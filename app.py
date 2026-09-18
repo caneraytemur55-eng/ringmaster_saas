@@ -190,3 +190,169 @@ with tab5:
             conn.close()
         else:
             st.error("Eksik bilgi girdiniz!")
+            import streamlit as st
+import datetime
+import urllib.parse
+from database import (
+    init_db, uye_ekle, uyeleri_getir, randevu_ekle, 
+    randevulari_getir, randevu_sayisi, aidat_durum_guncelle, kusak_guncelle
+)
+
+# Veritabanını Başlat
+init_db()
+
+st.set_page_config(page_title="RingMaster SaaS v3.5 - Ege Pilot", page_icon="🥊", layout="wide")
+
+# Lisans Durumu Kontrolü (Free Trial: Max 3 Randevu)
+randevu_toplam = randevu_sayisi()
+IS_PRO = st.sidebar.checkbox("Pro Lisansı Aktifleştir", value=False)
+
+st.sidebar.title("🥊 RingMaster SaaS v3.5")
+if not IS_PRO:
+    st.sidebar.warning(f"🔴 Deneme Sürümü: {randevu_toplam}/3 Randevu Kullanıldı")
+    if randevu_toplam >= 3:
+        st.sidebar.error("⚠️ Ücretsiz limit doldu! Pro Pakete geçin.")
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("💳 Pro Pakete Geç")
+    st.sidebar.write("**₺499 / Ay** (Sınırsız Randevu, Aidat ve Kuşak Takibi)")
+    st.sidebar.info("Ödeme için TR IBAN / QR ile transfer yapıp aktifleştirebilirsiniz.")
+else:
+    st.sidebar.success("🟢 PRO PAKET AKTİF")
+
+st.title("🥊 RingMaster SaaS - Salon Yönetim Sistemi")
+
+tab1, tab2, tab3, tab4 = st.tabs(["👤 Üye Yönetimi & Kuşak", "📅 Randevu & Ders", "💰 Aidat Takip Paneli", "📱 WhatsApp Otomasyonu"])
+
+# KUŞAK LİSTESİ
+KUSAKLAR = [
+    "Beyaz Kuşak / Başlangıç",
+    "Sarı Kuşak / Orta Seviye",
+    "Yeşil Kuşak",
+    "Mavi Kuşak",
+    "Kahverengi Kuşak",
+    "Siyah Kuşak / Müsabık / İleri Seviye"
+]
+
+# --- TAB 1: ÜYE YÖNETİMİ & KUŞAK ---
+with tab1:
+    st.subheader("Yeni Sporcu Kaydı")
+    with st.form("uye_form", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            ad_soyad = st.text_input("Sporcu Adı Soyadı")
+            telefon = st.text_input("Telefon (Başında 90 ile örn: 905xxxxxxxxx)")
+            brans = st.selectbox("Branş", ["Boks", "Kickboks", "Muay Thai", "Karate", "Fitness / Özel Ders"])
+        with col2:
+            kusak = st.selectbox("Kuşak / Seviye", KUSAKLAR)
+            aidat_tarihi = st.date_input("Son Aidat Ödeme Tarihi", datetime.date.today())
+            aidat_durumu = st.selectbox("Aidat Durumu", ["Ödendi", "Ödeme Bekliyor"])
+        
+        submit = st.form_submit_button("➕ Sporcuyu Kaydet")
+        if submit:
+            if ad_soyad and telefon:
+                uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu)
+                st.success(f"{ad_soyad} başarıyla kaydedildi!")
+                st.rerun()
+            else:
+                st.error("Lütfen ad soyad ve telefon alanlarını doldurun.")
+
+    st.markdown("---")
+    st.subheader("📋 Kayıtlı Sporcular ve Kuşak Dereceleri")
+    uyeler = uyeleri_getir()
+    if uyeler:
+        for u in uyeler:
+            u_id, u_ad, u_tel, u_brans, u_kusak, u_aidat_t, u_aidat_d = u
+            col_a, col_b, col_c, col_d = st.columns([2, 2, 2, 2])
+            col_a.write(f"**{u_ad}** ({u_brans})")
+            col_b.write(f"📞 {u_tel}")
+            col_c.write(f"🥋 **{u_kusak}**")
+            
+            # Kuşak Atlatma Seçeneği
+            yeni_k = col_d.selectbox("Kuşak Güncelle", KUSAKLAR, index=KUSAKLAR.index(u_kusak) if u_kusak in KUSAKLAR else 0, key=f"k_{u_id}")
+            if yeni_k != u_kusak:
+                kusak_guncelle(u_id, yeni_k)
+                st.success(f"{u_ad} kişisinin kuşağı güncellendi!")
+                st.rerun()
+    else:
+        st.info("Henüz kayıtlı üye bulunmuyor.")
+
+# --- TAB 2: RANDEVU TAKVİMİ ---
+with tab2:
+    st.subheader("Yeni Randevu / Antrenman Oluştur")
+    uyeler = uyeleri_getir()
+    
+    if not IS_PRO and randevu_toplam >= 3:
+        st.error("🔴 Ücretsiz deneme limitiniz (3 Randevu) doldu. Yeni randevu eklemek için Pro Pakete geçin.")
+    else:
+        if uyeler:
+            uye_dict = {f"{u[1]} ({u[3]})": u[0] for u in uyeler}
+            secilen_uye_str = st.selectbox("Sporcu Seç", list(uye_dict.keys()))
+            secilen_id = uye_dict[secilen_uye_str]
+            
+            col_r1, col_r2 = st.columns(2)
+            tarih = col_r1.date_input("Randevu Tarihi", datetime.date.today())
+            saat = col_r2.time_input("Randevu Saati", datetime.time(18, 0))
+            
+            if st.button("📅 Randevuyu Onayla ve Kaydet"):
+                randevu_ekle(secilen_id, str(tarih), str(saat))
+                st.success("Randevu başarıyla eklendi!")
+                st.rerun()
+        else:
+            st.warning("Randevu oluşturabilmek için önce 'Üye Yönetimi' sekmesinden üye eklemelisiniz.")
+
+    st.markdown("---")
+    st.subheader("📌 Planlanan Antrenmanlar")
+    randevular = randevulari_getir()
+    if randevular:
+        for r in randevular:
+            st.write(f"🗓️ **{r[3]} - {r[4]}** | 🥊 **{r[1]}** ({r[2]}) - Durum: `{r[5]}`")
+    else:
+        st.info("Planlanmış randevu bulunmuyor.")
+
+# --- TAB 3: AİDAT TAKİP PANELSİ ---
+with tab3:
+    st.subheader("💰 Sporcu Aidat Durumları ve Kasası")
+    uyeler = uyeleri_getir()
+    if uyeler:
+        for u in uyeler:
+            u_id, u_ad, u_tel, u_brans, u_kusak, u_aidat_t, u_aidat_d = u
+            col_m1, col_m2, col_m3, col_m4 = st.columns([2, 2, 2, 2])
+            
+            col_m1.write(f"**{u_ad}**")
+            col_m2.write(f"🗓️ Son Tarih: **{u_aidat_t}**")
+            
+            durum_renk = "🟢 Ödendi" if u_aidat_d == "Ödendi" else "🔴 Ödeme Bekliyor"
+            col_m3.write(f"Durum: **{durum_renk}**")
+            
+            yeni_aidat_d = col_m4.selectbox("Durum Değiştir", ["Ödendi", "Ödeme Bekliyor"], index=0 if u_aidat_d == "Ödendi" else 1, key=f"a_{u_id}")
+            if yeni_aidat_d != u_aidat_d:
+                aidat_durum_guncelle(u_id, yeni_aidat_d)
+                st.success(f"{u_ad} aidat durumu güncellendi!")
+                st.rerun()
+    else:
+        st.info("Sistemde henüz üye yok.")
+
+# --- TAB 4: WHATSAPP OTOMASYONU ---
+with tab4:
+    st.subheader("📱 Tek Tıkla WhatsApp Mesaj Fırlatıcı")
+    uyeler = uyeleri_getir()
+    if uyeler:
+        secilen_w_uye = st.selectbox("Mesaj Gönderilecek Sporcu", list(uye_dict.keys()), key="wa_select")
+        secilen_w_id = uye_dict[secilen_w_uye]
+        u_data = [u for u in uyeler if u[0] == secilen_w_id][0]
+        
+        mesaj_tipi = st.radio("Mesaj Tipi Seçin", ["Randevu Hatırlatma", "Aidat Hatırlatma"])
+        
+        if mesaj_tipi == "Randevu Hatırlatma":
+            varsayilan_mesaj = f"Merhaba {u_data[1]}, RingMaster Boks Salonu antrenman randevunuz planlanmıştır. Lütfen vaktinde salonda olunuz. 🥊"
+        else:
+            varsayilan_mesaj = f"Merhaba {u_data[1]}, Salon aidat ödemenizin son günü {u_data[5]}'dir. Lütfen ödemenizi gerçekleştiriniz. Teşekkürler! 💰"
+            
+        mesaj_metni = st.text_area("Mesaj Metni", varsayilan_mesaj)
+        
+        encoded_msg = urllib.parse.quote(mesaj_metni)
+        wa_url = f"https://wa.me/{u_data[2]}?text={encoded_msg}"
+        
+        st.markdown(f'<a href="{wa_url}" target="_blank"><button style="background-color:#25D366;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 WhatsApp Üzerinden Gönder</button></a>', unsafe_allow_html=True)
+    else:
+        st.info("Kayıtlı üye bulunmuyor.")
