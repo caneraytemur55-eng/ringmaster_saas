@@ -1,59 +1,12 @@
 import sqlite3
 
-def veritabanini_kur():
-    # RingMaster veritabanı bağlantısı
-    conn = sqlite3.connect("ringmaster.db")
-    cursor = conn.cursor()
-
-    # 1. SALON ÜYELERİ TABLE (Dövüşçüler)
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS uyeler (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ad_soyad TEXT NOT NULL,
-        telefon TEXT UNIQUE NOT NULL,
-        brans TEXT NOT NULL, -- Boks, Kickboks, Wing Chun vb.
-        seviye TEXT DEFAULT 'Başlangıç' -- Başlangıç, Orta, Sparring Grubu
-    )
-    """)
-
-    # 2. DERSLER VE KONTENJAN TABLE
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS dersler (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ders_adi TEXT NOT NULL, -- Örn: Akşam Sparring / Birebir Lapa
-        hoca_adi TEXT NOT NULL,
-        tarih_saat TEXT NOT NULL,
-        kontenjan INTEGER NOT NULL
-    )
-    """)
-
-    # 3. RANDEVULAR TABLE (Rezervasyonlar)
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS randevular (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        uye_id INTEGER,
-        ders_id INTEGER,
-        durum TEXT DEFAULT 'Onaylandı',
-        FOREIGN KEY(uye_id) REFERENCES uyeler(id),
-        FOREIGN KEY(ders_id) REFERENCES dersler(id)
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-    print(" RingMaster SQLite Veritabanı ve Tabloları Başarıyla Kuruldu!")
-
-if __name__ == "__main__":
-    veritabanini_kur()
-    import sqlite3
-
 DB_NAME = "ringmaster.db"
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Üyeler Tablosu (Kuşak ve Aidat Alanları Eklendi)
+    # 1. Üyeler Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,27 +20,43 @@ def init_db():
         )
     ''')
     
-    # Randevular Tablosu
+    # 2. Randevular Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS randevular (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             uye_id INTEGER NOT NULL,
-            tarih DATE NOT NULL,
-            saat TIME NOT NULL,
+            tarih DATE NOT NULL DEFAULT CURRENT_DATE,
+            saat TIME NOT NULL DEFAULT '18:00',
             durum TEXT DEFAULT 'Planlandı',
             FOREIGN KEY (uye_id) REFERENCES uyeler (id)
         )
     ''')
     
-    # Eski veritabanı güncellemeleri için kolon kontrolü
-    cursor.execute("PRAGMA table_info(uyeler)")
-    columns = [column[1] for column in cursor.fetchall()]
-    if 'kusak' not in columns:
+    # Kolon Kontrolleri
+    try:
         cursor.execute("ALTER TABLE uyeler ADD COLUMN kusak TEXT DEFAULT 'Beyaz Kuşak / Başlangıç'")
-    if 'aidat_tarihi' not in columns:
+    except sqlite3.OperationalError:
+        pass
+
+    try:
         cursor.execute("ALTER TABLE uyeler ADD COLUMN aidat_tarihi TEXT")
-    if 'aidat_durumu' not in columns:
+    except sqlite3.OperationalError:
+        pass
+
+    try:
         cursor.execute("ALTER TABLE uyeler ADD COLUMN aidat_durumu TEXT DEFAULT 'Ödendi'")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE randevular ADD COLUMN tarih DATE DEFAULT CURRENT_DATE")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE randevular ADD COLUMN saat TIME DEFAULT '18:00'")
+    except sqlite3.OperationalError:
+        pass
 
     conn.commit()
     conn.close()
@@ -105,8 +74,11 @@ def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu):
 def uyeleri_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu FROM uyeler")
-    uyeler = cursor.fetchall()
+    try:
+        cursor.execute("SELECT id, ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu FROM uyeler")
+        uyeler = cursor.fetchall()
+    except sqlite3.OperationalError:
+        uyeler = []
     conn.close()
     return uyeler
 
@@ -134,20 +106,30 @@ def randevu_ekle(uye_id, tarih, saat):
 def randevulari_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT r.id, u.ad_soyad, u.telefon, r.tarih, r.saat, r.durum 
-        FROM randevular r 
-        JOIN uyeler u ON r.uye_id = u.id
-        ORDER BY r.tarih DESC, r.saat DESC
-    ''')
-    randevular = cursor.fetchall()
+    try:
+        cursor.execute('''
+            SELECT r.id, u.ad_soyad, u.telefon, r.tarih, r.saat, r.durum 
+            FROM randevular r 
+            JOIN uyeler u ON r.uye_id = u.id
+            ORDER BY r.tarih DESC, r.saat DESC
+        ''')
+        randevular = cursor.fetchall()
+    except sqlite3.OperationalError:
+        # Eski veritabanı kilitlendiyse çökme yapmaz, boş liste döner
+        randevular = []
     conn.close()
     return randevular
 
 def randevu_sayisi():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM randevular")
-    count = cursor.fetchone()[0]
+    try:
+        cursor.execute("SELECT COUNT(*) FROM randevular")
+        count = cursor.fetchone()[0]
+    except sqlite3.OperationalError:
+        count = 0
     conn.close()
     return count
+
+  
+      
