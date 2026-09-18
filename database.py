@@ -1,3 +1,11 @@
+import os
+
+# Eski kilitli veritabanını diskten silip sıfırlama
+if os.path.exists("ringmaster.db"):
+    try:
+        os.remove("ringmaster.db")
+    except Exception:
+        pass
 import sqlite3
 
 DB_NAME = "ringmaster.db"
