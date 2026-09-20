@@ -6,13 +6,13 @@ from database import (
     randevulari_getir, randevu_sayisi, aidat_durum_guncelle, kusak_guncelle,
     deneme_ekle, denemeleri_getir,
     ozel_ders_ekle, ozel_dersleri_getir, ozel_ders_seans_dus, ozel_ders_ucret_guncelle,
-    kurulum_tarihi_getir
+    kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir
 )
 
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v3.7", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.0", page_icon="🥊", layout="wide")
 
 st.title("🥊 RingMaster SaaS - Salon Yönetim Sistemi")
 
@@ -44,7 +44,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "🎯 Özel Ders (PT) & Ücret",
     "👤 Üye Yönetimi & Kuşak", 
     "📅 Randevu & Ders", 
-    "💰 Aidat Takip Paneli", 
+    "📊 Kasa & Finans Paneli", 
     "📱 WhatsApp & SMS Otomasyonu",
     "🤖 AI RingMaster Chat Koç"
 ])
@@ -105,6 +105,9 @@ else:
             submit_pt = st.form_submit_button("➕ Özel Ders Paketini Başlat")
             if submit_pt and pt_ad and pt_tel:
                 ozel_ders_ekle(pt_ad, pt_tel, pt_brans, pt_seans, pt_ucret, pt_ucret_durumu, pt_not)
+                # Otomatik Gelir Ekleme (Ödendiyse Kasaya İşler)
+                if "Ödendi" in pt_ucret_durumu:
+                    kasa_islem_ekle("Gelir", "PT Ödemesi", pt_ucret, f"{pt_ad} PT Paket Ücreti")
                 st.success(f"🎉 {pt_ad} için {pt_seans} seanslık özel ders paketi açıldı!")
 
         st.markdown("---")
@@ -129,6 +132,8 @@ else:
                 yeni_pt_ucret_d = c4.selectbox("Ödeme Durumu", ["Ödendi 🟢", "Ödeme Bekliyor 🔴", "Kısmi Ödeme Yapıldı 🟡"], index=["Ödendi 🟢", "Ödeme Bekliyor 🔴", "Kısmi Ödeme Yapıldı 🟡"].index(pt_durum) if pt_durum in ["Ödendi 🟢", "Ödeme Bekliyor 🔴", "Kısmi Ödeme Yapıldı 🟡"] else 1, key=f"select_pt_{pt_id}")
                 if yeni_pt_ucret_d != pt_durum:
                     ozel_ders_ucret_guncelle(pt_id, yeni_pt_ucret_d)
+                    if "Ödendi" in yeni_pt_ucret_d:
+                        kasa_islem_ekle("Gelir", "PT Ödemesi", pt_ucret, f"{pt_ad} PT Ödemesi Alındı")
                     st.success("Ödeme durumu güncellendi!")
                     st.rerun()
                 st.markdown("---")
@@ -146,10 +151,13 @@ else:
             kusak = col2.selectbox("Mevcut Kuşak", KUSAKLAR)
             aidat_tarihi = col2.date_input("Son Aidat Tarihi", datetime.date.today())
             aidat_durumu = col2.selectbox("Aidat Durumu", ["Ödendi", "Ödeme Bekliyor"])
+            aidat_tutari = col2.number_input("Aylık Aidat Tutarı (TL)", min_value=0, value=1500)
             
             submit = st.form_submit_button("➕ Sporcuyu Kaydet")
             if submit and ad_soyad and telefon:
                 uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu, str(datetime.date.today()))
+                if aidat_durumu == "Ödendi":
+                    kasa_islem_ekle("Gelir", "Aidat", aidat_tutari, f"{ad_soyad} Üyelik Aidatı")
                 st.success(f"{ad_soyad} başarıyla eklendi!")
 
         st.markdown("---")
@@ -171,13 +179,42 @@ else:
         else:
             st.info("Randevu bulunmuyor.")
 
-    # --- TAB 5: AİDAT ---
+    # --- TAB 5: KASA & FİNANS PANENİ (YENİ MODÜL!) ---
     with tab5:
-        st.subheader("💰 Aidat Takibi")
-        uyeler = uyeleri_getir()
-        if uyeler:
-            for u in uyeler:
-                st.write(f"👤 **{u[1]}** - Son Tarih: {u[5]} - Durum: **{u[6]}**")
+        st.subheader("📊 Salon Kasa & Finans Durumu")
+        
+        gelir, gider, net_kar = kasa_ozet_getir()
+        
+        m1, m2, m3 = st.columns(3)
+        m1.metric("🟢 Toplam Gelir", f"{gelir:,.0f} TL")
+        m2.metric("🔴 Toplam Gider", f"{gider:,.0f} TL")
+        m3.metric("💰 Net Kasa / Kar", f"{net_kar:,.0f} TL")
+        
+        st.markdown("---")
+        
+        st.subheader("➕ Yeni Gelir / Gider Ekle")
+        with st.form("kasa_form", clear_on_submit=True):
+            col_k1, col_k2 = st.columns(2)
+            k_tip = col_k1.selectbox("İşlem Tipi", ["Gider", "Gelir"])
+            k_kat = col_k1.selectbox("Kategori", ["Kira", "Fatura (Elektrik/Su/İnternet)", "Antrenör Maaşı", "Ekipman Alımı", "Aidat Geliri", "PT Geliri", "Diğer"])
+            k_tutar = col_k2.number_input("Tutar (TL)", min_value=1.0, value=1000.0)
+            k_aciklama = col_k2.text_input("Açıklama / Not", "")
+            
+            submit_kasa = st.form_submit_button("💾 İşlemi Kasaya İşle")
+            if submit_kasa:
+                kasa_islem_ekle(k_tip, k_kat, k_tutar, k_aciklama)
+                st.success(f"{k_tip} işlemi kasaya eklendi!")
+                st.rerun()
+
+        st.markdown("---")
+        st.subheader("📜 Son Kasa Hareketleri")
+        kasa_kayitlari = kasa_islemleri_getir()
+        if kasa_kayitlari:
+            for k in kasa_kayitlari:
+                emoji = "🟢" if k[1] == "Gelir" else "🔴"
+                st.write(f"{emoji} **{k[5]}** | `{k[1]}` - **{k[2]}**: **{k[3]:,.0f} TL** | Not: {k[4]}")
+        else:
+            st.info("Kasada henüz işlem kaydı yok.")
 
     # --- TAB 6: WHATSAPP / SMS ---
     with tab6:
@@ -239,6 +276,3 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
                 st.markdown(response)
-
-                
-   
