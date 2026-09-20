@@ -64,7 +64,19 @@ def init_db():
         )
     ''')
     
-    # 5. Sistem Lisans/Abonelik Tablosu (15 Günlük Sayaç İçin)
+    # 5. Kasa / Gelir-Gider Tablosu (YENİ!)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS kasa (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            islem_tipi TEXT NOT NULL, -- 'Gelir' veya 'Gider'
+            kategori TEXT NOT NULL,   -- 'Aidat', 'PT Ödemesi', 'Kira', 'Fatura', 'Ekipman', 'Maaş', 'Diğer'
+            tutar REAL NOT NULL,
+            aciklama TEXT,
+            tarih DATE DEFAULT CURRENT_DATE
+        )
+    ''')
+    
+    # 6. Sistem Lisans/Abonelik Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -88,6 +100,43 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
+# KASA FONKSİYONLARI (YENİ!)
+def kasa_islem_ekle(islem_tipi, kategori, tutar, aciklama):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO kasa (islem_tipi, kategori, tutar, aciklama) VALUES (?, ?, ?, ?)",
+        (islem_tipi, kategori, tutar, aciklama)
+    )
+    conn.commit()
+    conn.close()
+
+def kasa_ozet_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT SUM(tutar) FROM kasa WHERE islem_tipi = 'Gelir'")
+        toplam_gelir = cursor.fetchone()[0] or 0.0
+        
+        cursor.execute("SELECT SUM(tutar) FROM kasa WHERE islem_tipi = 'Gider'")
+        toplam_gider = cursor.fetchone()[0] or 0.0
+    except Exception:
+        toplam_gelir, toplam_gider = 0.0, 0.0
+    conn.close()
+    return toplam_gelir, toplam_gider, toplam_gelir - toplam_gider
+
+def kasa_islemleri_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, islem_tipi, kategori, tutar, aciklama, tarih FROM kasa ORDER BY id DESC")
+        islemler = cursor.fetchall()
+    except Exception:
+        islemler = []
+    conn.close()
+    return islemler
+
+# DİĞER MEVCUT FONKSİYONLAR
 def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
