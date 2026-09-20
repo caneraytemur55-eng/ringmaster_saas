@@ -7,15 +7,15 @@ from database import (
     deneme_ekle, denemeleri_getir,
     ozel_ders_ekle, ozel_dersleri_getir, ozel_ders_seans_dus, ozel_ders_ucret_guncelle,
     kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir,
-    olcum_ekle, olcumleri_getir
+    olcum_ekle, olcumleri_getir, uykudaki_uyeleri_getir
 )
 
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v4.0", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.0 Ultimate", page_icon="🥊", layout="wide")
 
-st.title("🥊 RingMaster SaaS - Salon Yönetim Sistemi")
+st.title("🥊 RingMaster SaaS v4.0 Ultimate Edition")
 
 # --- 15 GÜNLÜK DENEME SÜRESİ MANTIĞI ---
 kurulum_str = kurulum_tarihi_getir()
@@ -40,13 +40,14 @@ else:
 
 st.sidebar.markdown("---")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "🥊 Deneme Dersi (Lead)",
     "🎯 Özel Ders (PT) & Ücret",
     "👤 Üye Yönetimi & Kuşak", 
     "📅 Randevu & Ders", 
     "📈 Sporcu Ölçüm Takibi",
     "📊 Kasa & Finans Paneli", 
+    "🚨 Kayıp Üye (Churn) Uyarısı",
     "📱 WhatsApp & SMS Otomasyonu",
     "🤖 AI RingMaster Chat Koç"
 ])
@@ -60,7 +61,6 @@ KUSAKLAR = [
     "Siyah Kuşak / Müsabık / İleri Seviye"
 ]
 
-# Deneme süresi bittiyse ve PRO değilse erişim uyarısı
 if not IS_PRO and kalan_deneme_gunu <= 0:
     st.error("⛔ **Deneme Süreniz Dolmuştur!** 15 günlük ücretsiz deneme periyodunuz sona ermiştir. Lütfen yönetici ile iletişime geçip PRO pakete geçiniz.")
 else:
@@ -180,7 +180,7 @@ else:
         else:
             st.info("Randevu bulunmuyor.")
 
-    # --- TAB 5: SPORCU ÖLÇÜM TAKİBİ (YENİ MODÜL!) ---
+    # --- TAB 5: SPORCU ÖLÇÜM TAKİBİ ---
     with tab5:
         st.subheader("📈 Sporcu Fiziksel Gelişim & Ölçüm Kaydı")
         uyeler = uyeleri_getir()
@@ -254,8 +254,32 @@ else:
         else:
             st.info("Kasada henüz işlem kaydı yok.")
 
-    # --- TAB 7: WHATSAPP / SMS ---
+    # --- TAB 7: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ (YENİ!) ---
     with tab7:
+        st.subheader("🚨 Riskli & Uykudaki Üye Erken Uyarı Paneli")
+        st.write("Aidatı geciken veya salona gelmeyi aksatan üyeleri buradan tek tıkla geri kazanın.")
+        
+        uykudakiler = uykudaki_uyeleri_getir()
+        if uykudakiler:
+            for uy in uykudakiler:
+                u_id, u_ad, u_tel, u_brans, u_tarih, u_durum = uy
+                
+                c_r1, c_r2, c_r3 = st.columns([3, 3, 2])
+                c_r1.write(f"👤 **{u_ad}** ({u_brans})\n\n📞 {u_tel}")
+                c_r2.write(f"🚨 Durum: **{u_durum}**\n\n🗓️ Son Tarih: {u_tarih}")
+                
+                # Geri Kazanım Mesajı Fırlatıcı
+                mesaj = f"Merhaba {u_ad}, RingMaster Salonu'nda antrenmanları aksattığını fark ettik! 🥊 Sağlığın ve hedeflerin için salona geri dönme vakti. Bu haftaki ders programı için dönüşünü bekliyoruz!"
+                enc_m = urllib.parse.quote(mesaj)
+                wa_churn_url = f"https://wa.me/{u_tel}?text={enc_m}"
+                
+                c_r3.markdown(f'<a href="{wa_churn_url}" target="_blank"><button style="background-color:#FF3B30;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">🔥 Üyeyi Geri Çağır</button></a>', unsafe_allow_html=True)
+                st.markdown("---")
+        else:
+            st.success("🎉 Harika! ŞŞŞ-ŞAK! Şu an aidatı geciken veya kayıp riski taşıyan üye bulunmuyor.")
+
+    # --- TAB 8: WHATSAPP / SMS İLETİŞİM ---
+    with tab8:
         st.subheader("📱 İletişim Otomasyonu")
         pt_dersler = ozel_dersleri_getir()
         if pt_dersler:
@@ -275,8 +299,8 @@ else:
             with col_pt_btn2:
                 st.markdown(f'<a href="{sms_pt_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS PT Bildirimi At</button></a>', unsafe_allow_html=True)
 
-    # --- TAB 8: AI RİNGMASTER CHAT KOÇ ---
-    with tab8:
+    # --- TAB 9: AI RİNGMASTER CHAT KOÇ ---
+    with tab9:
         st.subheader("🤖 AI RingMaster Canlı Chat Asistanı")
         st.write("7/24 Salon Yönetim, Antrenman ve İkna Koçunuz.")
 
@@ -314,3 +338,6 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
                 st.markdown(response)
+            
+    
+
