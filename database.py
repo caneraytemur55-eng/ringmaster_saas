@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 
 DB_NAME = "ringmaster.db"
 
@@ -47,7 +48,7 @@ def init_db():
         )
     ''')
 
-    # 4. Özel Ders (PT) Tablosu (Yeni)
+    # 4. Özel Ders (PT) Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ozel_dersler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,8 +64,29 @@ def init_db():
         )
     ''')
     
+    # 5. Sistem Lisans/Abonelik Tablosu (15 Günlük Sayaç İçin)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sistem_ayarlari (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            kurulum_tarihi DATE DEFAULT CURRENT_DATE
+        )
+    ''')
+    cursor.execute("INSERT OR IGNORE INTO sistem_ayarlari (id, kurulum_tarihi) VALUES (1, CURRENT_DATE)")
+    
     conn.commit()
     conn.close()
+
+def kurulum_tarihi_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT kurulum_tarihi FROM sistem_ayarlari WHERE id = 1")
+        row = cursor.fetchone()
+        tarih_str = row[0] if row else str(datetime.date.today())
+    except Exception:
+        tarih_str = str(datetime.date.today())
+    conn.close()
+    return tarih_str
 
 def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi):
     conn = sqlite3.connect(DB_NAME)
@@ -108,14 +130,6 @@ def denemeleri_getir():
     conn.close()
     return denemeler
 
-def deneme_durum_guncelle(deneme_id, yeni_durum):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE deneme_dersleri SET durum = ? WHERE id = ?", (yeni_durum, deneme_id))
-    conn.commit()
-    conn.close()
-
-# --- ÖZEL DERS (PT) FONKSİYONLARI ---
 def ozel_ders_ekle(ad_soyad, telefon, brans, toplam_seans, paket_ucreti, ucret_durumu, notlar):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
