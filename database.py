@@ -64,19 +64,35 @@ def init_db():
         )
     ''')
     
-    # 5. Kasa / Gelir-Gider Tablosu (YENİ!)
+    # 5. Kasa / Gelir-Gider Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS kasa (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            islem_tipi TEXT NOT NULL, -- 'Gelir' veya 'Gider'
-            kategori TEXT NOT NULL,   -- 'Aidat', 'PT Ödemesi', 'Kira', 'Fatura', 'Ekipman', 'Maaş', 'Diğer'
+            islem_tipi TEXT NOT NULL,
+            kategori TEXT NOT NULL,
             tutar REAL NOT NULL,
             aciklama TEXT,
             tarih DATE DEFAULT CURRENT_DATE
         )
     ''')
+
+    # 6. Sporcu Ölçüm Takip Tablosu (YENİ!)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS olcumler (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uye_id INTEGER NOT NULL,
+            tarih DATE DEFAULT CURRENT_DATE,
+            kilo REAL,
+            yag_orani REAL,
+            bel REAL,
+            gogus REAL,
+            pazu REAL,
+            notlar TEXT,
+            FOREIGN KEY (uye_id) REFERENCES uyeler (id)
+        )
+    ''')
     
-    # 6. Sistem Lisans/Abonelik Tablosu
+    # 7. Sistem Lisans/Abonelik Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -100,7 +116,29 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# KASA FONKSİYONLARI (YENİ!)
+# ÖLÇÜM FONKSİYONLARI (YENİ!)
+def olcum_ekle(uye_id, kilo, yag_orani, bel, gogus, pazu, notlar):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO olcumler (uye_id, kilo, yag_orani, bel, gogus, pazu, notlar) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (uye_id, kilo, yag_orani, bel, gogus, pazu, notlar)
+    )
+    conn.commit()
+    conn.close()
+
+def olcumleri_getir(uye_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, tarih, kilo, yag_orani, bel, gogus, pazu, notlar FROM olcumler WHERE uye_id = ? ORDER BY id DESC", (uye_id,))
+        olcumler = cursor.fetchall()
+    except Exception:
+        olcumler = []
+    conn.close()
+    return olcumler
+
+# KASA FONKSİYONLARI
 def kasa_islem_ekle(islem_tipi, kategori, tutar, aciklama):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -261,3 +299,4 @@ def randevu_sayisi():
         count = 0
     conn.close()
     return count
+
