@@ -832,3 +832,266 @@ with tab5:
                 st.markdown(f'<a href="https://wa.me/?text={enc_ai}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 WhatsApp Paylaş</button></a>', unsafe_allow_html=True)
             with col_share2:
                 st.markdown(f'<a href="sms:?body={enc_ai}"><button style="background-color:#007AFF;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS / iMessage Paylaş</button></a>', unsafe_allow_html=True)
+import streamlit as st
+import datetime
+import urllib.parse
+from database import (
+    init_db, uye_ekle, uyeleri_getir, randevu_ekle, 
+    randevulari_getir, randevu_sayisi, aidat_durum_guncelle, kusak_guncelle
+)
+
+# Veritabanını Başlat
+init_db()
+
+st.set_page_config(page_title="RingMaster SaaS v3.5 - Global Sürüm", page_icon="🥊", layout="wide")
+
+# Lisans Durumu Kontrolü
+randevu_toplam = randevu_sayisi()
+IS_PRO = st.sidebar.checkbox("Pro Lisansı Aktifleştir", value=False)
+
+st.sidebar.title("🥊 RingMaster SaaS v3.5")
+if not IS_PRO:
+    st.sidebar.warning(f"🔴 Deneme Sürümü: {randevu_toplam}/3 Randevu Kullanıldı")
+    if randevu_toplam >= 3:
+        st.sidebar.error("⚠️ Ücretsiz limit doldu! Pro Pakete geçin.")
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("💳 Pro Pakete Geç")
+    st.sidebar.write("**₺499 / Ay** veya **$19 / Month** (Kuşak Sınav Takibi & Otomasyon)")
+    st.sidebar.info("Ödeme için TR IBAN / Stripe ile transfer yapıp aktifleştirebilirsiniz.")
+else:
+    st.sidebar.success("🟢 PRO PAKET AKTİF")
+
+st.title("🥊 RingMaster SaaS - Salon Yönetim Sistemi")
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "👤 Üye Yönetimi & Kuşak Sınavı", 
+    "📅 Randevu & Ders", 
+    "💰 Aidat Takip Paneli", 
+    "📱 WhatsApp & SMS Otomasyonu",
+    "🤖 AI RingMaster Asistan"
+])
+
+KUSAKLAR = [
+    "Beyaz Kuşak / Başlangıç",
+    "Sarı Kuşak / Orta Seviye",
+    "Yeşil Kuşak",
+    "Mavi Kuşak",
+    "Kahverengi Kuşak",
+    "Siyah Kuşak / Müsabık / İleri Seviye"
+]
+
+# --- TAB 1: ÜYE YÖNETİMİ & KUŞAK SINAVI ---
+with tab1:
+    st.subheader("Yeni Sporcu Kaydı")
+    with st.form("uye_form", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            ad_soyad = st.text_input("Sporcu Adı Soyadı")
+            telefon = st.text_input("Telefon (Ülke Kodu ile örn: 905xxxxxxxxx)")
+            brans = st.selectbox("Branş", ["Boks", "Kickboks", "Muay Thai", "Karate", "Fitness / Özel Ders"])
+        with col2:
+            kusak = st.selectbox("Mevcut Kuşak / Seviye", KUSAKLAR)
+            aidat_tarihi = st.date_input("Son Aidat Ödeme Tarihi", datetime.date.today())
+            son_sinav_tarihi = st.date_input("Son Kuşak Sınavı / Başlangıç Tarihi", datetime.date.today())
+            aidat_durumu = st.selectbox("Aidat Durumu", ["Ödendi", "Ödeme Bekliyor"])
+        
+        submit = st.form_submit_button("➕ Sporcuyu Kaydet")
+        if submit:
+            if ad_soyad and telefon:
+                uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu, str(son_sinav_tarihi))
+                st.success(f"{ad_soyad} başarıyla kaydedildi!")
+                st.rerun()
+            else:
+                st.error("Lütfen ad soyad ve telefon alanlarını doldurun.")
+
+    st.markdown("---")
+    st.subheader("🥋 Kuşak Derece Sınavı Uyarı & Takip Paneli")
+    uyeler = uyeleri_getir()
+    if uyeler:
+        bugun = datetime.date.today()
+        for u in uyeler:
+            u_id = u[0]
+            u_ad = u[1]
+            u_tel = u[2]
+            u_brans = u[3]
+            u_kusak = u[4]
+            u_sinav_t_str = u[7] if len(u) > 7 and u[7] else str(bugun)
+            
+            try:
+                u_sinav_t = datetime.datetime.strptime(u_sinav_t_str, "%Y-%m-%d").date()
+            except ValueError:
+                u_sinav_t = bugun
+
+            gecen_gun = (bugun - u_sinav_t).days
+            
+            # Sınav Uyarı Mantığı (Örn: 90 gün / 3 ay üzeri sınav vakti geldi)
+            if gecen_gun >= 90:
+                sinav_durumu = f"🔴 **Sınav Vakti Geldi!** ({gecen_gun} gündür aynı kuşakta)"
+            elif gecen_gun >= 75:
+                sinav_durumu = f"🟡 **Sınav Yaklaştı** ({gecen_gun} gün oldu)"
+            else:
+                sinav_durumu = f"🟢 **Normal** ({gecen_gun} gündür mevcut kuşakta)"
+
+            col_a, col_b, col_c, col_d = st.columns([2, 2, 2, 2])
+            col_a.write(f"**{u_ad}** ({u_brans})")
+            col_b.write(f"🥋 **{u_kusak}**\n\n{sinav_durumu}")
+            
+            yeni_k = col_c.selectbox("Kuşak / Derece Yükselt", KUSAKLAR, index=KUSAKLAR.index(u_kusak) if u_kusak in KUSAKLAR else 0, key=f"k_{u_id}")
+            if col_d.button("🥋 Sınavı Geçti / Yükselt", key=f"btn_k_{u_id}"):
+                kusak_guncelle(u_id, yeni_k, str(bugun))
+                st.success(f"🎉 {u_ad} yeni kuşağa geçti! Sınav tarihi güncellendi.")
+                st.rerun()
+            st.markdown("---")
+    else:
+        st.info("Henüz kayıtlı üye bulunmuyor.")
+
+# --- TAB 2: RANDEVU TAKVİMİ ---
+with tab2:
+    st.subheader("Yeni Randevu / Antrenman Oluştur")
+    uyeler = uyeleri_getir()
+    
+    if not IS_PRO and randevu_toplam >= 3:
+        st.error("🔴 Ücretsiz deneme limitiniz (3 Randevu) doldu. Yeni randevu eklemek için Pro Pakete geçin.")
+    else:
+        if uyeler:
+            uye_dict = {f"{u[1]} ({u[3]})": u[0] for u in uyeler}
+            secilen_uye_str = st.selectbox("Sporcu Seç", list(uye_dict.keys()))
+            secilen_id = uye_dict[secilen_uye_str]
+            
+            col_r1, col_r2 = st.columns(2)
+            tarih = col_r1.date_input("Randevu Tarihi", datetime.date.today())
+            saat = col_r2.time_input("Randevu Saati", datetime.time(18, 0))
+            
+            if st.button("📅 Randevuyu Onayla ve Kaydet"):
+                randevu_ekle(secilen_id, str(tarih), str(saat))
+                st.success("Randevu başarıyla eklendi!")
+                st.rerun()
+        else:
+            st.warning("Randevu oluşturabilmek için önce 'Üye Yönetimi' sekmesinden üye eklemelisiniz.")
+
+    st.markdown("---")
+    st.subheader("📌 Planlanan Antrenmanlar")
+    randevular = randevulari_getir()
+    if randevular:
+        for r in randevular:
+            st.write(f"🗓️ **{r[3]} - {r[4]}** | 🥊 **{r[1]}** ({r[2]}) - Durum: `{r[5]}`")
+    else:
+        st.info("Planlanmış randevu bulunmuyor.")
+
+# --- TAB 3: AİDAT TAKİP PANELSİ ---
+with tab3:
+    st.subheader("💰 Sporcu Aidat Durumları ve Kasası")
+    uyeler = uyeleri_getir()
+    if uyeler:
+        for u in uyeler:
+            u_id, u_ad, u_tel, u_brans, u_kusak, u_aidat_t, u_aidat_d = u[0], u[1], u[2], u[3], u[4], u[5], u[6]
+            col_m1, col_m2, col_m3, col_m4 = st.columns([2, 2, 2, 2])
+            
+            col_m1.write(f"**{u_ad}**")
+            col_m2.write(f"🗓️ Son Tarih: **{u_aidat_t}**")
+            
+            durum_renk = "🟢 Ödendi" if u_aidat_d == "Ödendi" else "🔴 Ödeme Bekliyor"
+            col_m3.write(f"Durum: **{durum_renk}**")
+            
+            yeni_aidat_d = col_m4.selectbox("Durum Değiştir", ["Ödendi", "Ödeme Bekliyor"], index=0 if u_aidat_d == "Ödendi" else 1, key=f"a_{u_id}")
+            if yeni_aidat_d != u_aidat_d:
+                aidat_durum_guncelle(u_id, yeni_aidat_d)
+                st.success(f"{u_ad} aidat durumu güncellendi!")
+                st.rerun()
+    else:
+        st.info("Sistemde henüz üye yok.")
+
+# --- TAB 4: WHATSAPP & SMS OTOMASYONU ---
+with tab4:
+    st.subheader("📱 WhatsApp & SMS Mesaj Fırlatıcı (Sınav / Aidat / Randevu)")
+    uyeler = uyeleri_getir()
+    if uyeler:
+        secilen_w_uye = st.selectbox("Mesaj Gönderilecek Sporcu", [f"{u[1]} ({u[3]})" for u in uyeler], key="wa_select")
+        secilen_w_id = [u[0] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_w_uye][0]
+        u_data = [u for u in uyeler if u[0] == secilen_w_id][0]
+        
+        mesaj_tipi = st.radio("Mesaj Tipi Seçin", ["Kuşak Sınavı Daveti", "Randevu Hatırlatma", "Aidat Hatırlatma"])
+        
+        if mesaj_tipi == "Kuşak Sınavı Daveti":
+            varsayilan_mesaj = f"Merhaba {u_data[1]}, RingMaster Salonu Kuşak Derece Sınavınız yaklaşmıştır. Lütfen sınav katılımı ve derece yükseltme antrenmanları için antrenörünüzle iletişime geçiniz. 🥋🥊"
+        elif mesaj_tipi == "Randevu Hatırlatma":
+            varsayilan_mesaj = f"Merhaba {u_data[1]}, RingMaster Boks Salonu antrenman randevunuz planlanmıştır. Lütfen vaktinde salonda olunuz. 🥊"
+        else:
+            varsayilan_mesaj = f"Merhaba {u_data[1]}, Salon aidat ödemenizin son günü {u_data[5]}'dir. Lütfen ödemenizi gerçekleştiriniz. Teşekkürler! 💰"
+            
+        mesaj_metni = st.text_area("Mesaj Metni", varsayilan_mesaj)
+        
+        encoded_msg = urllib.parse.quote(mesaj_metni)
+        wa_url = f"https://wa.me/{u_data[2]}?text={encoded_msg}"
+        sms_url = f"sms:{u_data[2]}?body={encoded_msg}"
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            st.markdown(f'<a href="{wa_url}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 WhatsApp İle Gönder</button></a>', unsafe_allow_html=True)
+        with col_btn2:
+            st.markdown(f'<a href="{sms_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 Direct SMS / iMessage İle Gönder</button></a>', unsafe_allow_html=True)
+    else:
+        st.info("Kayıtlı üye bulunmuyor.")
+
+# --- TAB 5: AI RİNGMASTER ASİSTAN ---
+with tab5:
+    st.subheader("🤖 AI RingMaster Koç & İdari Asistan")
+    st.write("Dövüş sporları ve salon yönetimine özel yapay zeka asistanı. Tek tıkla antrenman programı veya ikna mesajı oluşturun!")
+    
+    ai_gorev = st.selectbox("AI Asistandan Ne İstiyorsunuz?", [
+        "🥊 Özelleştirilmiş Dövüş / Antrenman Programı Yaz",
+        "🥋 Kuşak Sınavı Hazırlık & Teknik Değerlendirme Metni",
+        "🥗 Sporcu Kilo Verme / Beslenme Tavsiyesi Hazırla",
+        "🔥 Sporu Bırakan / Devamsız Üyeyi Geri Çağırma Mesajı"
+    ])
+    
+    col_ai1, col_ai2 = st.columns(2)
+    with col_ai1:
+        ai_brans = st.selectbox("Branş / Seviye", ["Boks - Başlangıç", "Boks - Müsabık", "Kickboks - Orta Seviye", "Muay Thai", "Fitness"])
+    with col_ai2:
+        ai_hedef = st.text_input("Özel Not / Hedef (Örn: Sınav hazırlığı, patlayıcı güç)", "Kuşak sınavı derece hazırlığı")
+        
+    if st.button("🚀 AI Yanıtı Üret"):
+        with st.spinner("AI Antrenör düşünüyor ve metni hazırlıyor..."):
+            if "Kuşak Sınavı" in ai_gorev:
+                ai_cikti = f"""
+### 🥋 Kuşak Derece Sınavı Hazırlık & Teknik Programı
+**Branş:** {ai_brans} | **Hedef:** {ai_hedef}
+
+1. **Temel Teknik Sınavı:** Direk, kanca, aparkat kombinasyonlarının torba ve gard üzerindeki duruş hassasiyeti.
+2. **Kondisyon & Dayanıklılık:** 3 Raund kesintisiz lapa çalışması + 50 Şınav / 50 Mekik.
+3. **Mesafe ve Savunma:** Blok, gard, esneme ve kontra-atak refleks testi.
+4. **Disiplin ve Etik:** Salon içi duruş ve sporcu etiği değerlendirmesi.
+                """
+            elif "Antrenman Programı" in ai_gorev:
+                ai_cikti = f"""
+### 🥊 {ai_brans} Akıllı Antrenman Programı
+**Hedef:** {ai_hedef}
+
+**1. Isınma & Mobilite (15 Dk):** 3 Raund İp Atlama & Dinamik Esnetme.
+**2. Teknik & Gölge Boksu (20 Dk):** 3 Raund Gölge Boksu + 3 Raund Torba Çalışması.
+**3. Lapa & Kondisyon (20 Dk):** 4 Raund Lapa / Sparring Mekaniği + Boks Şınavı.
+**4. Soğuma (5 Dk):** Statik esnetme.
+                """
+            elif "Beslenme" in ai_gorev:
+                ai_cikti = f"""
+### 🥗 Sporcu Performans & Beslenme Rehberi
+**Branş:** {ai_brans} | **Hedef:** {ai_hedef}
+- Antrenman öncesi karmaşık karbonhidrat, antrenman sonrası yüksek protein.
+- Günlük en az 2.5 Litre hidrasyon.
+                """
+            else:
+                ai_cikti = f"""
+### 🔥 Üye İkna & Geri Çağırma Şablonu
+"Selam Şampiyon! 🥊 Uzun zamandır salonda göremiyoruz seni. {ai_hedef} hedeflerimiz için seni bu hafta ringde bekliyoruz!"
+                """
+            
+            st.success("AI Yanıtı Başarıyla Oluşturuldu!")
+            st.markdown(ai_cikti)
+            
+            enc_ai = urllib.parse.quote(ai_cikti)
+            col_share1, col_share2 = st.columns(2)
+            with col_share1:
+                st.markdown(f'<a href="https://wa.me/?text={enc_ai}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 WhatsApp Paylaş</button></a>', unsafe_allow_html=True)
+            with col_share2:
+                st.markdown(f'<a href="sms:?body={enc_ai}"><button style="background-color:#007AFF;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS / iMessage Paylaş</button></a>', unsafe_allow_html=True)
