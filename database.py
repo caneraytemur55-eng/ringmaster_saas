@@ -76,7 +76,7 @@ def init_db():
         )
     ''')
 
-    # 6. Sporcu Ölçüm Takip Tablosu (YENİ!)
+    # 6. Sporcu Ölçüm Takip Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS olcumler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,7 +116,20 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# ÖLÇÜM FONKSİYONLARI (YENİ!)
+# CHURN RISK / KAYIP ÜYE ALTYAPISI
+def uykudaki_uyeleri_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        # Aidat süresi geçmiş veya ödeme bekleyen üyeler
+        cursor.execute("SELECT id, ad_soyad, telefon, brans, aidat_tarihi, aidat_durumu FROM uyeler WHERE aidat_durumu = 'Ödeme Bekliyor'")
+        uykudakiler = cursor.fetchall()
+    except Exception:
+        uykudakiler = []
+    conn.close()
+    return uykudakiler
+
+# ÖLÇÜM FONKSİYONLARI
 def olcum_ekle(uye_id, kilo, yag_orani, bel, gogus, pazu, notlar):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -174,7 +187,7 @@ def kasa_islemleri_getir():
     conn.close()
     return islemler
 
-# DİĞER MEVCUT FONKSİYONLAR
+# DİĞER FONKSİYONLARI
 def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -298,5 +311,5 @@ def randevu_sayisi():
     except Exception:
         count = 0
     conn.close()
-    return count
+    return countt
 
