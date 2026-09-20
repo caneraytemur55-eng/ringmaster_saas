@@ -1,14 +1,11 @@
 import sqlite3
-import os
 
 DB_NAME = "ringmaster.db"
 
 def init_db():
-    # Kilitlenmiş veya bozulmuş veritabanı varsa sunucuyu kurtarmak için sıfırla
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,7 +20,6 @@ def init_db():
         )
     ''')
     
-    # 2. Randevular Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS randevular (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +31,6 @@ def init_db():
         )
     ''')
 
-    # 3. Deneme Dersi Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS deneme_dersleri (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,37 +44,6 @@ def init_db():
         )
     ''')
     
-    # Kolon Kontrolleri
-    try:
-        cursor.execute("ALTER TABLE uyeler ADD COLUMN kusak TEXT DEFAULT 'Beyaz Kuşak / Başlangıç'")
-    except Exception:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE uyeler ADD COLUMN aidat_tarihi TEXT")
-    except Exception:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE uyeler ADD COLUMN aidat_durumu TEXT DEFAULT 'Ödendi'")
-    except Exception:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE uyeler ADD COLUMN son_sinav_tarihi TEXT")
-    except Exception:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE randevular ADD COLUMN tarih DATE DEFAULT CURRENT_DATE")
-    except Exception:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE randevular ADD COLUMN saat TIME DEFAULT '18:00'")
-    except Exception:
-        pass
-
     conn.commit()
     conn.close()
 
@@ -118,7 +82,7 @@ def denemeleri_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id, ad_soyad, telefon, brans, tarih, saat, durum, notlar FROM deneme_dersleri ORDER BY tarih DESC, saat DESC")
+        cursor.execute("SELECT id, ad_soyad, telefon, brans, tarih, saat, durum, notlar FROM deneme_dersleri ORDER BY id DESC")
         denemeler = cursor.fetchall()
     except Exception:
         denemeler = []
@@ -161,7 +125,7 @@ def randevulari_getir():
             SELECT r.id, u.ad_soyad, u.telefon, r.tarih, r.saat, r.durum 
             FROM randevular r 
             JOIN uyeler u ON r.uye_id = u.id
-            ORDER BY r.tarih DESC, r.saat DESC
+            ORDER BY r.id DESC
         ''')
         randevular = cursor.fetchall()
     except Exception:
