@@ -6,7 +6,8 @@ from database import (
     randevulari_getir, randevu_sayisi, aidat_durum_guncelle, kusak_guncelle,
     deneme_ekle, denemeleri_getir,
     ozel_ders_ekle, ozel_dersleri_getir, ozel_ders_seans_dus, ozel_ders_ucret_guncelle,
-    kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir
+    kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir,
+    olcum_ekle, olcumleri_getir
 )
 
 # Veritabanı Kurulumu
@@ -39,11 +40,12 @@ else:
 
 st.sidebar.markdown("---")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "🥊 Deneme Dersi (Lead)",
     "🎯 Özel Ders (PT) & Ücret",
     "👤 Üye Yönetimi & Kuşak", 
     "📅 Randevu & Ders", 
+    "📈 Sporcu Ölçüm Takibi",
     "📊 Kasa & Finans Paneli", 
     "📱 WhatsApp & SMS Otomasyonu",
     "🤖 AI RingMaster Chat Koç"
@@ -105,7 +107,6 @@ else:
             submit_pt = st.form_submit_button("➕ Özel Ders Paketini Başlat")
             if submit_pt and pt_ad and pt_tel:
                 ozel_ders_ekle(pt_ad, pt_tel, pt_brans, pt_seans, pt_ucret, pt_ucret_durumu, pt_not)
-                # Otomatik Gelir Ekleme (Ödendiyse Kasaya İşler)
                 if "Ödendi" in pt_ucret_durumu:
                     kasa_islem_ekle("Gelir", "PT Ödemesi", pt_ucret, f"{pt_ad} PT Paket Ücreti")
                 st.success(f"🎉 {pt_ad} için {pt_seans} seanslık özel ders paketi açıldı!")
@@ -179,10 +180,48 @@ else:
         else:
             st.info("Randevu bulunmuyor.")
 
-    # --- TAB 5: KASA & FİNANS PANENİ (YENİ MODÜL!) ---
+    # --- TAB 5: SPORCU ÖLÇÜM TAKİBİ (YENİ MODÜL!) ---
     with tab5:
+        st.subheader("📈 Sporcu Fiziksel Gelişim & Ölçüm Kaydı")
+        uyeler = uyeleri_getir()
+        if uyeler:
+            secilen_uye_str = st.selectbox("Ölçüm Yapılacak Sporcuyu Seç", [f"{u[1]} ({u[3]})" for u in uyeler])
+            uye_id = [u[0] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_uye_str][0]
+            
+            with st.form("olcum_form", clear_on_submit=True):
+                col_o1, col_o2, col_o3 = st.columns(3)
+                o_kilo = col_o1.number_input("Kilo (kg)", min_value=30.0, max_value=200.0, value=75.0, step=0.1)
+                o_yag = col_o1.number_input("Yağ Oranı (%)", min_value=3.0, max_value=60.0, value=15.0, step=0.1)
+                
+                o_bel = col_o2.number_input("Bel Çevresi (cm)", min_value=40.0, max_value=200.0, value=80.0, step=0.5)
+                o_gogus = col_o2.number_input("Göğüs Çevresi (cm)", min_value=50.0, max_value=200.0, value=100.0, step=0.5)
+                
+                o_pazu = col_o3.number_input("Pazu Çevresi (cm)", min_value=20.0, max_value=70.0, value=35.0, step=0.5)
+                o_not = col_o3.text_input("Ölçüm Notu / Hedef", "Formda görünüş iyi, yağ oranı düşüyor.")
+                
+                submit_olcum = st.form_submit_button("📏 Yeni Ölçümü Kaydet")
+                if submit_olcum:
+                    olcum_ekle(uye_id, o_kilo, o_yag, o_bel, o_gogus, o_pazu, o_not)
+                    st.success("Sporcunun yeni fiziksel ölçümü kaydedildi!")
+                    st.rerun()
+
+            st.markdown("---")
+            st.subheader(f"📊 {secilen_uye_str} - Ölçüm Geçmişi")
+            olcum_gecmisi = olcumleri_getir(uye_id)
+            if olcum_gecmisi:
+                for olc in olcum_gecmisi:
+                    st.write(f"🗓️ **{olc[1]}** | ⚖️ Kilo: **{olc[2]} kg** | 🩸 Yağ: **%{olc[3]}** | 📏 Bel: **{olc[4]} cm** | 🏋️ Göğüs: **{olc[5]} cm** | 💪 Pazu: **{olc[6]} cm**")
+                    if olc[7]:
+                        st.caption(f"📝 Not: {olc[7]}")
+                    st.markdown("---")
+            else:
+                st.info("Bu sporcuya ait henüz ölçüm kaydı bulunmuyor.")
+        else:
+            st.warning("Ölçüm yapabilmek için önce 'Üye Yönetimi' sekmesinden sporcu kaydı oluşturmalısınız.")
+
+    # --- TAB 6: KASA & FİNANS PANENİ ---
+    with tab6:
         st.subheader("📊 Salon Kasa & Finans Durumu")
-        
         gelir, gider, net_kar = kasa_ozet_getir()
         
         m1, m2, m3 = st.columns(3)
@@ -191,7 +230,6 @@ else:
         m3.metric("💰 Net Kasa / Kar", f"{net_kar:,.0f} TL")
         
         st.markdown("---")
-        
         st.subheader("➕ Yeni Gelir / Gider Ekle")
         with st.form("kasa_form", clear_on_submit=True):
             col_k1, col_k2 = st.columns(2)
@@ -216,8 +254,8 @@ else:
         else:
             st.info("Kasada henüz işlem kaydı yok.")
 
-    # --- TAB 6: WHATSAPP / SMS ---
-    with tab6:
+    # --- TAB 7: WHATSAPP / SMS ---
+    with tab7:
         st.subheader("📱 İletişim Otomasyonu")
         pt_dersler = ozel_dersleri_getir()
         if pt_dersler:
@@ -237,8 +275,8 @@ else:
             with col_pt_btn2:
                 st.markdown(f'<a href="{sms_pt_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS PT Bildirimi At</button></a>', unsafe_allow_html=True)
 
-    # --- TAB 7: AI RİNGMASTER CHAT KOÇ ---
-    with tab7:
+    # --- TAB 8: AI RİNGMASTER CHAT KOÇ ---
+    with tab8:
         st.subheader("🤖 AI RingMaster Canlı Chat Asistanı")
         st.write("7/24 Salon Yönetim, Antrenman ve İkna Koçunuz.")
 
