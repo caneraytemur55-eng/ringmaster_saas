@@ -1,17 +1,17 @@
 -- Abonelik Planları Tablosu
-CREATE TABLE subscription_plans (
+CREATE TABLE abonelik_planlari (
     id SERIAL PRIMARY KEY,
-    plan_key VARCHAR(50) UNIQUE NOT NULL, -- 'starter', 'pro'
-    name_tr VARCHAR(100) NOT NULL,
-    name_en VARCHAR(100) NOT NULL
+    plan_anahtar VARCHAR(50) UNIQUE NOT NULL, -- 'baslangic', 'profesyonel'
+    isim_tr VARCHAR(100) NOT NULL,
+    isim_en VARCHAR(100) NOT NULL
 );
 
--- Plan Fiyatları Tablosu (Çoklu Para Birimi Desteği)
-CREATE TABLE plan_prices (
+-- Plan Fiyatları Tablosu (Çoklu Para Birimi Desteği: TRY, USD, GBP, EUR)
+CREATE TABLE plan_fiyatlari (
     id SERIAL PRIMARY KEY,
-    plan_key VARCHAR(50) REFERENCES subscription_plans(plan_key),
-    currency VARCHAR(3) NOT NULL, -- 'TRY', 'USD', 'GBP', 'EUR'
-    amount INT NOT NULL,          -- Kuruş/Cent cinsinden (Örn: 1900 = 19.00 EUR)
-    gateway VARCHAR(50) NOT NULL  -- 'iyzico', 'stripe'
+    plan_anahtar VARCHAR(50) REFERENCES abonelik_planlari(plan_anahtar),
+    para_birimi VARCHAR(3) NOT NULL, -- 'TRY', 'USD', 'GBP', 'EUR'
+    miktar INT NOT NULL,           -- Kuruş/Cent cinsi (Örn: 1900 = 19.00 EUR)
+    gecit VARCHAR(50) NOT NULL     -- 'iyzico', 'stripe'
 );
 
