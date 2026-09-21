@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu (Veli Bilgileri ve Çocuk Grubu Alanları Eklendi)
+    # 1. Üyeler Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +28,21 @@ def init_db():
         )
     ''')
     
-    # 2. Randevular Tablosu
+    # 2. Antrenörler Tablosu (YENİ!)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS antrenorler (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ad_soyad TEXT NOT NULL,
+            telefon TEXT NOT NULL,
+            brans TEXT NOT NULL,
+            maas_tipi TEXT DEFAULT 'Sabit + Prim',
+            sabit_maas REAL DEFAULT 0.0,
+            prim_yuzdesi REAL DEFAULT 40.0,
+            kayit_tarihi DATE DEFAULT CURRENT_DATE
+        )
+    ''')
+    
+    # 3. Randevular Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS randevular (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +54,7 @@ def init_db():
         )
     ''')
 
-    # 3. Deneme Dersi Tablosu
+    # 4. Deneme Dersi Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS deneme_dersleri (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +68,7 @@ def init_db():
         )
     ''')
 
-    # 4. Özel Ders (PT) Tablosu
+    # 5. Özel Ders (PT) Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ozel_dersler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,7 +84,7 @@ def init_db():
         )
     ''')
     
-    # 5. Kasa Tablosu
+    # 6. Kasa Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS kasa (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,7 +96,7 @@ def init_db():
         )
     ''')
 
-    # 6. Ölçüm Tablosu
+    # 7. Ölçüm Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS olcumler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +112,7 @@ def init_db():
         )
     ''')
     
-    # 7. Müsabık Tablosu
+    # 8. Müsabık Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS musabiklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +129,7 @@ def init_db():
         )
     ''')
 
-    # 8. Sakatlık Tablosu
+    # 9. Sakatlık Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sakatliklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,7 +143,7 @@ def init_db():
         )
     ''')
 
-    # 9. Ürün & Stok Tablosu
+    # 10. Ürün & Stok Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS urunler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,7 +155,7 @@ def init_db():
         )
     ''')
 
-    # 10. Sistem Ayarları
+    # 11. Sistem Ayarları
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -164,6 +178,28 @@ def kurulum_tarihi_getir():
         tarih_str = str(datetime.date.today())
     conn.close()
     return tarih_str
+
+# ANTRENÖR FONKSİYONLARI (YENİ!)
+def antrenor_ekle(ad_soyad, telefon, brans, maas_tipi, sabit_maas, prim_yuzdesi):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO antrenorler (ad_soyad, telefon, brans, maas_tipi, sabit_maas, prim_yuzdesi)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (ad_soyad, telefon, brans, maas_tipi, sabit_maas, prim_yuzdesi))
+    conn.commit()
+    conn.close()
+
+def antrenorleri_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, ad_soyad, telefon, brans, maas_tipi, sabit_maas, prim_yuzdesi FROM antrenorler ORDER BY id DESC")
+        res = cursor.fetchall()
+    except Exception:
+        res = []
+    conn.close()
+    return res
 
 def cocuk_rapor_guncelle(uye_id, yeni_not):
     conn = sqlite3.connect(DB_NAME)
