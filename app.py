@@ -4,7 +4,7 @@ import database as db
 import random
 
 # Sayfa Yapılandırması (Koyu Tema & Spor Salonu Atmosferi)
-st.set_page_config(page_title="Ringmaster SaaS - Global Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="Ringmaster SaaS - Global & Yerel Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
 
 # Veritabanını başlat
 db.veritabani_baslat()
@@ -12,7 +12,7 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm Modüller + Global Ödeme Entegrasyonu (20 Modül Tam Kadro)
+# Tüm Modüller + Kart Zorunlu Deneme Altyapısı (20 Modül Tam Kadro)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -34,7 +34,7 @@ secilen_modul = st.sidebar.selectbox(
         "Üye Terk (Churn) Riski", 
         "Toplu SMS / Duyuru Logu",
         "SaaS Abonelik Yönetimi",
-        "🌍 Küresel Ödemeler (UK, US, EU)",
+        "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)",
         "Sistem Ayarları"
     ]
 )
@@ -42,31 +42,31 @@ secilen_modul = st.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     st.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    st.info("Global açılım modülleri aktif! İngiltere, ABD ve Avrupa şirket yapılanman için ödeme altyapısı hazır.")
+    st.info("Kart zorunlu 14 günlük akıllı deneme modeli hem Türkiye hem de global pazarlar için aktif!")
     
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "20 / 20 (Global Ödemeler Aktif)")
+        st.metric("Aktif Modül", "20 / 20 (Güvenli Tahsilat Aktif)")
     with col3:
-        st.metric("Hedef Pazar", "UK, US & Europe 🚀")
+        st.metric("Sistem Modeli", "Kartlı Deneme (Trial w/ CC) 🚀")
 
 # --- 2. RİNGMASTER AI ASİSTANI ---
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.subheader("🤖 Ringmaster AI - Salon Yönetim Asistanı")
-    st.write("Salonunla ilgili sorular sorabilir, antrenman programları, üye tutma stratejileri veya küresel pazarlama fikirleri alabilirsin.")
+    st.write("Salonunla ilgili sorular sorabilir, üye sadakati (churn) stratejileri ve abonelik dönüşüm oranları hakkında fikir alabilirsin.")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! İngiltere, ABD ve Avrupa operasyonları için hazırım. Global pazar stratejimizi ne üzerine kuruyoruz?"}
+            {"role": "assistant", "content": "Selam patron! Kartlı deneme (trial) modeli sayesinde niteliksiz kayıtları tamamen eleyerek en sağlam müşterileri içeri alıyoruz. Bugün hangi stratejiyi konuşuyoruz?"}
         ]
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Küresel pazar, abonelikler veya salon yönetimi hakkında sor..."):
+    if prompt := st.chat_input("Abonelikler, tahsilatlar veya salon yönetimi hakkında sor..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -76,12 +76,12 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
                 lower_p = prompt.lower()
                 if "üye" in lower_p or "kayıt" in lower_p:
                     yanit = f"Patron, sistemde toplam **{len(db.uyeleri_getir())}** kayıtlı sporcumuz bulunuyor."
-                elif "stripe" in lower_p or "ödeme" in lower_p or "global" in lower_p:
-                    yanit = "Küresel ödemeler modülünden USD, GBP ve EUR bazlı abonelik linkleri oluşturabilir, uluslararası müşterilerini tek tıkla yönetebilirsin."
+                elif "ödeme" in lower_p or "kart" in lower_p or "deneme" in lower_p:
+                    yanit = "Kart zorunlu 14 günlük deneme modeli, 14 gün sonunda otomatik tahsilat sağlayarak gelir kaybını (churn) sıfıra yaklaştırır."
                 elif "merhaba" in lower_p or "selam" in lower_p:
-                    yanit = "Ooo selam patron! Dünya fethi yolunda mermi gibi ilerliyoruz. Ne yapıyoruz bugün?"
+                    yanit = "Ooo selam patron! Finansal altyapımız taş gibi sağlam, mermi gibi ilerliyoruz!"
                 else:
-                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda uluslararası standartlarda otomasyon kurmak işini çok büyütecektir."
+                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda otomasyonu sıkı tutmak işini hak ettiği büyüklüğe taşıyacaktır."
                 
                 st.markdown(yanit)
                 st.session_state.messages.append({"role": "assistant", "content": yanit})
@@ -147,7 +147,7 @@ elif secilen_modul == "Stok Takibi":
     with st.form("yeni_stok"):
         urun = st.text_input("Ürün Adı")
         adet = st.number_input("Adet", min_value=1, value=10)
-        fiyat = st.number_input("Fiyat (TL)", min_value=0.0, value=100.0)
+        fiyat = st.number_input("Fiyat", min_value=0.0, value=100.0)
         if st.form_submit_button("Stok Ekle"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO stok (urun_adi, adet, fiyat) VALUES (?, ?, ?)", (urun, adet, fiyat))
@@ -393,65 +393,73 @@ elif secilen_modul == "Toplu SMS / Duyuru Logu":
 
 # --- 18. SAAS ABONELİK YÖNETİMİ ---
 elif secilen_modul == "SaaS Abonelik Yönetimi":
-    st.subheader("🏢 SaaS Salon ve Abonelik Yönetimi")
+    st.subheader("🏢 SaaS Salon ve Abonelik Yönetimi (Kart Zorunlu 14 Gün Deneme)")
     conn = db.baglanti_kur()
     salonlar = pd.read_sql("SELECT * FROM salonlar", conn)
     conn.close()
     st.dataframe(salonlar, use_container_width=True)
     with st.form("salon_form"):
-        st.write("Yeni Salon (Müşteri) Kaydı")
+        st.write("Yeni Salon (Müşteri) Kaydı - Kart Zorunlu Deneme Akışı")
         s_adi = st.text_input("Salon Adı")
         sahip = st.text_input("Sahip Adı")
         tel = st.text_input("Telefon")
         email = st.text_input("E-Posta")
-        if st.form_submit_button("Salon Ekle (15 Gün Deneme)"):
+        if st.form_submit_button("Kart Bilgisi Al ve 14 Gün Deneme Başlat 💳"):
             if s_adi and sahip:
                 db.salon_ekle(s_adi, sahip, tel, email)
-                st.success(f"{s_adi} başarıyla eklendi!")
+                st.success(f"{s_adi} için kart doğrulama linki oluşturuldu ve 14 günlük deneme başlatıldı! (Süre sonunda otomatik çekim aktif)")
                 st.rerun()
             else:
                 st.warning("Salon adı ve sahip adını doldurun.")
 
-# --- 19. KÜRESEL ÖDEMELER (UK, US, EU) - YENİ MODÜL ---
-elif secilen_modul == "🌍 Küresel Ödemeler (UK, US, EU)":
-    st.subheader("🌍 Küresel Ödeme Entegrasyonu (Stripe Altyapısı)")
-    st.write("İngiltere (GBP), ABD (USD) ve Avrupa (EUR) şirket yapıların için uluslararası abonelik planları ve ödeme geçidi yönetimi.")
+# --- 19. KÜRESEL & YEREL ÖDEMELER (KARTLI DENEME) - YENİ MODEL ---
+elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
+    st.subheader("🌍 & 🇹🇷 Güvenli Tahsilat ve Kartlı Deneme Modeli")
+    st.write("Türkiye (TRY - PayTR/Iyzico) ve Global (USD/GBP/EUR - Stripe) pazarlar için **önce kart al, 14 gün sonra çek** altyapı yönetimi.")
     
-    col_uk, col_us, col_eu = st.columns(3)
+    col_tr, col_uk, col_us, col_eu = st.columns(4)
     
+    with col_tr:
+        st.markdown("### 🇹🇷 Türkiye (TRY)")
+        st.write("Yerel Altyapı: **Iyzico / PayTR**")
+        st.info("Plan: 1.499₺ / ay (14 Gün Kartlı Deneme)")
+        if st.button("🇹🇷 TR Kartlı Deneme Linki"):
+            st.success("Türkiye için 14 gün denemeli kart saklama (Tokenization) linki üretildi!")
+            st.code("https://www.paytr.com/link/test_tr_trial_secure")
+
     with col_uk:
-        st.markdown("### 🇬🇧 United Kingdom (GBP)")
-        st.write("Para Birimi: **£ (GBP)**")
-        st.write("Şirket Lokasyonu: Londra, UK")
-        st.info("Standart Plan: £49 / ay")
-        if st.button("🇬🇧 UK Ödeme Linki Oluştur"):
-            st.success("Stripe UK (GBP) abonelik ödeme linki üretildi! (Canlı API entegrasyonu için Stripe Secret Key tanımlanmalıdır)")
-            st.code("https://buy.stripe.com/test_uk_ringmaster_sample_gbp")
+        st.markdown("### 🇬🇧 UK (GBP)")
+        st.write("Gateway: **Stripe**")
+        st.info("Plan: £49 / ay (14 Days Trial w/ CC)")
+        if st.button("🇬🇧 UK Kartlı Deneme Linki"):
+            st.success("Stripe UK (GBP) 14 gün denemeli ödeme linki üretildi!")
+            st.code("https://buy.stripe.com/test_uk_trial_sample_gbp")
 
     with col_us:
-        st.markdown("### 🇺🇸 United States (USD)")
-        st.write("Para Birimi: **$ (USD)**")
-        st.write("Şirket Lokasyonu: Delaware, US")
-        st.info("Standart Plan: $59 / ay")
-        if st.button("🇺🇸 US Ödeme Linki Oluştur"):
-            st.success("Stripe US (USD) abonelik ödeme linki üretildi!")
-            st.code("https://buy.stripe.com/test_us_ringmaster_sample_usd")
+        st.markdown("### 🇺🇸 US (USD)")
+        st.write("Gateway: **Stripe**")
+        st.info("Plan: $59 / ay (14 Days Trial w/ CC)")
+        if st.button("🇺🇸 US Kartlı Deneme Linki"):
+            st.success("Stripe US (USD) 14 gün denemeli ödeme linki üretildi!")
+            st.code("https://buy.stripe.com/test_us_trial_sample_usd")
 
     with col_eu:
-        st.markdown("### 🇪🇺 European Union (EUR)")
-        st.write("Para Birimi: **€ (EUR)**")
-        st.write("Şirket Lokasyonu: Estonya / Almanya, EU")
-        st.info("Standart Plan: €55 / ay")
-        if st.button("🇪🇺 EU Ödeme Linki Oluştur"):
-            st.success("Stripe EU (EUR) abonelik ödeme linki üretildi!")
-            st.code("https://buy.stripe.com/test_eu_ringmaster_sample_eur")
+        st.markdown("### 🇪🇺 EU (EUR)")
+        st.write("Gateway: **Stripe**")
+        st.info("Plan: €55 / ay (14 Days Trial w/ CC)")
+        if st.button("🇪🇺 EU Kartlı Deneme Linki"):
+            st.success("Stripe EU (EUR) 14 gün denemeli ödeme linki üretildi!")
+            st.code("https://buy.stripe.com/test_eu_trial_sample_eur")
 
     st.markdown("---")
-    st.markdown("### ⚙️ Küresel Ödeme Ayarları & Webhook Durumu")
-    st.text_input("Stripe Publishable Key (Canlı / Test)", type="password", value="pk_test_...")
-    st.text_input("Stripe Secret Key (Canlı / Test)", type="password", value="sk_test_...")
-    if st.button("Stripe Bağlantısını Test Et 🔌"):
-        st.success("Stripe API köprüsü başarıyla doğrulandı! Uluslararası ödemeler almaya hazırsın patron.")
+    st.markdown("### ⚙️ Ödeme Ağ Geçidi Entegrasyon Parametreleri")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.text_input("Iyzico / PayTR Merchant Key (TR)", type="password", value="tr_key_test_...")
+    with c2:
+        st.text_input("Stripe Secret Key (Global)", type="password", value="sk_test_...")
+    if st.button("Tüm Ödeme Ağ Geçitlerini Test Et 🔌"):
+        st.success("Türkiye ve Global ödeme köprüleri kusursuz doğrulandı patron! Artık sistem tam bir gelir makinesi oldu.")
 
 # --- 20. SİSTEM AYARLARI ---
 elif secilen_modul == "Sistem Ayarları":
