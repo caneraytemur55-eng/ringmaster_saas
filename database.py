@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DB_NAME = "ringmaster.db"
 
@@ -10,7 +10,7 @@ def veritabani_baslat():
     conn = baglanti_kur()
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu
+    # 1. Üyeler Tablosu (Deneme süresi ve abonelik alanlarıyla güncellendi)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,11 +19,13 @@ def veritabani_baslat():
             brans TEXT,
             paket TEXT,
             pin_kodu TEXT,
-            kayit_tarihi TEXT
+            kayit_tarihi TEXT,
+            deneme_bitis TEXT,
+            abonelik_durumu TEXT
         )
     """)
 
-    # 2. Yoklamalar Tablosu
+    # Diğer tablolar aynı kalıyor
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS yoklamalar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +36,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 3. Stok / POS Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS stok (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +55,6 @@ def veritabani_baslat():
         ]
         cursor.executemany("INSERT INTO stok (urun_adi, adet, fiyat) VALUES (?, ?, ?)", ornek_stoklar)
 
-    # 4. Kasa & Finans Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS kasa (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +65,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 5. Antrenor Hakediş Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS antrenorler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,7 +75,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 6. Çocuk Gelişim Raporları Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS cocuk_gelisim (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +85,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 7. Kuşak Sınav Takibi Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS kusak_sinav (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +95,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 8. Müsabık & Fight Record Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS musabiklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,7 +105,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 9. Sakatlık & Sparring Protokolü Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS sakatliklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,7 +114,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 10. Maç Hazırlık Takvimi Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS mac_takvimi (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,7 +123,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 11. Deneme Dersi (Lead) Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS adaylar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,7 +133,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 12. Özel Ders (PT) Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ozel_dersler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -150,7 +142,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 13. Sporcu Ölçüm Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS olcumler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -161,7 +152,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 14. Kayıp Üye / Churn Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS churn_takip (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,7 +161,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 15. İletişim Otomasyonu Log Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS mesaj_loglari (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -184,19 +173,26 @@ def veritabani_baslat():
     conn.commit()
     conn.close()
 
-# Temel Veri Çekme ve Ekleme Fonksiyonları
 def uye_ekle(ad_soyad, telefon, brans, paket, pin_kodu):
     conn = baglanti_kur()
     cursor = conn.cursor()
-    tarih = datetime.now().strftime("%Y-%m-%d %H:%M")
-    cursor.execute("INSERT INTO uyeler (ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi) VALUES (?, ?, ?, ?, ?, ?)", (ad_soyad, telefon, brans, paket, pin_kodu, tarih))
+    simdi = datetime.now()
+    kayit_tarihi = simdi.strftime("%Y-%m-%d %H:%M")
+    # 15 günlük deneme süresi hesaplama
+    deneme_bitis = (simdi + timedelta(days=15)).strftime("%Y-%m-%d")
+    abonelik_durumu = "15 Günlük Deneme Süresi"
+    
+    cursor.execute("""
+        INSERT INTO uyeler (ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi, deneme_bitis, abonelik_durumu) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi, deneme_bitis, abonelik_durumu))
     conn.commit()
     conn.close()
 
 def uyeleri_getir():
     conn = baglanti_kur()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi FROM uyeler")
+    cursor.execute("SELECT id, ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi, deneme_bitis, abonelik_durumu FROM uyeler")
     veriler = cursor.fetchall()
     conn.close()
     return veriler
