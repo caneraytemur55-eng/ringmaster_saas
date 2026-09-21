@@ -9,15 +9,15 @@ from database import (
     olcum_ekle, olcumleri_getir, uykudaki_uyeleri_getir,
     pin_ile_yoklama_al, ders_sayisi_arttir, kusak_yukselt_sifirla,
     musabik_ekle_guncelle, musabik_getir, sakatlik_ekle, sakatliklari_getir, sakatlik_kapat,
-    tum_yaklasan_maclari_getir, urun_ekle, urunleri_getir, urun_satisi_yap
+    tum_yaklasan_maclari_getir, urun_ekle, urunleri_getir, urun_satisi_yap, cocuk_rapor_guncelle
 )
 
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v4.5", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.6", page_icon="🥊", layout="wide")
 
-st.title("🥊 RingMaster SaaS v4.5 - POS & Ekipman Stok Sürümü")
+st.title("🥊 RingMaster SaaS v4.6 - Veli & Çocuk Gelişim Sürümü")
 
 # --- 15 GÜNLÜK DENEME SÜRESİ MANTIĞI ---
 kurulum_str = kurulum_tarihi_getir()
@@ -42,8 +42,9 @@ else:
 
 st.sidebar.markdown("---")
 
-tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 = st.tabs([
     "⚡ PIN Yoklama & Mat Kontenjanı",
+    "👶 Çocuk Veli Gelişim Raporu",
     "🛍️ Ekipman Satış POS & Stok",
     "🥋 Kuşak Sınav Uygunluk Takibi",
     "🏆 Müsabık & Fight Record",
@@ -101,14 +102,63 @@ else:
                     st.success(f"🎉 **{ad}** ({brans}) Başarıyla Derse Katıldı! Toplam Katıldığı Ders: **{yeni_ders}**")
                     st.rerun()
                 else:
-                    st.error("❌ Hatalı PIN Kodu! Kayıtlı sporcu bulunmavadı.")
+                    st.error("❌ Hatalı PIN Kodu! Kayıtlı sporcu bulunamadı.")
 
-    # --- TAB 1: EKİPMAN SATIŞ POS & STOK PANENİ (YENİ MODÜL!) ---
+    # --- TAB 1: ÇOCUK VELİ GELİŞİM RAPORU (ÇİFT KANAL WHATSAPP + SMS!) ---
     with tab1:
+        st.subheader("👶 Çocuk Grupları Veli Bilgilendirme & Gelişim Raporu (WhatsApp & SMS)")
+        st.markdown("Salona kayıtlı çocuk sporcuların ders katılımını, kuşak seviyesini ve hoca gelişim notunu velilerle tek tıkla paylaşın.")
+        
+        uyeler = uyeleri_getir()
+        cocuklar = [u for u in uyeler if u[10] == "Çocuk Grubu (Minik/Yıldız)"]
+        
+        if cocuklar:
+            secili_cocuk_str = st.selectbox("Raporu Düzenlenecek Çocuk Sporcuyu Seç", [f"{c[1]} ({c[3]} - Veli: {c[11]})" for c in cocuklar])
+            c_data = [c for c in cocuklar if f"{c[1]} ({c[3]} - Veli: {c[11]})" == secili_cocuk_str][0]
+            
+            c_id, c_ad, c_tel, c_brans, c_kusak, c_aidat_t, c_aidat_d, c_sinav_t, c_pin, c_ders, c_grup, c_veli_ad, c_veli_tel, c_not = c_data
+
+            col_r1, col_r2 = st.columns(2)
+            with col_r1:
+                st.markdown(f"### 📋 Sporcu & Veli Künyesi")
+                st.write(f"👤 **Çocuk Sporcu:** {c_ad}")
+                st.write(f"🥋 **Mevcut Kuşak / Seviye:** {c_kusak}")
+                st.write(f"📊 **Toplam Katıldığı Ders:** {c_ders} Ders")
+                st.write(f"👥 **Veli Adı Soyadı:** {c_veli_ad if c_veli_ad else 'Belirtilmemiş'}")
+                st.write(f"📞 **Veli Telefonu:** {c_veli_tel if c_veli_tel else c_tel}")
+
+            with col_r2:
+                st.markdown(f"### ✍️ Antrenör Gelişim & Performans Notu")
+                yeni_gelisim_notu = st.text_area("Hoca Gelişim Raporu Notu", value=c_not, height=100)
+                if st.button("💾 Gelişim Notunu Kaydet", key=f"btn_not_{c_id}"):
+                    cocuk_rapor_guncelle(c_id, yeni_gelisim_notu)
+                    st.success("Çocuğun gelişim raporu güncellendi!")
+                    st.rerun()
+
+            st.markdown("---")
+            # ÇİFT KANAL: WHATSAPP & SMS VELİ KARNE/RAPOR GÖNDERME
+            veli_hedef_tel = c_veli_tel if c_veli_tel else c_tel
+            veli_hitap = c_veli_ad if c_veli_ad else "Sayın Veli"
+            
+            veli_mesaj = f"Merhaba {veli_hitap}, RingMaster Spor Kulübü'nden çocuğunuz {c_ad} ({c_brans}) için aylık Gelişim & Katılım Raporu: \n\n🥋 Kuşak/Seviye: {c_kusak}\n📊 Toplam Katıldığı Ders: {c_ders}\n📝 Hoca Notu: {yeni_gelisim_notu}\n\nÇocuğumuzun gelişimini birlikte destekliyoruz! İyi günler dileriz. 🥊"
+            
+            enc_veli = urllib.parse.quote(veli_mesaj)
+            wa_veli_url = f"https://wa.me/{veli_hedef_tel}?text={enc_veli}"
+            sms_veli_url = f"sms:{veli_hedef_tel}?body={enc_veli}"
+            
+            col_v_btn1, col_v_btn2 = st.columns(2)
+            with col_v_btn1:
+                st.markdown(f'<a href="{wa_veli_url}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:12px;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:15px;">📲 WhatsApp ile Veliye Gelişim Raporu At</button></a>', unsafe_allow_html=True)
+            with col_v_btn2:
+                st.markdown(f'<a href="{sms_veli_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:15px;">💬 SMS ile Veliye Gelişim Raporu At</button></a>', unsafe_allow_html=True)
+        else:
+            st.info("Kayıtlı çocuk grubu sporcusu bulunmuyor. Üye kaydı yaparken 'Grup Kategorisi' olarak 'Çocuk Grubu' seçmelisiniz.")
+
+    # --- TAB 2: EKİPMAN SATIŞ POS & STOK ---
+    with tab2:
         st.subheader("🛍️ Salon İçi Mini Ekipman Satış POS & Stok Paneli")
         col_pos1, col_pos2 = st.columns(2)
         
-        # SOL SÜTUN: HIZLI POS KASA SATIŞI
         with col_pos1:
             st.markdown("### 🛒 Hızlı POS Kasa Satışı")
             urunler = urunleri_getir()
@@ -134,7 +184,6 @@ else:
             else:
                 st.info("Kayıtlı ürün bulunmuyor. Sağ taraftan yeni ürün ekleyiniz.")
 
-        # SAĞ SÜTUN: STOK VE ÜRÜN EKLEME
         with col_pos2:
             st.markdown("### 📦 Yeni Ekipman / Ürün Ekle")
             with st.form("urun_form", clear_on_submit=True):
@@ -162,18 +211,18 @@ else:
                 st.write(f"📦 **{u_ad}** ({u_kat}) | Stok: **{u_stk} Adet** ({stok_alert}) | Alış: {u_al:,.0f} TL -> Satış: **{u_sat:,.0f} TL**")
                 st.markdown("---")
 
-    # --- TAB 2: KUŞAK SINAV UYGUNLUK TAKİBİ ---
-    with tab2:
+    # --- TAB 3: KUŞAK SINAV UYGUNLUK TAKİBİ ---
+    with tab3:
         st.subheader("🥋 Otomatik Kuşak Derece Sınavı Uygunluk Takibi")
         st.caption(f"Bir sonraki kuşak sınavına girmek için baraj: **{BARAJ_DERS_SAYISI} Katılım Dersi**")
         
         uyeler = uyeleri_getir()
         if uyeler:
             for u in uyeler:
-                u_id, u_ad, u_tel, u_brans, u_kusak, u_aidat_t, u_aidat_d, u_sinav_t, u_pin, u_ders = u
+                u_id, u_ad, u_tel, u_brans, u_kusak, u_aidat_t, u_aidat_d, u_sinav_t, u_pin, u_ders, u_grup, u_veli_ad, u_veli_tel, u_not = u
                 
                 c_k1, c_k2, c_k3 = st.columns([3, 3, 2])
-                c_k1.write(f"👤 **{u_ad}** ({u_brans})\n\n🥋 Mevcut: **{u_kusak}** | PIN: `{u_pin}`")
+                c_k1.write(f"👤 **{u_ad}** ({u_brans} - `{u_grup}`)\n\n🥋 Mevcut: **{u_kusak}** | PIN: `{u_pin}`")
                 
                 kalan_ders = max(0, BARAJ_DERS_SAYISI - u_ders)
                 if u_ders >= BARAJ_DERS_SAYISI:
@@ -203,8 +252,8 @@ else:
         else:
             st.info("Kayıtlı sporcu bulunmuyor.")
 
-    # --- TAB 3: MÜSABIK & DÖVÜŞ SİCİLİ ---
-    with tab3:
+    # --- TAB 4: MÜSABIK & DÖVÜŞ SİCİLİ ---
+    with tab4:
         st.subheader("🏆 Müsabık Sporcu, Sıklet & Dövüş Sicili (Fight Record)")
         uyeler = uyeleri_getir()
         if uyeler:
@@ -249,8 +298,8 @@ else:
         else:
             st.warning("Önce 'Üye Yönetimi' sekmesinden sporcu kaydı yapmalısınız.")
 
-    # --- TAB 4: SAKATLIK & SPARRING PROTOKOLÜ ---
-    with tab4:
+    # --- TAB 5: SAKATLIK & SPARRING PROTOKOLÜ ---
+    with tab5:
         st.subheader("🚨 Sakatlık & Sparring/Temas Kısıtlama Protokolü")
         uyeler = uyeleri_getir()
         if uyeler:
@@ -289,8 +338,8 @@ else:
         else:
             st.warning("Önce 'Üye Yönetimi' sekmesinden sporcu kaydı yapmalısınız.")
 
-    # --- TAB 5: MAÇ HAZIRLIK TAKVİMİ & GERİ SAYIM ---
-    with tab5:
+    # --- TAB 6: MAÇ HAZIRLIK TAKVİMİ & GERİ SAYIM ---
+    with tab6:
         st.subheader("📅 Salon Genel Maç Hazırlık Takvimi & Geri Sayım")
         st.caption("Salondaki tüm müsabık sporcuların yaklaşan maçları ve canlı geri sayım kronometresi.")
         
@@ -322,8 +371,8 @@ else:
         else:
             st.info("Henüz eklenmiş yaklaşan bir maç bulunmuyor.")
 
-    # --- TAB 6: DENEME DERSİ ---
-    with tab6:
+    # --- TAB 7: DENEME DERSİ ---
+    with tab7:
         st.subheader("🥊 Potansiyel Sporcu Deneme Dersi Kaydı")
         with st.form("deneme_form", clear_on_submit=True):
             col_d1, col_d2 = st.columns(2)
@@ -348,8 +397,8 @@ else:
         else:
             st.info("Planlanmış deneme dersi yok.")
 
-    # --- TAB 7: ÖZEL DERS (PT) & ÜCRET TAKİBİ ---
-    with tab7:
+    # --- TAB 8: ÖZEL DERS (PT) & ÜCRET TAKİBİ ---
+    with tab8:
         st.subheader("🥊 Birebir Özel Ders (PT) Paketi Tanımla")
         with st.form("pt_form", clear_on_submit=True):
             col_p1, col_p2 = st.columns(2)
@@ -399,23 +448,33 @@ else:
         else:
             st.info("Kayıtlı özel ders paketi bulunmuyor.")
 
-    # --- TAB 8: ÜYE YÖNETİMİ ---
-    with tab8:
-        st.subheader("Yeni Sporcu Kaydı")
+    # --- TAB 9: ÜYE YÖNETİMİ ---
+    with tab9:
+        st.subheader("Yeni Sporcu Kaydı (Yetişkin & Çocuk Grubu)")
         with st.form("uye_form", clear_on_submit=True):
             col1, col2 = st.columns(2)
-            ad_soyad = col1.text_input("Adı Soyadı")
+            ad_soyad = col1.text_input("Sporcu Adı Soyadı")
             telefon = col1.text_input("Telefon (örn: 905xxxxxxxxx)")
-            brans = col1.selectbox("Branş", ["Boks", "Kickboks", "Muay Thai", "Karate", "Fitness"])
+            brans = col1.selectbox("Branş", ["Boks", "Kickboks", "Muay Thai", "Karate", "Fitness", "Çocuk Cimnastik/Dövüş"])
+            
+            grup_tipi = col2.selectbox("Grup Kategorisi", ["Yetişkin / Genel", "Çocuk Grubu (Minik/Yıldız)"])
             kusak = col2.selectbox("Mevcut Kuşak", KUSAKLAR)
             pin_kod = col2.text_input("Yoklama PIN Kodu (Örn: 1234)", "1234")
-            aidat_tarihi = col2.date_input("Son Aidat Tarihi", datetime.date.today())
-            aidat_durumu = col2.selectbox("Aidat Durumu", ["Ödendi", "Ödeme Bekliyor"])
-            aidat_tutari = col2.number_input("Aylık Aidat Tutarı (TL)", min_value=0, value=1500)
+            
+            st.markdown("---")
+            st.write("👶 **Eğer Çocuk Grubu ise Veli Bilgileri:**")
+            col_v1, col_v2 = st.columns(2)
+            veli_adi = col_v1.text_input("Veli Adı Soyadı", "")
+            veli_telefonu = col_v2.text_input("Veli Telefonu (örn: 905xxxxxxxxx)", "")
+
+            col_a1, col_a2 = st.columns(2)
+            aidat_tarihi = col_a1.date_input("Son Aidat Tarihi", datetime.date.today())
+            aidat_durumu = col_a2.selectbox("Aidat Durumu", ["Ödendi", "Ödeme Bekliyor"])
+            aidat_tutari = col_a2.number_input("Aylık Aidat Tutarı (TL)", min_value=0, value=1500)
             
             submit = st.form_submit_button("➕ Sporcuyu Kaydet")
             if submit and ad_soyad and telefon:
-                uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu, str(datetime.date.today()), pin_kod)
+                uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu, str(datetime.date.today()), pin_kod, grup_tipi, veli_adi, veli_telefonu, "İlk kayıt oluşturuldu. Gelişimi düzenli takip ediliyor.")
                 if aidat_durumu == "Ödendi":
                     kasa_islem_ekle("Gelir", "Aidat", aidat_tutari, f"{ad_soyad} Üyelik Aidatı")
                 st.success(f"{ad_soyad} başarıyla eklendi!")
@@ -425,16 +484,18 @@ else:
         uyeler = uyeleri_getir()
         if uyeler:
             for u in uyeler:
-                st.write(f"🥊 **{u[1]}** | Branş: {u[3]} | 🥋 Kuşak: **{u[4]}** | PIN: `{u[8]}` | Aidat: `{u[6]}`")
+                grup_etiketi = f"👶 {u[10]}" if u[10] == "Çocuk Grubu (Minik/Yıldız)" else f"👤 {u[10]}"
+                veli_bilgi = f" | Veli: {u[11]} ({u[12]})" if u[11] else ""
+                st.write(f"🥊 **{u[1]}** | {grup_etiketi} | Branş: {u[3]} | 🥋 Kuşak: **{u[4]}** | PIN: `{u[8]}`{veli_bilgi}")
         else:
             st.info("Kayıtlı sporcu yok.")
 
-    # --- TAB 9: SPORCU ÖLÇÜM TAKİBİ ---
-    with tab9:
+    # --- TAB 10: SPORCU ÖLÇÜM TAKİBİ ---
+    with tab10:
         st.subheader("📈 Sporcu Fiziksel Gelişim & Ölçüm Kaydı")
         uyeler = uyeleri_getir()
         if uyeler:
-            secilen_uye_str = st.selectbox("Ölçüm Yapılacak Sporcuyu Seç", [f"{u[1]} ({u[3]})" for u in uyeler])
+            secilen_uye_str = st.selectbox("Ölçüm Yapılacak Sporcuyu Seç", [f"{u[1]} ({u[3]})" for u in uyeler], key="sel_olcum_uye")
             uye_id = [u[0] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_uye_str][0]
             
             with st.form("olcum_form", clear_on_submit=True):
@@ -466,10 +527,10 @@ else:
             else:
                 st.info("Bu sporcuya ait henüz ölçüm kaydı bulunmuyor.")
         else:
-            st.warning("Ölçüm yapabilmek için önce 'Üye Yönetimi' sekmesinden sporcu kaydı oluşturmalısınız.")
+            st.warning("Önce 'Üye Yönetimi' sekmesinden sporcu kaydı oluşturmalısınız.")
 
-    # --- TAB 10: KASA & FİNANS PANENİ ---
-    with tab10:
+    # --- TAB 11: KASA & FİNANS PANENİ ---
+    with tab11:
         st.subheader("📊 Salon Kasa & Finans Durumu")
         gelir, gider, net_kar = kasa_ozet_getir()
         
@@ -483,7 +544,7 @@ else:
         with st.form("kasa_form", clear_on_submit=True):
             col_k1, col_k2 = st.columns(2)
             k_tip = col_k1.selectbox("İşlem Tipi", ["Gider", "Gelir"])
-            k_kat = col_k1.selectbox("Kategori", ["Kira", "Fatura (Elektrik/Su/İnternet)", "Antrenör Maaşı", "Ekipman Alımı", "Aidat Geliri", "PT Geliri", "Diğer"])
+            k_kat = col_k1.selectbox("Kategori", ["Kira", "Fatura (Elektrik/Su/İnternet)", "Antrenör Maaşı", "Ekipman Alımı", "Aidat Geliri", "PT Geliri", "Ekipman Satışı", "Diğer"])
             k_tutar = col_k2.number_input("Tutar (TL)", min_value=1.0, value=1000.0)
             k_aciklama = col_k2.text_input("Açıklama / Not", "")
             
@@ -503,8 +564,8 @@ else:
         else:
             st.info("Kasada henüz işlem kaydı yok.")
 
-    # --- TAB 11: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ ---
-    with tab11:
+    # --- TAB 12: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ ---
+    with tab12:
         st.subheader("🚨 Riskli & Uykudaki Üye Erken Uyarı Paneli")
         st.write("Aidatı geciken veya salona gelmeyi aksatan üyeleri buradan tek tıkla geri kazanın.")
         
@@ -526,8 +587,8 @@ else:
         else:
             st.success("🎉 Harika! Şu an aidatı geciken veya kayıp riski taşıyan üye bulunmuyor.")
 
-    # --- TAB 12: İLETİŞİM OTOMASYONU ---
-    with tab12:
+    # --- TAB 13: İLETİŞİM OTOMASYONU ---
+    with tab13:
         st.subheader("📱 Akıllı İletişim Otomasyon Merkezi")
         otomasyon_tipi = st.radio("İletişim Türünü Seçiniz", ["👥 Grup Dersi Aidat Hatırlatma", "🎯 Özel Ders (PT) Kalan Seans Uyarısı"], horizontal=True)
         st.markdown("---")
@@ -561,7 +622,7 @@ else:
                 secilen_pt_str = st.selectbox("Özel Ders Sporcusu Seç", [f"{p[1]} ({p[3]} - Kalan Seans: {p[5]}/{p[4]})" for p in pt_dersler])
                 pt_data = [p for p in pt_dersler if f"{p[1]} ({p[3]} - Kalan Seans: {p[5]}/{p[4]})" == secilen_pt_str][0]
                 
-                varsayilan_pt_msg = f"Merhaba {pt_data[1]}, RingMaster Salonu Özel Ders paketinizden kalan seans sayınız: {pt_data[5]}. Ödeme Durumu: {pt_data[7]}. Bir sonraki antrenman saatinizi planlamak veya paketinizi yenilemek için dönüş yapabilirsimiz! 🥊"
+                varsayilan_pt_msg = f"Merhaba {pt_data[1]}, RingMaster Salonu Özel Ders paketinizden kalan seans sayınız: {pt_data[5]}. Ödeme Durumu: {pt_data[7]}. Bir sonraki antrenman saatinizi planlamak veya paketinizi yenilemek için dönüş yapabilirsiniz! 🥊"
                 msg_pt_text = st.text_area("Özel Ders Mesaj Metni", varsayilan_pt_msg, height=100)
                 
                 enc_pt_msg = urllib.parse.quote(msg_pt_text)
@@ -575,6 +636,7 @@ else:
                     st.markdown(f'<a href="{sms_pt_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS PT Kalan Ders Uyarısı At</button></a>', unsafe_allow_html=True)
             else:
                 st.info("Kayıtlı özel ders paketi bulunmuyor.")
+                
 
     
  
