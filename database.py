@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu (PIN ve Katılan Ders Sayısı)
+    # 1. Üyeler Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +24,7 @@ def init_db():
         )
     ''')
     
-    # 2. Randevular / Ders Katılım Tablosu
+    # 2. Randevular Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS randevular (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,7 +94,7 @@ def init_db():
         )
     ''')
     
-    # 7. Müsabık Sporcu & Dövüş Sicili Tablosu
+    # 7. Müsabık Sporcu Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS musabiklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -111,7 +111,7 @@ def init_db():
         )
     ''')
 
-    # 8. Sakatlık & Sparring Protokol Tablosu
+    # 8. Sakatlık Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sakatliklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,7 +125,7 @@ def init_db():
         )
     ''')
 
-    # 9. Sistem Lisans/Abonelik Tablosu
+    # 9. Sistem Ayarları Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -149,7 +149,6 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# MÜSABIK VE MAÇ TAKVİMİ FONKSİYONLARI
 def musabik_ekle_guncelle(uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -196,7 +195,6 @@ def tum_yaklasan_maclari_getir():
     conn.close()
     return maclar
 
-# SAKATLIK FONKSİYONLARI
 def sakatlik_ekle(uye_id, sakatlik_bolgesi, sparring_yasak_gun, izin_verilen_antrenman):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -225,7 +223,6 @@ def sakatlik_kapat(sakatlik_id):
     conn.commit()
     conn.close()
 
-# DİĞER FONKSİYONLAR
 def pin_ile_yoklama_al(pin):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
