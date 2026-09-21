@@ -94,7 +94,7 @@ def init_db():
         )
     ''')
     
-    # 7. Müsabık Sporcu & Dövüş Sicili Tablosu (YENİ!)
+    # 7. Müsabık Sporcu & Dövüş Sicili Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS musabiklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -111,7 +111,7 @@ def init_db():
         )
     ''')
 
-    # 8. Sakatlık & Sparring Protokol Tablosu (YENİ!)
+    # 8. Sakatlık & Sparring Protokol Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sakatliklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -149,7 +149,7 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# MÜSABIK VE DÖVÜŞ SİCİLİ FONKSİYONLARI
+# MÜSABIK VE MAÇ TAKVİMİ FONKSİYONLARI
 def musabik_ekle_guncelle(uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -178,6 +178,23 @@ def musabik_getir(uye_id):
         res = None
     conn.close()
     return res
+
+def tum_yaklasan_maclari_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            SELECT u.ad_soyad, u.brans, m.hedef_siklet, m.yaklasan_mac_tarihi, m.organizasyon, u.telefon
+            FROM musabiklar m
+            JOIN uyeler u ON m.uye_id = u.id
+            WHERE m.yaklasan_mac_tarihi IS NOT NULL AND m.yaklasan_mac_tarihi != ''
+            ORDER BY m.yaklasan_mac_tarihi ASC
+        ''')
+        maclar = cursor.fetchall()
+    except Exception:
+        maclar = []
+    conn.close()
+    return maclar
 
 # SAKATLIK FONKSİYONLARI
 def sakatlik_ekle(uye_id, sakatlik_bolgesi, sparring_yasak_gun, izin_verilen_antrenman):
