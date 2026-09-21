@@ -4,8 +4,71 @@ import database as db
 import random
 import urllib.parse
 
-# Sayfa Yapılandırması (Koyu Tema & Spor Salonu Atmosferi)
-st.set_page_config(page_title="Ringmaster SaaS - Global & Yerel Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
+# Sayfa Yapılandırması
+st.set_page_config(page_title="Ringmaster SaaS - Professional Gym Management", page_icon="🥊", layout="wide")
+
+# --- ÖZEL SPOR SALONU (GYM) CSS & TEMA DOKUNUŞU ---
+st.markdown("""
+    <style>
+    /* Ana Arka Plan ve Genel Tema */
+    .stApp {
+        background-color: #0e1117;
+        color: #f0f2f6;
+    }
+    
+    /* Sidebar Tasarımı */
+    [data-testid="stSidebar"] {
+        background-color: #161b22;
+        border-right: 1px solid #30363d;
+    }
+    
+    /* Başlıklar ve Metinler */
+    h1, h2, h3 {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    /* Metrik Kartları Özelleştirme */
+    [data-testid="stMetricValue"] {
+        font-size: 28px !important;
+        font-weight: 800;
+        color: #FF4B4B;
+    }
+    [data-testid="stMetricContainer"] {
+        background-color: #1f242d;
+        border: 1px solid #30363d;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    
+    /* Butonlar */
+    .stButton>button {
+        background: linear-gradient(135deg, #FF4B4B 0%, #D11A2A 100%);
+        color: white;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 4px 10px rgba(255, 75, 75, 0.3);
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF2E2E 100%);
+        box-shadow: 0 6px 15px rgba(255, 75, 75, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    /* Form Alanları ve Tablolar */
+    .stTextInput>div>div>input, .stSelectbox>div>div>select, .stTextArea>div>div>textarea {
+        background-color: #1f242d;
+        color: white;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Veritabanını başlat
 db.veritabani_baslat()
@@ -43,7 +106,7 @@ secilen_modul = st.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     st.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    st.info("PIN otomasyonu ve WhatsApp entegrasyonu üye yönetimine eklendi! Sistem mermi gibi akıyor.")
+    st.markdown("Karbon siyahı neon altyapı ve tam otomasyon devreye alındı. Sistem kusursuz akıyor.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -56,11 +119,11 @@ if secilen_modul == "Ana Sayfa":
 # --- 2. RİNGMASTER AI ASİSTANI ---
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.subheader("🤖 Ringmaster AI - Salon Yönetim Asistanı")
-    st.write("Salonunla ilgili sorular sorabilir, üye sadakati ve otomasyon süreçleri hakkında fikir alabilirsin.")
+    st.write("Salonunla ilgili stratejik sorular sorabilir, operasyonel hız hakkında bilgi alabilirsin.")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! PIN otomasyonu ve WhatsApp entegrasyonu sayesinde üyelerin girişte asla sorun yaşamayacak. Bugün hangi operasyonu yönetiyoruz?"}
+            {"role": "assistant", "content": "Selam patron! Yeni havalı arayüzümüzle salon yönetimi artık çok daha keyifli. Bugün ringde hangi operasyonu yönetiyoruz?"}
         ]
 
     for message in st.session_state.messages:
@@ -76,13 +139,13 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
             with st.spinner("Ringmaster AI düşünüyor..."):
                 lower_p = prompt.lower()
                 if "pin" in lower_p or "yoklama" in lower_p:
-                    yanit = "Sporcu kayıt ekranından PIN kodları anında görülebilir ve WhatsApp ile tek tıkla sporcunun cebine gönderilebilir, patron!"
+                    yanit = "Sporcu kayıt ekranından PIN kodları anında üretiliyor ve WhatsApp ile tek tıkla cebine gönderiliyor, patron!"
                 elif "üye" in lower_p or "kayıt" in lower_p:
-                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz kayıtlı."
+                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz gururla ter döküyor."
                 elif "merhaba" in lower_p or "selam" in lower_p:
-                    yanit = "Ooo selam patron! Altyapı taş gibi sağlam, dünyayı fethə hazırım!"
+                    yanit = "Ooo selam patron! Yeni tema göz alıyor, altyapı mermi gibi!"
                 else:
-                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tam otomasyon kurarak iş yükünü sıfıra indiriyoruz."
+                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tam otomasyon devrede."
                 
                 st.markdown(yanit)
                 st.session_state.messages.append({"role": "assistant", "content": yanit})
