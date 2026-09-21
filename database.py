@@ -54,10 +54,10 @@ def veritabani_baslat():
         ]
         cursor.executemany("INSERT INTO stok (urun_adi, adet, fiyat) VALUES (?, ?, ?)", ornek_stoklar)
 
-    # 4. Kasa & Finans Tablosu
+    # 4. Kasa & Finans Tablosu (Fazla virgül temizlendi)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS kasa (
-            id INTEGER PRIMARY KEY AUTOINCREMENT\,,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             islem_tipi TEXT,
             aciklama TEXT,
             tutar REAL,
