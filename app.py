@@ -7,74 +7,72 @@ import urllib.parse
 # Sayfa Yapılandırması
 st.set_page_config(page_title="Ringmaster SaaS - Professional Gym Management", page_icon="🥊", layout="wide")
 
-# --- FERAH VE İŞTAH KABARTICI GYM TEMASI (ÖZEL CSS) ---
+# --- KOYU LACİVERT & NEON TURUNCU/MERCAN GYM TEMASI (ÖZEL CSS) ---
 st.markdown("""
     <style>
-    /* Ana Arka Plan - Çok koyu olmayan, ferah koyu gri/antrasit ton */
+    /* Ana Arka Plan - Derin, asil ve ferah koyu lacivert (Gece Mavisi) */
     .stApp {
-        background-color: #131722;
+        background-color: #0f172a;
         color: #f8fafc;
     }
     
-    /* Sidebar (Yan Menü) - Şık ve net kontrast */
+    /* Sidebar (Yan Menü) - Şık kontrast sağlayan lacivert tonu */
     [data-testid="stSidebar"] {
-        background-color: #1a1f2c;
-        border-right: 1px {
-        background-color: #1a1f2c;
-        border-right: 1px solid #2d3748;
+        background-color: #1e293b;
+        border-right: 1px solid #334155;
     }
     
-    /* Başlıklar */
+    /* Başlıklar - Kristal netliğinde beyaz */
     h1, h2, h3 {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         font-weight: 700;
         color: #ffffff;
     }
     
-    /* Metrik Kutuları - Ferah ve modern */
+    /* Metrik Kutuları - Ferah lacivert ton ve neon turuncu değerler */
     [data-testid="stMetricValue"] {
         font-size: 30px !important;
         font-weight: 800;
-        color: #ff3333;
+        color: #f97316;
     }
     [data-testid="stMetricContainer"] {
-        background-color: #1e2536;
-        border: 1px solid #2d3748;
+        background-color: #1e293b;
+        border: 1px solid #334155;
         padding: 18px;
         border-radius: 12px;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.3);
     }
     
-    /* BUTONLAR - Asla boğulmayan, canlı, parlayan neon turuncu/kırmızı gradyan */
+    /* BUTONLAR - Asla boğulmayan, canlı neon turuncu / mercan gradyan ve muazzam parlama */
     .stButton>button {
-        background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         color: #ffffff !important;
         font-weight: 700;
         border: none;
         border-radius: 8px;
         padding: 0.6rem 1.2rem;
-        box-shadow: 0 4px 14px rgba(255, 65, 108, 0.4);
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.45);
         transition: all 0.3s ease;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%);
-        box-shadow: 0 6px 20px rgba(255, 75, 43, 0.6);
+        background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.65);
         transform: translateY(-2px);
     }
     
-    /* Form Input ve Seçim Kutuları - İç açan, net okunabilir gri zemin */
+    /* Form Input ve Seçim Kutuları - İç açan, net okunabilir modern gri-lacivert zemin */
     .stTextInput>div>div>input, .stSelectbox>div>div>select, .stTextArea>div>div>textarea {
-        background-color: #222b3b !important;
+        background-color: #1e293b !important;
         color: #ffffff !important;
-        border: 1px solid #3a475d !important;
+        border: 1px solid #475569 !important;
         border-radius: 8px;
     }
     
     /* Bilgi ve Başarı Kutuları */
     .stAlert {
-        background-color: #1e2536;
+        background-color: #1e293b;
         color: #ffffff;
-        border: 1px solid #2d3748;
+        border: 1px solid #334155;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -115,7 +113,7 @@ secilen_modul = st.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     st.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    st.markdown("Ferah, göz yormayan ve net neon detaylı yeni arayüz devrede. Sistem mermi gibi akıyor.")
+    st.markdown("Koyu lacivert zemin ve canlı neon turuncu butonlarla donatılmış ferah profesyonel tema devrede. Sistem mermi gibi akıyor.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -132,7 +130,7 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! Ferah ve canlı yeni arayüzümüzle salon yönetimi keyiften dört köşe oldu. Bugün ringde hangi operasyonu yönetiyoruz?"}
+            {"role": "assistant", "content": "Selam patron! Koyu lacivert ferah temamızla yönetim paneli göz alıyor. Bugün ringde hangi operasyonu yönetiyoruz?"}
         ]
 
     for message in st.session_state.messages:
@@ -152,14 +150,14 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
                 elif "üye" in lower_p or "kayıt" in lower_p:
                     yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz gururla ter döküyor."
                 elif "merhaba" in lower_p or "selam" in lower_p:
-                    yanit = "Ooo selam patron! Yeni ferah tema göz alıyor, altyapı mermi gibi!"
+                    yanit = "Ooo selam patron! Yeni lacivert tema ve turuncu butonlar harika duruyor, altyapı mermi gibi!"
                 else:
                     yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tam otomasyon devrede."
                 
                 st.markdown(yanit)
                 st.session_state.messages.append({"role": "assistant", "content": yanit})
 
-# --- 3. SALON ÜYELERİ YÖNETİMİ (GÜNCELLENDİ: PIN & WHATSAPP GÖNDERİMİ) ---
+# --- 3. SALON ÜYELERİ YÖNETİMİ ---
 elif secilen_modul == "Salon Üyeleri Yönetimi":
     st.subheader("👤 Salon Üyeleri ve PIN Yönetimi")
     
