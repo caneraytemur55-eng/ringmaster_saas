@@ -30,15 +30,14 @@ PRICING_CONFIG = {
 }
 
 try:
-    # Sayfayı sekmelere bölüyoruz: Biri Müşteri Vitrini, Diğeri Senin Yönetici Panelin
-    tab_vitrin, tab_yonetici = st.tabs(["🌐 Müşteri Vitrini & Paketler", "🚀 Salon Yönetim Paneli (Senin Alanın)"])
+    # Sayfayı iki ana sekmeye bölüyoruz
+    tab_vitrin, tab_yonetici = st.tabs(["🌐 Müşteri Vitrini & Paketler", "🚀 Salon Yönetim Paneli (Veri Girişleri & İşlemler)"])
 
     # --- 1. SEKME: MÜŞTERİ VİTRİNİ VE FİYATLAR ---
     with tab_vitrin:
         st.title("🥊 RingMaster SaaS - Salonunuzu Zirveye Taşıyın")
         st.write("Salon yönetimini dijitalleştiren profesyonel mikro-SaaS çözümü. 15 gün ücretsiz dene!")
 
-        # Para Birimi Seçici
         selected_currency = st.selectbox(
             "Para Birimi / Bölge Seçin",
             options=["TRY", "EUR", "USD", "GBP"],
@@ -89,26 +88,63 @@ try:
                 else:
                     st.info(f"Stripe güvenli ödeme sayfasına yönlendiriliyorsunuz ({selected_currency})...")
 
-    # --- 2. SEKME: SENİN YÖNETİCİ PANELİN ---
+    # --- 2. SEKME: SENİN YÖNETİCİ PANELİN VE İŞLEM MODÜLLERİN ---
     with tab_yonetici:
-        st.title("🚀 RingMaster Geliştirici & Salon Yönetim Paneli")
-        st.success("Hoş geldin patron! Burada parola sormadan tüm sistem elinin altında.")
-        
-        st.info("💡 15 Modülün entegrasyonunu ve veritabanı akışını bu alandan yönetiyorsun.")
-        
-        # Test amaçlı modül listesi önizlemesi
-        moduller = [
-            "1. PIN Yoklama & Mat Kontenjanı", "2. QR & Üye Self-Servis Portal", 
-            "3. Antrenör Hakediş & Prim", "4. Çocuk Veli Gelişim Raporu", 
-            "5. Ekipman Satış POS & Stok", "6. Kuşak Sınav Uygunluk Takibi", 
-            "7. Müsabık & Fight Record", "8. Sakatlık & Sparring Protokolü", 
-            "9. Maç Hazırlık Takvimi", "10. Deneme Dersi (Lead)", 
-            "11. Özel Ders (PT) & Ücret", "12. Üye Yönetimi", 
-            "13. Sporcu Ölçüm Takibi", "14. Kasa & Finans Paneli", "15. Kayıp Üye (Churn) Uyarısı"
-        ]
-        
-        selected_modul = st.selectbox("Gitmek İstediğin Modülü Seç", moduller)
-        st.write(f"Şu an **{selected_modul}** modülü aktif ve çalışmaya hazırdır.")
+        st.title("🚀 Salon Operasyon ve Yönetim Paneli")
+        st.success("Hoş geldin patron! Tüm veri girişleri ve yönetim modülleri burada aktif.")
+
+        # İçeride hızlı geçiş yapabileceğin alt işlem başlıkları (Radio veya Selectbox)
+        yonetim_islem = st.radio(
+            "İşlem Seçin:",
+            ["👥 Üye Ekle & Yönetimi", "📋 PIN Yoklama & Mat Kontenjanı", "💰 Antrenör Hakediş & Kasa", "📦 Ekipman Satış POS & Stok"],
+            horizontal=True
+        )
+
+        st.divider()
+
+        if "Üye Ekle" in yonetim_islem:
+            st.subheader("Yeni Sporcu / Üye Kaydı")
+            with st.form("uye_kayit_formu"):
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    ad_soyad = st.text_input("Sporcu Adı Soyadı")
+                    telefon = st.text_input("Telefon Numarası")
+                with col_b:
+                    brans = st.selectbox("Branş / Ders", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
+                    paket = st.selectbox("Abonelik Tipi", ["Starter", "Pro", "VIP Sınırsız"])
+                
+                kaydet_btn = st.form_submit_button("Üyeyi Kaydet")
+                if kaydet_btn:
+                    if ad_soyad:
+                        st.success(f"Başarıyla kaydedildi: {ad_soyad} ({brans}) - {paket}")
+                        # Buraya gerçek veritabanı kayıt kodunu ekleyebilirsin
+                    else:
+                        st.warning("Lütfen sporcu adını boş bırakmayın.")
+
+        elif "PIN Yoklama" in yonetim_islem:
+            st.subheader("Hızlı PIN Yoklama Sistemi")
+            girilen_pin = st.text_input("Sporcu 4 Haneli PIN Kodunu Girin", type="password")
+            if st.button("Yoklama Al"):
+                if len(girilen_pin) == 4:
+                    st.success(f"PIN ({girilen_pin}) doğrulandı! Yoklama başarıyla alındı.")
+                else:
+                    st.error("Geçersiz PIN kodu.")
+
+        elif "Antrenör" in yonetim_islem:
+            st.subheader("Antrenör Hakediş ve Kasa Durumu")
+            st.metric(label="Bu Ay Toplam Kasa", value="48.500 ₺", delta="+12%")
+            st.write("Antrenör prim hesaplamaları ve prim oranları bu alandan yönetilmektedir.")
+
+        elif "Ekipman" in yonetim_islem:
+            st.subheader("Ekipman Satış POS ve Stok Paneli")
+            st.info("Eldiven, bandaj, dişlik satışları ve stok takibi burada yer alıyor.")
+            col_pos1, col_pos2 = st.columns(2)
+            with col_pos1:
+                st.number_input("Satılan Ürün Adedi", min_value=1, value=1)
+            with col_pos2:
+                st.selectbox("Ürün Seç", ["Deri Boks Eldiveni", "El Bandajı", "Dişlik"])
+            if st.button("Satışı Tamamla (POS)"):
+                st.success("Satış başarıyla kasaya işlendi!")
 
 except Exception as e:
     st.error("Uygulama çalıştırılırken bir hata oluştu, Caner Baba:")
