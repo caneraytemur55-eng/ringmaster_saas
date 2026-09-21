@@ -10,7 +10,7 @@ def veritabani_baslat():
     conn = baglanti_kur()
     cursor = conn.cursor()
     
-    # 1. SaaS Müşterileri (Salon Sahipleri) Tablosu - 15 Gün Deneme ve 999 TL Abonelik Takibi
+    # 1. SaaS Müşterileri (Salon Sahipleri) Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS salonlar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +24,7 @@ def veritabani_baslat():
         )
     """)
 
-    # 2. Salon Üyeleri Tablosu (Salonların kendi sporcuları için)
+    # 2. Salon Üyeleri Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,8 +35,15 @@ def veritabani_baslat():
             kayit_tarihi TEXT
         )
     """)
+    
+    # Emniyet Sübabı: Eskiden kalan uyeler tablosunda pin_kodu sütunu yoksa otomatik ekle
+    try:
+        cursor.execute("ALTER TABLE uyeler ADD COLUMN pin_kodu TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass # Sütun zaten varsa hata verme, devam et
 
-    # Diğer tablolar aynı kalıyor
+    # Diğer tablolar
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS yoklamalar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
