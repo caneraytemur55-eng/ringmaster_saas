@@ -1,1 +1,4 @@
 streamlit
+pandas
+stripe
+# (varsa diğer lokal veritabanı veya yardımcı paketlerin, örn: requests)
