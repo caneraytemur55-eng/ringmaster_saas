@@ -28,7 +28,7 @@ def init_db():
         )
     ''')
     
-    # 2. Antrenörler Tablosu (YENİ!)
+    # 2. Antrenörler Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS antrenorler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -179,7 +179,6 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# ANTRENÖR FONKSİYONLARI (YENİ!)
 def antrenor_ekle(ad_soyad, telefon, brans, maas_tipi, sabit_maas, prim_yuzdesi):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
