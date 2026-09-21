@@ -7,7 +7,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Fiyatlandırma Konfigürasyonun
+# Fiyatlandırma Konfigürasyonun (TRY, EUR, USD, GBP)
 PRICING_CONFIG = {
     "starter": {
         "name": "Başlangıç / Starter",
@@ -31,7 +31,7 @@ PRICING_CONFIG = {
 
 try:
     # Sayfayı iki ana sekmeye bölüyoruz
-    tab_vitrin, tab_yonetici = st.tabs(["🌐 Müşteri Vitrini & Paketler", "🚀 Salon Yönetim Paneli (Veri Girişleri & İşlemler)"])
+    tab_vitrin, tab_yonetici = st.tabs(["🌐 Müşteri Vitrini & Paketler", "🚀 Salon Yönetim Paneli (Tam 16 Modül)"])
 
     # --- 1. SEKME: MÜŞTERİ VİTRİNİ VE FİYATLAR ---
     with tab_vitrin:
@@ -79,7 +79,7 @@ try:
             st.subheader(plan_data["name"])
             st.markdown(f"### **{formatted_price}** / Ay")
             st.write("✅ 15 Gün Ücretsiz Deneme")
-            st.write("✅ Tüm 15 Gelişmiş Modül")
+            st.write("✅ Tüm 16 Gelişmiş Modül")
             st.write("✅ Öncelikli Destek & Sınırsız Üye")
             
             if st.button("Profesyonel Paketi Seç", key="btn_pro"):
@@ -88,22 +88,39 @@ try:
                 else:
                     st.info(f"Stripe güvenli ödeme sayfasına yönlendiriliyorsunuz ({selected_currency})...")
 
-    # --- 2. SEKME: SENİN YÖNETİCİ PANELİN VE İŞLEM MODÜLLERİN ---
+    # --- 2. SEKME: SENİN YÖNETİCİ PANELİN (TAM 16 MODÜL) ---
     with tab_yonetici:
         st.title("🚀 Salon Operasyon ve Yönetim Paneli")
-        st.success("Hoş geldin patron! Tüm veri girişleri ve yönetim modülleri burada aktif.")
+        st.success("Hoş geldin patron! Tüm operasyonel modüller ve veri girişleri emre amade.")
 
-        # İçeride hızlı geçiş yapabileceğin alt işlem başlıkları (Radio veya Selectbox)
-        yonetim_islem = st.radio(
-            "İşlem Seçin:",
-            ["👥 Üye Ekle & Yönetimi", "📋 PIN Yoklama & Mat Kontenjanı", "💰 Antrenör Hakediş & Kasa", "📦 Ekipman Satış POS & Stok"],
-            horizontal=True
+        # Tam 16 modülü içeren seçim menüsü
+        secilen_modul = st.selectbox(
+            "🛠️ Yönetim Modülü Seçin:",
+            [
+                "⚡ PIN Yoklama & Mat Kontenjanı",
+                "🌐 QR & Üye Self-Servis Portal",
+                "💵 Antrenör Hakediş & Prim",
+                "👶 Çocuk Veli Gelişim Raporu",
+                "🛍️ Ekipman Satış POS & Stok",
+                "🥋 Kuşak Sınav Uygunluk Takibi",
+                "🏆 Müsabık & Fight Record",
+                "🚨 Sakatlık & Sparring Protokolü",
+                "📅 Maç Hazırlık Takvimi",
+                "🥊 Deneme Dersi (Lead)",
+                "🎯 Özel Ders (PT) & Ücret",
+                "👤 Üye Yönetimi", 
+                "📈 Sporcu Ölçüm Takibi",
+                "📊 Kasa & Finans Paneli", 
+                "🚨 Kayıp Üye (Churn) Uyarısı",
+                "📱 İletişim Otomasyonu (SMS/WA)"
+            ]
         )
 
         st.divider()
 
-        if "Üye Ekle" in yonetim_islem:
-            st.subheader("Yeni Sporcu / Üye Kaydı")
+        # Seçilen modüle göre ilgili alanların açılması
+        if "Üye Yönetimi" in secilen_modul:
+            st.subheader("👤 Üye Yönetimi & Yeni Kayıt")
             with st.form("uye_kayit_formu"):
                 col_a, col_b = st.columns(2)
                 with col_a:
@@ -113,38 +130,89 @@ try:
                     brans = st.selectbox("Branş / Ders", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
                     paket = st.selectbox("Abonelik Tipi", ["Starter", "Pro", "VIP Sınırsız"])
                 
-                kaydet_btn = st.form_submit_button("Üyeyi Kaydet")
-                if kaydet_btn:
+                if st.form_submit_button("Üyeyi Kaydet"):
                     if ad_soyad:
                         st.success(f"Başarıyla kaydedildi: {ad_soyad} ({brans}) - {paket}")
-                        # Buraya gerçek veritabanı kayıt kodunu ekleyebilirsin
                     else:
                         st.warning("Lütfen sporcu adını boş bırakmayın.")
 
-        elif "PIN Yoklama" in yonetim_islem:
-            st.subheader("Hızlı PIN Yoklama Sistemi")
+        elif "PIN Yoklama" in secilen_modul:
+            st.subheader("⚡ PIN Yoklama & Mat Kontenjanı")
             girilen_pin = st.text_input("Sporcu 4 Haneli PIN Kodunu Girin", type="password")
             if st.button("Yoklama Al"):
                 if len(girilen_pin) == 4:
-                    st.success(f"PIN ({girilen_pin}) doğrulandı! Yoklama başarıyla alındı.")
+                    st.success(f"PIN ({girilen_pin}) doğrulandı! Mat kontenjanı güncellendi.")
                 else:
                     st.error("Geçersiz PIN kodu.")
 
-        elif "Antrenör" in yonetim_islem:
-            st.subheader("Antrenör Hakediş ve Kasa Durumu")
-            st.metric(label="Bu Ay Toplam Kasa", value="48.500 ₺", delta="+12%")
-            st.write("Antrenör prim hesaplamaları ve prim oranları bu alandan yönetilmektedir.")
+        elif "QR & Üye Self-Servis" in secilen_modul:
+            st.subheader("🌐 QR & Üye Self-Servis Portal")
+            st.info("Sporcuların salon girişinde okutacağı dinamik QR kod ve üye self-servis panel yönetimi.")
 
-        elif "Ekipman" in yonetim_islem:
-            st.subheader("Ekipman Satış POS ve Stok Paneli")
-            st.info("Eldiven, bandaj, dişlik satışları ve stok takibi burada yer alıyor.")
-            col_pos1, col_pos2 = st.columns(2)
-            with col_pos1:
-                st.number_input("Satılan Ürün Adedi", min_value=1, value=1)
-            with col_pos2:
-                st.selectbox("Ürün Seç", ["Deri Boks Eldiveni", "El Bandajı", "Dişlik"])
-            if st.button("Satışı Tamamla (POS)"):
-                st.success("Satış başarıyla kasaya işlendi!")
+        elif "Antrenör Hakediş" in secilen_modul:
+            st.subheader("💵 Antrenör Hakediş & Prim Paneli")
+            st.metric("Bu Ay Toplam Hakediş Havuzu", "34.000 ₺")
+            st.write("Antrenör bazlı ders saatleri ve prim oranları hesaplamaları.")
+
+        elif "Çocuk Veli Gelişim" in secilen_modul:
+            st.subheader("👶 Çocuk Veli Gelişim Raporu")
+            st.write("Minik sporcuların gelişim grafikleri, devamsızlık ve hoca değerlendirme raporları.")
+
+        elif "Ekipman Satış POS" in secilen_modul:
+            st.subheader("🛍️ Ekipman Satış POS & Stok")
+            col_p1, col_p2 = st.columns(2)
+            with col_p1:
+                st.number_input("Adet", min_value=1, value=1)
+                st.selectbox("Ürün", ["Deri Eldiven", "Dişlik", "Bandaj", "Şort"])
+            with col_p2:
+                st.write("Stok Durumu: Yeterli (Yeşil)")
+            if st.button("Satışı Tamamla"):
+                st.success("POS satışı başarıyla kasaya işlendi.")
+
+        elif "Kuşak Sınav" in secilen_modul:
+            st.subheader("🥋 Kuşak Sınav Uygunluk Takibi")
+            st.info("Sporcunun antrenman katılım saati ve kıdemine göre sınava çıkış uygunluk kontrolü.")
+
+        elif "Müsabık & Fight" in secilen_modul:
+            st.subheader("🏆 Müsabık & Fight Record")
+            st.write("Sporcuların maç geçmişleri, galibiyet/malubiyet oranları ve sıklet bilgileri.")
+
+        elif "Sakatlık & Sparring" in secilen_modul:
+            st.subheader("🚨 Sakatlık & Sparring Protokolü")
+            st.warning("Aktif sakatlık bildirimleri ve sparring yasaklı sporcu listesi takibi.")
+
+        elif "Maç Hazırlık" in secilen_modul:
+            st.subheader("📅 Maç Hazırlık Takvimi")
+            st.write("Yaklaşan turnuvalar, tartı günleri ve kamp antrenman programı.")
+
+        elif "Deneme Dersi" in secilen_modul:
+            st.subheader("🥊 Deneme Dersi (Lead) Yönetimi")
+            st.info("Salona ilk defa gelen potansiyel müşteri kayıtları ve takip aramaları.")
+
+        elif "Özel Ders" in secilen_modul:
+            st.subheader("🎯 Özel Ders (PT) & Ücret Takibi")
+            st.write("Hoca bazlı PT saatleri, paket kalan ders sayıları ve ücretlendirmeler.")
+
+        elif "Sporcu Ölçüm" in secilen_modul:
+            st.subheader("📈 Sporcu Ölçüm Takibi")
+            st.info("Kilo, yağ oranı, kas kütlesi ve performans değişim grafiklerinin girildiği alan.")
+
+        elif "Kasa & Finans" in secilen_modul:
+            st.subheader("📊 Kasa & Finans Paneli")
+            col_f1, col_f2, col_f3 = st.columns(3)
+            col_f1.metric("Aylık Ciro", "125.400 ₺", "+15%")
+            col_f2.metric("Giderler", "32.000 ₺", "-4%")
+            col_f3.metric("Net Kar", "93.400 ₺", "+18%")
+
+        elif "Kayıp Üye" in secilen_modul:
+            st.subheader("🚨 Kayıp Üye (Churn) Uyarısı")
+            st.warning("Son 15 gündür salona gelmeyen ve üyeliği bitmek üzere olan riskli üyelerin listesi.")
+
+        elif "İletişim Otomasyonu" in secilen_modul:
+            st.subheader("📱 İletişim Otomasyonu (SMS / WhatsApp)")
+            st.text_area("Toplu Bilgilendirme / Hatırlatma Mesajı", "Değerli üyemiz, bu hafta antrenmanları aksatmayalım! 🥊")
+            if st.button("Mesajları Gönder (Simülasyon)"):
+                st.success("Otomatik SMS/WhatsApp kuyruğuna eklendi.")
 
 except Exception as e:
     st.error("Uygulama çalıştırılırken bir hata oluştu, Caner Baba:")
