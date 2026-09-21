@@ -10,18 +10,29 @@ def veritabani_baslat():
     conn = baglanti_kur()
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu (Deneme süresi ve abonelik alanlarıyla güncellendi)
+    # 1. SaaS Müşterileri (Salon Sahipleri) Tablosu - 15 Gün Deneme ve 999 TL Abonelik Takibi
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS salonlar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            salon_adi TEXT NOT NULL,
+            sahip_adi TEXT NOT NULL,
+            telefon TEXT,
+            email TEXT,
+            kayit_tarihi TEXT,
+            deneme_bitis TEXT,
+            abonelik_durumu TEXT
+        )
+    """)
+
+    # 2. Salon Üyeleri Tablosu (Salonların kendi sporcuları için)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ad_soyad TEXT NOT NULL,
             telefon TEXT,
             brans TEXT,
-            paket TEXT,
             pin_kodu TEXT,
-            kayit_tarihi TEXT,
-            deneme_bitis TEXT,
-            abonelik_durumu TEXT
+            kayit_tarihi TEXT
         )
     """)
 
@@ -173,26 +184,45 @@ def veritabani_baslat():
     conn.commit()
     conn.close()
 
-def uye_ekle(ad_soyad, telefon, brans, paket, pin_kodu):
+def salon_ekle(salon_adi, sahip_adi, telefon, email):
     conn = baglanti_kur()
     cursor = conn.cursor()
     simdi = datetime.now()
     kayit_tarihi = simdi.strftime("%Y-%m-%d %H:%M")
-    # 15 günlük deneme süresi hesaplama
     deneme_bitis = (simdi + timedelta(days=15)).strftime("%Y-%m-%d")
     abonelik_durumu = "15 Günlük Deneme Süresi"
     
     cursor.execute("""
-        INSERT INTO uyeler (ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi, deneme_bitis, abonelik_durumu) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi, deneme_bitis, abonelik_durumu))
+        INSERT INTO salonlar (salon_adi, sahip_adi, telefon, email, kayit_tarihi, deneme_bitis, abonelik_durumu) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (salon_adi, sahip_adi, telefon, email, kayit_tarihi, deneme_bitis, abonelik_durumu))
+    conn.commit()
+    conn.close()
+
+def salonlari_getir():
+    conn = baglanti_kur()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, salon_adi, sahip_adi, telefon, email, kayit_tarihi, deneme_bitis, abonelik_durumu FROM salonlar")
+    veriler = cursor.fetchall()
+    conn.close()
+    return veriler
+
+def uye_ekle(ad_soyad, telefon, brans, pin_kodu):
+    conn = baglanti_kur()
+    cursor = conn.cursor()
+    simdi = datetime.now()
+    kayit_tarihi = simdi.strftime("%Y-%m-%d %H:%M")
+    cursor.execute("""
+        INSERT INTO uyeler (ad_soyad, telefon, brans, pin_kodu, kayit_tarihi) 
+        VALUES (?, ?, ?, ?, ?)
+    """, (ad_soyad, telefon, brans, pin_kodu, kayit_tarihi))
     conn.commit()
     conn.close()
 
 def uyeleri_getir():
     conn = baglanti_kur()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, ad_soyad, telefon, brans, paket, pin_kodu, kayit_tarihi, deneme_bitis, abonelik_durumu FROM uyeler")
+    cursor.execute("SELECT id, ad_soyad, telefon, brans, pin_kodu, kayit_tarihi FROM uyeler")
     veriler = cursor.fetchall()
     conn.close()
     return veriler
