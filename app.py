@@ -19,13 +19,3 @@ elif "AI Asistan & Koçluk" in secilen_modul:
                     st.warning("⚠️ **Churn (Kayıp Üye) Uyarısı:** \nSon 15 gündür matı ziyaret etmeyen 4 sporcu tespit edildi. 'İletişim Otomasyonu' modülü üzerinden otomatik motivasyon SMS'i tetiklenmesi önerilir.")
                 else:
                     st.info(f"🤖 **AI Yanıtı:** '{user_query}' talebiniz incelendi. Salonunuzun operasyonel dengesi şu an stabil, verileriniz güvende patron!")
-
-                
-                
-
-    
- 
-
-            
-    
-
