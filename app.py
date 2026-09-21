@@ -93,20 +93,44 @@ try:
         st.info("Salon giriş ekranı için dinamik QR kod simülasyonu.")
         st.image("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RingMasterCheckIn", width=150)
 
-    # --- 4. ANTRENÖR HAKEDİŞ ---
+    # --- 4. ANTRENÖR HAKEDİŞ & PRİM (GÜNCELLENDİ) ---
     elif "Antrenör Hakediş" in secilen_modul:
         st.subheader("💵 Antrenör Hakediş & Prim Paneli")
+        
         with st.form("hoca_form"):
-            hoca = st.text_input("Antrenör Adı")
-            h_brans = st.text_input("Uzmanlık Branşı")
-            ders_s = st.number_input("Verilen Ders Saati", min_value=1, value=10)
-            prim = st.number_input("Saatlik Ücret / Prim (₺)", min_value=100.0, value=500.0)
-            if st.form_submit_button("Hakedişi Kaydet"):
-                conn = db.baglanti_kur()
-                conn.cursor().execute("INSERT INTO antrenorler (hoca_adi, brans, ders_sayisi, prim_orani) VALUES (?, ?, ?, ?)", (hoca, h_brans, ders_s, prim))
-                conn.commit()
-                conn.close()
-                st.success(f"{hoca} için hakediş kaydedildi. Toplam: {ders_s * prim} ₺")
+            c_h1, c_h2 = st.columns(2)
+            with c_h1:
+                hoca = st.text_input("Antrenör Adı Soyadı")
+                h_brans = st.selectbox("Uzmanlık Branşı", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
+            with c_h2:
+                ders_s = st.number_input("Verilen Ders / PT Saati", min_value=1, value=10)
+                prim = st.number_input("Saatlik Ücret / Prim (₺)", min_value=100.0, value=500.0)
+            
+            if st.form_submit_button("Hakedişi Hesapla & Kaydet 💾"):
+                if hoca:
+                    toplam_hakedis = ders_s * prim
+                    conn = db.baglanti_kur()
+                    cur = conn.cursor()
+                    cur.execute("INSERT INTO antrenorler (hoca_adi, brans, ders_sayisi, prim_orani) VALUES (?, ?, ?, ?)", 
+                                (hoca, h_brans, ders_s, prim))
+                    # Aynı zamanda kasaya gider olarak da işleyelim ki finans tablosu tam tutsun
+                    cur.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
+                                ("Gider", f"Antrenör Hakediş: {hoca} ({ders_s} Saat)", toplam_hakedis, datetime.now().strftime("%Y-%m-%d")))
+                    conn.commit()
+                    conn.close()
+                    st.success(f"Tebrikler patron! {hoca} için {toplam_hakedis:,.2f} ₺ hakediş kaydedildi ve kasaya gider olarak işlendi.")
+                else:
+                    st.warning("Lütfen antrenör adını giriniz.")
+
+        st.markdown("### 📋 Kayıtlı Antrenör Hakedişleri")
+        conn = db.baglanti_kur()
+        hakedis_df = pd.read_sql("SELECT * FROM antrenorler", conn)
+        conn.close()
+        if not hakedis_df.empty:
+            hakedis_df["Toplam Hakediş (₺)"] = hakedis_df["ders_sayisi"] * hakedis_df["prim_orani"]
+            st.dataframe(hakedis_df, use_container_width=True)
+        else:
+            st.info("Henüz kaydedilmiş antrenör hakedişi bulunmuyor.")
 
     # --- 5. ÇOCUK VELİ GELİŞİM ---
     elif "Çocuk Veli Gelişim" in secilen_modul:
@@ -252,16 +276,53 @@ try:
                 conn.close()
                 st.success("Sporcu ölçüm verileri kaydedildi.")
 
-    # --- 14. KASA & FİNANS ---
+    # --- 14. KASA & FİNANS PANELİ (GÜNCELLENDİ) ---
     elif "Kasa & Finans" in secilen_modul:
-        st.subheader("📊 Kasa & Finans Paneli")
+        st.subheader("📊 Kasa & Finans Paneli (Gelir / Gider Yönetimi)")
+        
+        # Manuel Gelir / Gider Ekleme Formu
+        with st.form("kasa_form"):
+            c_f1, c_f2, c_f3 = st.columns(3)
+            with c_f1:
+                tip = st.selectbox("İşlem Tipi", ["Gelir", "Gider"])
+            with c_f2:
+                tutar = st.number_input("Tutar (₺)", min_value=1.0, value=500.0)
+            with c_f3:
+                tarih_str = st.text_input("Tarih", value=datetime.now().strftime("%Y-%m-%d %H:%M"))
+            
+            aciklama = st.text_input("İşlem Açıklaması (Örn: Aidat Tahsilatı, Elektrik Faturası vb.)")
+            
+            if st.form_submit_button("Kasa İşlemini Kaydet 💾"):
+                if aciklama:
+                    conn = db.baglanti_kur()
+                    conn.cursor().execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
+                                          (tip, aciklama, tutar, tarih_str))
+                    conn.commit()
+                    conn.close()
+                    st.success(f"Başarılı! Kasaya {tip} olarak {tutar:,.2f} ₺ işlendi.")
+                else:
+                    st.warning("Lütfen işlem açıklaması giriniz.")
+
+        st.divider()
+        st.markdown("### 📋 Kasa Hareketleri ve Finans Tablosu")
         conn = db.baglanti_kur()
         kasa_df = pd.read_sql("SELECT * FROM kasa", conn)
         conn.close()
         
-        toplam_gelir = kasa_df["tutar"].sum() if not kasa_df.empty else 0.0
-        st.metric("Toplam Kasa Hareketi (Gelir)", f"{toplam_gelir:,.2f} ₺")
-        st.dataframe(kasa_df, use_container_width=True)
+        if not kasa_df.empty:
+            # Gelir ve giderleri ayrı ayrı hesaplayalım
+            toplam_gelir = kasa_df[kasa_df["islem_tipi"] == "Gelir"]["tutar"].sum()
+            toplam_gider = kasa_df[kasa_df["islem_tipi"] == "Gider"]["tutar"].sum()
+            net_durum = toplam_gelir - toplam_gider
+            
+            col_m1, col_m2, col_m3 = st.columns(3)
+            col_m1.metric("Toplam Gelir", f"{toplam_gelir:,.2f} ₺")
+            col_m2.metric("Toplam Gider", f"{toplam_gider:,.2f} ₺")
+            col_m3.metric("Net Kasa Durumu", f"{net_durum:,.2f} ₺")
+            
+            st.dataframe(kasa_df, use_container_width=True)
+        else:
+            st.info("Henüz kasaya ait bir hareket bulunmuyor.")
 
     # --- 15. KAYIP ÜYE (CHURN) ---
     elif "Kayıp Üye" in secilen_modul:
