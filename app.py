@@ -7,15 +7,16 @@ from database import (
     ozel_ders_ekle, ozel_dersleri_getir, ozel_ders_seans_dus, ozel_ders_ucret_guncelle,
     kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir,
     olcum_ekle, olcumleri_getir, uykudaki_uyeleri_getir,
-    pin_ile_yoklama_al, ders_sayisi_arttir, kusak_yukselt_sifirla
+    pin_ile_yoklama_al, ders_sayisi_arttir, kusak_yukselt_sifirla,
+    musabik_ekle_guncelle, musabik_getir, sakatlik_ekle, sakatliklari_getir, sakatlik_kapat
 )
 
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v4.1", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.2", page_icon="🥊", layout="wide")
 
-st.title("🥊 RingMaster SaaS v4.1 - Kuşak & Mat Kontenjan Sürümü")
+st.title("🥊 RingMaster SaaS v4.2 - Müsabık & Sakatlık Sürümü")
 
 # --- 15 GÜNLÜK DENEME SÜRESİ MANTIĞI ---
 kurulum_str = kurulum_tarihi_getir()
@@ -40,9 +41,10 @@ else:
 
 st.sidebar.markdown("---")
 
-tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
     "⚡ PIN Yoklama & Mat Kontenjanı",
     "🥋 Kuşak Sınav Uygunluk Takibi",
+    "🏆 Müsabık & Dövüş Sicili & Sakatlık",
     "🥊 Deneme Dersi (Lead)",
     "🎯 Özel Ders (PT) & Ücret",
     "👤 Üye Yönetimi", 
@@ -62,7 +64,7 @@ KUSAKLAR = [
     "Siyah Kuşak / Müsabık / İleri Seviye"
 ]
 
-BARAJ_DERS_SAYISI = 24  # Sınav için gereken ders sayısı barajı
+BARAJ_DERS_SAYISI = 24
 
 if not IS_PRO and kalan_deneme_gunu <= 0:
     st.error("⛔ **Deneme Süreniz Dolmuştur!** 15 günlük ücretsiz deneme periyodunuz sona ermiştir. Lütfen yönetici ile iletişime geçip PRO pakete geçiniz.")
@@ -123,7 +125,6 @@ else:
                     st.success(f"{u_ad} için +1 ders işlendi!")
                     st.rerun()
                 
-                # Kuşak Yükseltme İşlemi
                 if u_ders >= BARAJ_DERS_SAYISI:
                     yeni_k = c_k3.selectbox("Yeni Kuşak Seç", KUSAKLAR, key=f"sel_k_{u_id}")
                     if c_k3.button("🎓 Kuşağı Yükselt & Sıfırla", key=f"btn_yuks_{u_id}"):
@@ -132,7 +133,6 @@ else:
                         st.success(f"{u_ad} resmen **{yeni_k}** seviyesine yükseltildi!")
                         st.rerun()
                         
-                    # Sınav Davetiye Mesajı
                     msg_sinav = f"Tebrikler {u_ad}! RingMaster Salonu'nda {BARAJ_DERS_SAYISI} derslik devamlılığını tamamlayarak Kuşak Sınavı'na girmeye hak kazandın! Sınav saatini öğrenmek için dönüş yapabilirsin. 🥋"
                     enc_s = urllib.parse.quote(msg_sinav)
                     wa_sinav_url = f"https://wa.me/{u_tel}?text={enc_s}"
@@ -142,8 +142,92 @@ else:
         else:
             st.info("Kayıtlı sporcu bulunmuyor.")
 
-    # --- TAB 2: DENEME DERSİ ---
+    # --- TAB 2: MÜSABIK & DÖVÜŞ SİCİLİ & SAKATLIK (YENİ MODÜL!) ---
     with tab2:
+        st.subheader("🏆 Müsabık Sporcu, Sıklet, Dövüş Sicili & Sakatlık Protokolü")
+        uyeler = uyeleri_getir()
+        if uyeler:
+            secilen_f_str = st.selectbox("Sporcu Seçiniz", [f"{u[1]} ({u[3]})" for u in uyeler])
+            f_id = [u[0] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_f_str][0]
+            f_ad = [u[1] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_f_str][0]
+
+            col_f1, col_f2 = st.columns(2)
+            
+            # --- SOL SÜTUN: MÜSABIK KARTI VE DÖVÜŞ SİCİLİ (FIGHT RECORD) ---
+            with col_f1:
+                st.markdown("### 🥊 Dövüş Sicili & Sıklet Profili (Fight Record)")
+                m_data = musabik_getir(f_id)
+                stili_def = m_data[1] if m_data else 'Ortodoks (Sağak)'
+                siklet_def = m_data[2] if m_data else 70.0
+                g_def = m_data[3] if m_data else 0
+                m_def = m_data[4] if m_data else 0
+                b_def = m_data[5] if m_data else 0
+                ko_def = m_data[6] if m_data else 0
+                mac_t_def = datetime.datetime.strptime(m_data[7], "%Y-%m-%d").date() if (m_data and m_data[7]) else datetime.date.today()
+                org_def = m_data[8] if m_data else "Türkiye Şampiyonası / Gala"
+
+                with st.form("musabik_form"):
+                    f_stili = st.selectbox("Dövüş Stili / Duruş", ["Ortodoks (Sağak)", "Southpaw (Solak)", "Switch (Çift Yönlü)"], index=["Ortodoks (Sağak)", "Southpaw (Solak)", "Switch (Çift Yönlü)"].index(stili_def) if stili_def in ["Ortodoks (Sağak)", "Southpaw (Solak)", "Switch (Çift Yönlü)"] else 0)
+                    f_siklet = st.number_input("Hedef Maç Sıkleti (kg)", min_value=40.0, max_value=150.0, value=float(siklet_def), step=0.5)
+                    
+                    c_rec1, c_rec2, c_rec3, c_rec4 = st.columns(4)
+                    f_win = c_rec1.number_input("Galibiyet (W)", min_value=0, value=int(g_def))
+                    f_loss = c_rec2.number_input("Mağlubiyet (L)", min_value=0, value=int(m_def))
+                    f_draw = c_rec3.number_input("Beraberlik (D)", min_value=0, value=int(b_def))
+                    f_ko = c_rec4.number_input("KO / TKO", min_value=0, value=int(ko_def))
+                    
+                    f_mac_tarihi = st.date_input("Yaklaşan Maç Tarihi", mac_t_def)
+                    f_org = st.text_input("Organizasyon / Şampiyona Adı", org_def)
+                    
+                    submit_musabik = st.form_submit_button("💾 Dövüş Sicilini Güncelle")
+                    if submit_musabik:
+                        musabik_ekle_guncelle(f_id, f_stili, f_siklet, f_win, f_loss, f_draw, f_ko, f_mac_tarihi, f_org)
+                        st.success("Sporcunun dövüş profili ve sicili güncellendi!")
+                        st.rerun()
+
+                st.markdown("---")
+                if m_data:
+                    st.success(f"🏆 **FIGHT RECORD:** `{g_def}-W / {m_def}-L / {b_def}-D ({ko_def} KO)`")
+                    st.write(f"🎯 **Hedef Sıklet:** {siklet_def} kg | 🥊 **Stil:** {stili_def}")
+                    st.write(f"🗓️ **Yaklaşan Maç:** {m_data[7]} | **Organizasyon:** {org_def}")
+
+            # --- SAĞ SÜTUN: SAKATLIK VE SPARRING PROTOKOLÜ ---
+            with col_f2:
+                st.markdown("### 🚨 Sakatlık & Sparring/Temas Kısıtlaması")
+                
+                with st.form("sakatlik_form", clear_on_submit=True):
+                    s_bolge = st.text_input("Sakatlık Bölgesi / Tanı", "Örn: Burun Kırığı / Sağ El Bileği Burkulması")
+                    s_gun = st.number_input("Sparring & Temas Yasağı Süresi (Gün)", min_value=1, max_value=180, value=14)
+                    s_izin = st.text_input("İzin Verilen Antrenman Türü", "Örn: Sadece Koşu, İp Atlama ve Gölge Boksu Yapabilir")
+                    
+                    submit_sak = st.form_submit_button("🚨 Sakatlık & Kısıtlama Ekle")
+                    if submit_sak:
+                        sakatlik_ekle(f_id, s_bolge, s_gun, s_izin)
+                        st.warning("Sakatlık ve Sparring kısıtlaması sisteme işlendi!")
+                        st.rerun()
+
+                st.markdown("---")
+                st.subheader(f"🩹 {f_ad} - Aktif & Geçmiş Sakatlıklar")
+                sak_listesi = sakatliklari_getir(f_id)
+                if sak_listesi:
+                    for sak in sak_listesi:
+                        sak_id, sak_b, sak_g, sak_iz, sak_t, sak_durum = sak
+                        if sak_durum == "Aktif Sakatlık 🔴":
+                            st.error(f"🔴 **{sak_durum}** | **{sak_b}**\n\n⛔ **{sak_g} Gün Sparring Yapamaz!**\n\n🟢 İzin Verilen: {sak_iz} (Tarih: {sak_t})")
+                            if st.button("🟢 İyileşti Olarak İşaretle", key=f"btn_sak_{sak_id}"):
+                                sakatlik_kapat(sak_id)
+                                st.success("Sporcu iyileşti olarak güncellendi!")
+                                st.rerun()
+                        else:
+                            st.success(f"🟢 **{sak_durum}** | {sak_b} (Süre: {sak_g} Gün)")
+                        st.markdown("---")
+                else:
+                    st.info("Bu sporcunun aktif bir sakatlık veya sparring kısıtlaması bulunmuyor.")
+        else:
+            st.warning("Önce 'Üye Yönetimi' sekmesinden sporcu kaydı yapmalısınız.")
+
+    # --- TAB 3: DENEME DERSİ ---
+    with tab3:
         st.subheader("🥊 Potansiyel Sporcu Deneme Dersi Kaydı")
         with st.form("deneme_form", clear_on_submit=True):
             col_d1, col_d2 = st.columns(2)
@@ -168,8 +252,8 @@ else:
         else:
             st.info("Planlanmış deneme dersi yok.")
 
-    # --- TAB 3: ÖZEL DERS (PT) & ÜCRET TAKİBİ ---
-    with tab3:
+    # --- TAB 4: ÖZEL DERS (PT) & ÜCRET TAKİBİ ---
+    with tab4:
         st.subheader("🥊 Birebir Özel Ders (PT) Paketi Tanımla")
         with st.form("pt_form", clear_on_submit=True):
             col_p1, col_p2 = st.columns(2)
@@ -219,8 +303,8 @@ else:
         else:
             st.info("Kayıtlı özel ders paketi bulunmuyor.")
 
-    # --- TAB 4: ÜYE YÖNETİMİ ---
-    with tab4:
+    # --- TAB 5: ÜYE YÖNETİMİ ---
+    with tab5:
         st.subheader("Yeni Sporcu Kaydı")
         with st.form("uye_form", clear_on_submit=True):
             col1, col2 = st.columns(2)
@@ -249,8 +333,8 @@ else:
         else:
             st.info("Kayıtlı sporcu yok.")
 
-    # --- TAB 5: SPORCU ÖLÇÜM TAKİBİ ---
-    with tab5:
+    # --- TAB 6: SPORCU ÖLÇÜM TAKİBİ ---
+    with tab6:
         st.subheader("📈 Sporcu Fiziksel Gelişim & Ölçüm Kaydı")
         uyeler = uyeleri_getir()
         if uyeler:
@@ -288,8 +372,8 @@ else:
         else:
             st.warning("Ölçüm yapabilmek için önce 'Üye Yönetimi' sekmesinden sporcu kaydı oluşturmalısınız.")
 
-    # --- TAB 6: KASA & FİNANS PANENİ ---
-    with tab6:
+    # --- TAB 7: KASA & FİNANS PANENİ ---
+    with tab7:
         st.subheader("📊 Salon Kasa & Finans Durumu")
         gelir, gider, net_kar = kasa_ozet_getir()
         
@@ -323,8 +407,8 @@ else:
         else:
             st.info("Kasada henüz işlem kaydı yok.")
 
-    # --- TAB 7: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ ---
-    with tab7:
+    # --- TAB 8: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ ---
+    with tab8:
         st.subheader("🚨 Riskli & Uykudaki Üye Erken Uyarı Paneli")
         st.write("Aidatı geciken veya salona gelmeyi aksatan üyeleri buradan tek tıkla geri kazanın.")
         
@@ -346,8 +430,8 @@ else:
         else:
             st.success("🎉 Harika! Şu an aidatı geciken veya kayıp riski taşıyan üye bulunmuyor.")
 
-    # --- TAB 8: WHATSAPP / SMS İLETİŞİM ---
-    with tab8:
+    # --- TAB 9: WHATSAPP / SMS İLETİŞİM ---
+    with tab9:
         st.subheader("📱 İletişim Otomasyonu")
         pt_dersler = ozel_dersleri_getir()
         if pt_dersler:
@@ -367,8 +451,8 @@ else:
             with col_pt_btn2:
                 st.markdown(f'<a href="{sms_pt_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS PT Bildirimi At</button></a>', unsafe_allow_html=True)
 
-    # --- TAB 9: AI RİNGMASTER CHAT KOÇ ---
-    with tab9:
+    # --- TAB 10: AI RİNGMASTER CHAT KOÇ ---
+    with tab10:
         st.subheader("🤖 AI RingMaster Canlı Chat Asistanı")
         st.write("7/24 Salon Yönetim, Antrenman ve İkna Koçunuz.")
 
