@@ -141,7 +141,7 @@ try:
         user_query = st.text_input("Asistana bir şey sorun (Örn: Bu ayki en çok gelen üyeler kimler?)")
         if st.button("AI'a Sor"):
             if user_query:
-                st.info(f"Yapay Zeka Yanıtı: '{user_query' konusunu analiz ediyorum, salon verileriniz güvende patron!")
+                st.info(f"Yapay Zeka Yanıtı: '{user_query}' konusunu analiz ediyorum, salon verileriniz güvende patron!")
             else:
                 st.warning("Lütfen bir soru yazın.")
 
