@@ -136,18 +136,16 @@ else:
             st.markdown("### 📊 Aylık Hakediş & Ciro Simülasyonu")
             antrenorler = antrenorleri_getir()
             if antrenorler:
-                sec_ant_str = st.selectbox("Hakedişi Hesaplanacak Antrenör", [f"{a[1]} ({a[3]})" for a inantrenorler])
+                sec_ant_str = st.selectbox("Hakedişi Hesaplanacak Antrenör", [f"{a[1]} ({a[3]})" for a in antrenorler])
                 ant_data = [a for a in antrenorler if f"{a[1]} ({a[3]})" == sec_ant_str][0]
                 
                 a_id, a_ad, a_tel, a_brans, a_m_tip, a_sabit, a_prim_y = ant_data
                 
-                st.write(fmt_info := f"📋 **Model:** {a_m_tip} | Sabit: **{a_sabit:,.0f} TL** | Prim: **%{a_prim_y}**")
+                st.write(f"📋 **Model:** {a_m_tip} | Sabit: **{a_sabit:,.0f} TL** | Prim: **%{a_prim_y}**")
                 
-                # Salon verilerinden örnek ciro/ders hesabı
                 sim_ciro = st.number_input("Bu Ay Antrenörün Ürettiği Toplam PT/Grup Cirosu (TL)", min_value=0.0, value=30000.0, step=1000.0)
                 sim_ders_sayisi = st.number_input("Bu Ay Verilen Toplam Ders Saati", min_value=0, value=40)
                 
-                # Hakediş Hesaplama
                 hesaplanan_prim = sim_ciro * (a_prim_y / 100.0)
                 toplam_net_hakedis = (a_sabit if "Sabit" in a_m_tip else 0.0) + hesaplanan_prim
                 
@@ -707,6 +705,7 @@ else:
                     st.markdown(f'<a href="{sms_pt_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS PT Kalan Ders Uyarısı At</button></a>', unsafe_allow_html=True)
             else:
                 st.info("Kayıtlı özel ders paketi bulunmuyor.")
+
                 
                 
 
