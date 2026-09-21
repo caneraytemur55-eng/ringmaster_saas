@@ -15,9 +15,9 @@ from database import (
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v4.3", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.4", page_icon="🥊", layout="wide")
 
-st.title("🥊 RingMaster SaaS v4.3 - Ayrılmış Modüller Sürümü")
+st.title("🥊 RingMaster SaaS v4.4 - Gelişmiş İletişim Otomasyonu")
 
 # --- 15 GÜNLÜK DENEME SÜRESİ MANTIĞI ---
 kurulum_str = kurulum_tarihi_getir()
@@ -54,7 +54,7 @@ tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.ta
     "📈 Sporcu Ölçüm Takibi",
     "📊 Kasa & Finans Paneli", 
     "🚨 Kayıp Üye (Churn) Uyarısı",
-    "🤖 AI RingMaster Chat Koç"
+    "📱 İletişim Otomasyonu (SMS/WA)"
 ])
 
 KUSAKLAR = [
@@ -75,7 +75,6 @@ else:
     # --- TAB 0: PIN YOKLAMA & MAT KONTENJANI ---
     with tab0:
         st.subheader("⚡ Hızlı PIN/QR Yoklama ve Mat Kontenjan Paneli")
-        
         col_m1, col_m2 = st.columns(2)
         mat_kapasite = col_m1.number_input("🤼‍♂️ Mat / Ring Maksimum Kapasitesi (Kişi)", min_value=5, max_value=100, value=15)
         
@@ -261,7 +260,7 @@ else:
                 c_m3.markdown(f'<a href="{wa_mc_url}" target="_blank"><button style="background-color:#007AFF;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 Maç Motivasyon Bildirimi At</button></a>', unsafe_allow_html=True)
                 st.markdown("---")
         else:
-            st.info("Henüz eklenmiş yaklaşan bir maç bulunmuyor. '🏆 Müsabık & Fight Record' sekmesinden sporcu seçip yeni maç tarihi ekleyebilirsiniz.")
+            st.info("Henüz eklenmiş yaklaşan bir maç bulunmuyor.")
 
     # --- TAB 5: DENEME DERSİ ---
     with tab5:
@@ -467,45 +466,61 @@ else:
         else:
             st.success("🎉 Harika! Şu an aidatı geciken veya kayıp riski taşıyan üye bulunmuyor.")
 
-    # --- TAB 11: AI RİNGMASTER CHAT KOÇ ---
+    # --- TAB 11: İLETİŞİM OTOMASYONU (MÜKEMMELLEŞTİRİLMİŞ!) ---
     with tab11:
-        st.subheader("🤖 AI RingMaster Canlı Chat Asistanı")
-        st.write("7/24 Salon Yönetim, Antrenman ve İkna Koçunuz.")
-
-        if "messages" not in st.session_state:
-            st.session_state.messages = [
-                {"role": "assistant", "content": "Selam Şampiyon! 🥊 Ben RingMaster AI Koçun. Özel ders paketleri, ikna mesajları ve antrenman programları için emrindeyim!"}
-            ]
-
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-
-        if prompt := st.chat_input("RingMaster AI Koç'a sorun..."):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
-
-            p_lower = prompt.lower()
-            if "özel ders" in p_lower or "pt" in p_lower:
-                response = """
-### 🥊 Özel Ders (PT) Satış & İkna Stratejisi
-"Özel ders satarken sporcuya seans değil **DEĞİŞİM** satın. 10 Seanslık pakette 5. derste sporcunun gelişim videosunu çekip kendisine atın ve ekleyin: 'Tekniğin 2 katına çıktı, bir 10 seanslık paketle müsabık seviyeye geçeriz!'"
-                """
-            elif "antrenman" in p_lower or "program" in p_lower:
-                response = """
-### 🥊 Özelleştirilmiş Antrenman Programı
-**1. Isınma (15 Dk):** 3 Raund İp Atlama & Omuz Mobilite  
-**2. Teknik (20 Dk):** 3 Raund Gölge Boksu (Direk-Kanca) + 3 Raund Torba  
-**3. Kondisyon (20 Dk):** 4 Raund Lapa & 50 Şınav / Plank  
-**4. Soğuma (5 Dk):** Statik esnetme.
-                """
+        st.subheader("📱 Akıllı İletişim Otomasyon Merkezi")
+        
+        otomasyon_tipi = st.radio("İletişim Türünü Seçiniz", ["👥 Grup Dersi Aidat Hatırlatma", "🎯 Özel Ders (PT) Kalan Seans Uyarısı"], horizontal=True)
+        
+        st.markdown("---")
+        
+        # 1. GRUP DERSI AİDAT HATIRLATMA
+        if "Grup Dersi" in otomasyon_tipi:
+            st.markdown("### 👥 Grup Dersi Sporcuları Aidat Hatırlatıcısı")
+            uyeler = uyeleri_getir()
+            if uyeler:
+                secilen_grup_str = st.selectbox("Aidat Hatırlatılacak Sporcuyu Seç", [f"{u[1]} ({u[3]} - Aidat: {u[6]} - Tarih: {u[5]})" for u in uyeler])
+                grup_data = [u for u in uyeler if f"{u[1]} ({u[3]} - Aidat: {u[6]} - Tarih: {u[5]})" == secilen_grup_str][0]
+                
+                varsayilan_grup_msg = f"Merhaba {grup_data[1]}, RingMaster Salonu aylık üyelik aidat tarihiniz ({grup_data[5]}) dolmuştur/yaklaşmıştır. Aidat Durumu: {grup_data[6]}. Antrenmanlarınızın aksamaması için ödemenizi tamamlayabilirsiniz. İyi antrenmanlar! 🥊"
+                msg_grup_text = st.text_area("Grup Dersi Mesaj Metni", varsayilan_grup_msg, height=100)
+                
+                enc_grup_msg = urllib.parse.quote(msg_grup_text)
+                wa_grup_url = f"https://wa.me/{grup_data[2]}?text={enc_grup_msg}"
+                sms_grup_url = f"sms:{grup_data[2]}?body={enc_grup_msg}"
+                
+                col_g_btn1, col_g_btn2 = st.columns(2)
+                with col_g_btn1:
+                    st.markdown(f'<a href="{wa_grup_url}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 WhatsApp Aidat Hatırlatması At</button></a>', unsafe_allow_html=True)
+                with col_g_btn2:
+                    st.markdown(f'<a href="{sms_grup_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS Aidat Hatırlatması At</button></a>', unsafe_allow_html=True)
             else:
-                response = f"Anlaşıldı Şampiyon! **'{prompt}'** konusuyla ilgili özel ders ve salon yönetiminde sana destek olmaya hazırım! 🥊"
+                st.info("Kayıtlı grup dersi sporcusu bulunmuyor.")
 
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            with st.chat_message("assistant"):
-                st.markdown(response)
+        # 2. ÖZEL DERS (PT) KALAN SEANS UYARISI
+        else:
+            st.markdown("### 🎯 Özel Ders (PT) Kalan Ders Sayısı Hatırlatıcısı")
+            pt_dersler = ozel_dersleri_getir()
+            if pt_dersler:
+                secilen_pt_str = st.selectbox("Özel Ders Sporcusu Seç", [f"{p[1]} ({p[3]} - Kalan Seans: {p[5]}/{p[4]})" for p in pt_dersler])
+                pt_data = [p for p in pt_dersler if f"{p[1]} ({p[3]} - Kalan Seans: {p[5]}/{p[4]})" == secilen_pt_str][0]
+                
+                varsayilan_pt_msg = f"Merhaba {pt_data[1]}, RingMaster Salonu Özel Ders paketinizden kalan seans sayınız: {pt_data[5]}. Ödeme Durumu: {pt_data[7]}. Bir sonraki antrenman saatinizi planlamak veya paketinizi yenilemek için dönüş yapabilirsiniz! 🥊"
+                msg_pt_text = st.text_area("Özel Ders Mesaj Metni", varsayilan_pt_msg, height=100)
+                
+                enc_pt_msg = urllib.parse.quote(msg_pt_text)
+                wa_pt_url = f"https://wa.me/{pt_data[2]}?text={enc_pt_msg}"
+                sms_pt_url = f"sms:{pt_data[2]}?body={enc_pt_msg}"
+                
+                col_pt_btn1, col_pt_btn2 = st.columns(2)
+                with col_pt_btn1:
+                    st.markdown(f'<a href="{wa_pt_url}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 WhatsApp PT Kalan Ders Uyarısı At</button></a>', unsafe_allow_html=True)
+                with col_pt_btn2:
+                    st.markdown(f'<a href="{sms_pt_url}"><button style="background-color:#007AFF;color:white;width:100%;padding:12px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">💬 SMS PT Kalan Ders Uyarısı At</button></a>', unsafe_allow_html=True)
+            else:
+                st.info("Kayıtlı özel ders paketi bulunmuyor.")
+
+    
  
 
             
