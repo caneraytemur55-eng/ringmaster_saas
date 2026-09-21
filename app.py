@@ -8,15 +8,16 @@ from database import (
     kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir,
     olcum_ekle, olcumleri_getir, uykudaki_uyeleri_getir,
     pin_ile_yoklama_al, ders_sayisi_arttir, kusak_yukselt_sifirla,
-    musabik_ekle_guncelle, musabik_getir, sakatlik_ekle, sakatliklari_getir, sakatlik_kapat
+    musabik_ekle_guncelle, musabik_getir, sakatlik_ekle, sakatliklari_getir, sakatlik_kapat,
+    tum_yaklasan_maclari_getir
 )
 
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v4.2", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.3", page_icon="🥊", layout="wide")
 
-st.title("🥊 RingMaster SaaS v4.2 - Müsabık & Sakatlık Sürümü")
+st.title("🥊 RingMaster SaaS v4.3 - Maç Hazırlık Takvimi Sürümü")
 
 # --- 15 GÜNLÜK DENEME SÜRESİ MANTIĞI ---
 kurulum_str = kurulum_tarihi_getir()
@@ -142,7 +143,7 @@ else:
         else:
             st.info("Kayıtlı sporcu bulunmuyor.")
 
-    # --- TAB 2: MÜSABIK & DÖVÜŞ SİCİLİ & SAKATLIK (YENİ MODÜL!) ---
+    # --- TAB 2: MÜSABIK & DÖVÜŞ SİCİLİ & SAKATLIK ---
     with tab2:
         st.subheader("🏆 Müsabık Sporcu, Sıklet, Dövüş Sicili & Sakatlık Protokolü")
         uyeler = uyeleri_getir()
@@ -153,7 +154,6 @@ else:
 
             col_f1, col_f2 = st.columns(2)
             
-            # --- SOL SÜTUN: MÜSABIK KARTI VE DÖVÜŞ SİCİLİ (FIGHT RECORD) ---
             with col_f1:
                 st.markdown("### 🥊 Dövüş Sicili & Sıklet Profili (Fight Record)")
                 m_data = musabik_getir(f_id)
@@ -191,7 +191,6 @@ else:
                     st.write(f"🎯 **Hedef Sıklet:** {siklet_def} kg | 🥊 **Stil:** {stili_def}")
                     st.write(f"🗓️ **Yaklaşan Maç:** {m_data[7]} | **Organizasyon:** {org_def}")
 
-            # --- SAĞ SÜTUN: SAKATLIK VE SPARRING PROTOKOLÜ ---
             with col_f2:
                 st.markdown("### 🚨 Sakatlık & Sparring/Temas Kısıtlaması")
                 
@@ -223,6 +222,38 @@ else:
                         st.markdown("---")
                 else:
                     st.info("Bu sporcunun aktif bir sakatlık veya sparring kısıtlaması bulunmuyor.")
+
+            # --- YENİ EKLENEN MAÇ HAZIRLIK TAKVİMİ AKIŞI ---
+            st.markdown("---")
+            st.subheader("📅 Salon Genel Maç Hazırlık Takvimi & Geri Sayım")
+            maclar_listesi = tum_yaklasan_maclari_getir()
+            if maclar_listesi:
+                for mc in maclar_listesi:
+                    mc_ad, mc_brans, mc_siklet, mc_tarih_str, mc_org, mc_tel = mc
+                    try:
+                        mc_dt = datetime.datetime.strptime(mc_tarih_str, "%Y-%m-%d").date()
+                        kalan_mac_gunu = (mc_dt - datetime.date.today()).days
+                    except Exception:
+                        kalan_mac_gunu = 0
+
+                    c_m1, c_m2, c_m3 = st.columns([3, 3, 2])
+                    c_m1.write(f"🥊 **{mc_ad}** ({mc_brans} - {mc_siklet} kg)\n\n🏆 Organizasyon: **{mc_org}**")
+                    
+                    if kalan_mac_gunu > 7:
+                        c_m2.info(f"🗓️ Maç Tarihi: **{mc_tarih_str}**\n\n⏳ Kalan Süre: **{kalan_mac_gunu} Gün**")
+                    elif kalan_mac_gunu >= 0:
+                        c_m2.warning(f"🚨 **MAÇA SON {kalan_mac_gunu} GÜN!** (Kilo düşme & Lapa Dönemi)")
+                    else:
+                        c_m2.success(f"✅ Maç Tamamlandı / Tarih Geçti ({mc_tarih_str})")
+                        
+                    msg_mac = f"Selam {mc_ad}! RingMaster Salonu'nda {mc_org} organizasyonundaki maçına son {kalan_mac_gunu} gün kaldı! Sıkletini korumayı ve lapa antrenmanlarını aksatmamayı unutma! 🥊"
+                    enc_mc = urllib.parse.quote(msg_mac)
+                    wa_mc_url = f"https://wa.me/{mc_tel}?text={enc_mc}"
+                    c_m3.markdown(f'<a href="{wa_mc_url}" target="_blank"><button style="background-color:#007AFF;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 Maç Motivasyon Bildirimi At</button></a>', unsafe_allow_html=True)
+                    st.markdown("---")
+            else:
+                st.info("Henüz yaklaşan bir maç kaydı girilmemiş.")
+
         else:
             st.warning("Önce 'Üye Yönetimi' sekmesinden sporcu kaydı yapmalısınız.")
 
