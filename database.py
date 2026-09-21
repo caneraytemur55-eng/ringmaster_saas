@@ -83,7 +83,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS olcumler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             uye_id INTEGER NOT NULL,
-            tarih DATE DEFAULT CURRENT_DATE,
+            tarih DEFAULT CURRENT_DATE,
             kilo REAL,
             yag_orani REAL,
             bel REAL,
@@ -125,7 +125,19 @@ def init_db():
         )
     ''')
 
-    # 9. Sistem Ayarları Tablosu
+    # 9. Ürün & Stok Takip Tablosu (YENİ!)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS urunler (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            urun_adi TEXT NOT NULL,
+            kategori TEXT DEFAULT 'Ekipman',
+            stok_miktari INTEGER DEFAULT 10,
+            alis_fiyati REAL DEFAULT 0.0,
+            satis_fiyati REAL DEFAULT 0.0
+        )
+    ''')
+
+    # 10. Sistem Ayarları Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -149,6 +161,48 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
+# STOK & ÜRÜN POS FONKSİYONLARI (YENİ!)
+def urun_ekle(urun_adi, kategori, stok_miktari, alis_fiyati, satis_fiyati):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO urunler (urun_adi, kategori, stok_miktari, alis_fiyati, satis_fiyati)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (urun_adi, kategori, stok_miktari, alis_fiyati, satis_fiyati))
+    conn.commit()
+    conn.close()
+
+def urunleri_getir():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, urun_adi, kategori, stok_miktari, alis_fiyati, satis_fiyati FROM urunler ORDER BY id DESC")
+        urunler = cursor.fetchall()
+    except Exception:
+        urunler = []
+    conn.close()
+    return urunler
+
+def urun_satisi_yap(urun_id, adet, toplam_tutar, odeme_tipi):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    # Stok Düş
+    cursor.execute("UPDATE urunler SET stok_miktari = MAX(0, stok_miktari - ?) WHERE id = ?", (adet, urun_id))
+    
+    # Kasaya Gelir İşle
+    cursor.execute("SELECT urun_adi FROM urunler WHERE id = ?", (urun_id,))
+    row = cursor.fetchone()
+    u_adi = row[0] if row else "Ekipman"
+    
+    cursor.execute(
+        "INSERT INTO kasa (islem_tipi, kategori, tutar, aciklama) VALUES (?, ?, ?, ?)",
+        ("Gelir", "Ekipman Satışı", toplam_tutar, f"POS Satış: {adet}x {u_adi} ({odeme_tipi})")
+    )
+    
+    conn.commit()
+    conn.close()
+
+# DİĞER FONKSİYONLAR
 def musabik_ekle_guncelle(uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
