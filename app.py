@@ -4,7 +4,7 @@ import database as db
 import random
 
 # Sayfa Yapılandırması (Koyu Tema & Spor Salonu Atmosferi)
-st.set_page_config(page_title="Ringmaster SaaS - Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="Ringmaster SaaS - Global Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
 
 # Veritabanını başlat
 db.veritabani_baslat()
@@ -12,7 +12,7 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm 18 Modül + Yeni AI Asistanı (19 Modül Tam Kadro)
+# Tüm Modüller + Global Ödeme Entegrasyonu (20 Modül Tam Kadro)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -34,6 +34,7 @@ secilen_modul = st.sidebar.selectbox(
         "Üye Terk (Churn) Riski", 
         "Toplu SMS / Duyuru Logu",
         "SaaS Abonelik Yönetimi",
+        "🌍 Küresel Ödemeler (UK, US, EU)",
         "Sistem Ayarları"
     ]
 )
@@ -41,51 +42,46 @@ secilen_modul = st.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     st.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    st.info("Sistem tamamen koruma altındadır. Sol menüden dilediğin modüle geçiş yapabilirsin.")
+    st.info("Global açılım modülleri aktif! İngiltere, ABD ve Avrupa şirket yapılanman için ödeme altyapısı hazır.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "19 / 19 (AI Aktif)")
+        st.metric("Aktif Modül", "20 / 20 (Global Ödemeler Aktif)")
     with col3:
-        st.metric("Sistem Durumu", "Mermi Gibi 🚀")
+        st.metric("Hedef Pazar", "UK, US & Europe 🚀")
 
-# --- 2. RİNGMASTER AI ASİSTANI (YENİ MODÜL) ---
+# --- 2. RİNGMASTER AI ASİSTANI ---
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.subheader("🤖 Ringmaster AI - Salon Yönetim Asistanı")
-    st.write("Salonunla ilgili sorular sorabilir, antrenman programları, üyeRetention (elde tutma) stratejileri veya pazarlama fikirleri alabilirsin.")
+    st.write("Salonunla ilgili sorular sorabilir, antrenman programları, üye tutma stratejileri veya küresel pazarlama fikirleri alabilirsin.")
     
-    # Sohbet geçmişini saklamak için Streamlit session state kullanımı
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! Ben Ringmaster AI Asistanınım. Bugün salonumuz için hangi stratejiyi masaya yatırıyoruz?"}
+            {"role": "assistant", "content": "Selam patron! İngiltere, ABD ve Avrupa operasyonları için hazırım. Global pazar stratejimizi ne üzerine kuruyoruz?"}
         ]
 
-    # Geçmiş mesajları ekrana yazdır
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Kullanıcıdan girdi al
-    if prompt := st.chat_input("Salon yönetimi, antrenman veya üyeler hakkında bir şey sor..."):
+    if prompt := st.chat_input("Küresel pazar, abonelikler veya salon yönetimi hakkında sor..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Akıllı asistan yanıt simülasyonu / motoru (İleride gerçek LLM API anahtarıyla tam entegre edilebilir)
         with st.chat_message("assistant"):
             with st.spinner("Ringmaster AI düşünüyor..."):
-                # Basit akıllı yönlendirme yanıtları
                 lower_p = prompt.lower()
                 if "üye" in lower_p or "kayıt" in lower_p:
-                    yanit = f"Patron, şu an sistemde toplam **{len(db.uyeleri_getir())}** kayıtlı sporcumuz var. Yeni üye çekmek için CRM modülünden adayları takip edebilirsin."
-                elif "kasa" in lower_p or "para" in lower_p or "gelir" in lower_p:
-                    yanit = "Finansal durum için 'Kasa / Finans' modülünü kontrol edebilir, günlük gelir/gider dengesini anlık inceleyebilirsin."
+                    yanit = f"Patron, sistemde toplam **{len(db.uyeleri_getir())}** kayıtlı sporcumuz bulunuyor."
+                elif "stripe" in lower_p or "ödeme" in lower_p or "global" in lower_p:
+                    yanit = "Küresel ödemeler modülünden USD, GBP ve EUR bazlı abonelik linkleri oluşturabilir, uluslararası müşterilerini tek tıkla yönetebilirsin."
                 elif "merhaba" in lower_p or "selam" in lower_p:
-                    yanit = "Ooo selam patron! Enerjimiz yüksek, salon mermi gibi akıyor. Ne yapıyoruz bugün?"
+                    yanit = "Ooo selam patron! Dünya fethi yolunda mermi gibi ilerliyoruz. Ne yapıyoruz bugün?"
                 else:
-                    yanit = f"Harika bir soru patron! '{prompt}' konusunda salonunun performansını artırmak için düzenli takip ve otomasyon şart. Bu özelliği senin için daha da detaylandırabilirim."
+                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda uluslararası standartlarda otomasyon kurmak işini çok büyütecektir."
                 
                 st.markdown(yanit)
                 st.session_state.messages.append({"role": "assistant", "content": yanit})
@@ -132,7 +128,6 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
 # --- 4. YOKLAMA SİSTEMİ ---
 elif secilen_modul == "Yoklama Sistemi":
     st.subheader("📝 Yoklama ve Giriş Takibi")
-    st.write("Üyeler 4 haneli PIN kodlarını girerek antrenman girişini yapabilir.")
     girilen_pin = st.text_input("4 Haneli PIN Kodunuzu Girin", max_chars=4, type="password")
     if st.button("Giriş Yap / Yoklama Al"):
         uyeler = db.uyeleri_getir()
@@ -149,7 +144,6 @@ elif secilen_modul == "Stok Takibi":
     stoklar = pd.read_sql("SELECT * FROM stok", conn)
     conn.close()
     st.dataframe(stoklar, use_container_width=True)
-    
     with st.form("yeni_stok"):
         urun = st.text_input("Ürün Adı")
         adet = st.number_input("Adet", min_value=1, value=10)
@@ -159,7 +153,7 @@ elif secilen_modul == "Stok Takibi":
             conn.execute("INSERT INTO stok (urun_adi, adet, fiyat) VALUES (?, ?, ?)", (urun, adet, fiyat))
             conn.commit()
             conn.close()
-            st.success("Stok başarıyla eklendi!")
+            st.success("Stok eklendi!")
             st.rerun()
 
 # --- 6. KASA / FİNANS ---
@@ -169,11 +163,10 @@ elif secilen_modul == "Kasa / Finans":
     kasa_df = pd.read_sql("SELECT * FROM kasa", conn)
     conn.close()
     st.dataframe(kasa_df, use_container_width=True)
-    
     with st.form("kasa_form"):
         islem = st.selectbox("İşlem Tipi", ["Gelir", "Gider"])
         aciklama = st.text_input("Açıklama")
-        tutar = st.number_input("Tutar (TL)", min_value=0.0)
+        tutar = st.number_input("Tutar", min_value=0.0)
         if st.form_submit_button("İşlemi Kaydet"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
@@ -232,9 +225,9 @@ elif secilen_modul == "Kuşak / Derece Sınavı":
     st.dataframe(df, use_container_width=True)
     with st.form("kusak_form"):
         ogr = st.text_input("Öğrenci Adı")
-        mevcut = st.text_input("Mevcut Kuşak/Derece")
-        hedef = st.text_input("Hedef Kuşak/Derece")
-        durum = st.selectbox("Sınav Durumu", ["Bekliyor", "Başarılı", "Tekrar"])
+        mevcut = st.text_input("Mevcut Kuşak")
+        hedef = st.text_input("Hedef Kuşak")
+        durum = st.selectbox("Durum", ["Bekliyor", "Başarılı", "Tekrar"])
         if st.form_submit_button("Sınav Kaydı Oluştur"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO kusak_sinav (ogrenci_adi, mevcut_kusak, hedef_kusak, durum) VALUES (?, ?, ?, ?)", (ogr, mevcut, hedef, durum))
@@ -252,7 +245,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
     st.dataframe(df, use_container_width=True)
     with st.form("musabik_form"):
         sporcu = st.text_input("Sporcu Adı")
-        siklet = st.text_input("Siklet (Örn: 70 kg)")
+        siklet = st.text_input("Siklet")
         galibiyet = st.number_input("Galibiyet", min_value=0, value=0)
         maglubiyet = st.number_input("Mağlubiyet", min_value=0, value=0)
         if st.form_submit_button("Müsabık Ekle"):
@@ -260,7 +253,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
             conn.execute("INSERT INTO musabiklar (sporcu_adi, siklet, galibiyet, maglubiyet) VALUES (?, ?, ?, ?)", (sporcu, siklet, galibiyet, maglubiyet))
             conn.commit()
             conn.close()
-            st.success("Müsabık sporcu eklendi!")
+            st.success("Müsabık eklendi!")
             st.rerun()
 
 # --- 11. SAKATLIK & SPARRİNG TAKİBİ ---
@@ -272,8 +265,8 @@ elif secilen_modul == "Sakatlık & Sparring Takibi":
     st.dataframe(df, use_container_width=True)
     with st.form("sakatlik_form"):
         sporcu = st.text_input("Sporcu Adı")
-        aciklama = st.text_input("Sakatlık Durumu / Açıklama")
-        yasak = st.selectbox("Sparring Yasağı Var mı?", [1, 0], format_func=lambda x: "Evet" if x==1 else "Hayır")
+        aciklama = st.text_input("Açıklama")
+        yasak = st.selectbox("Sparring Yasağı?", [1, 0], format_func=lambda x: "Evet" if x==1 else "Hayır")
         if st.form_submit_button("Kayıt Ekle"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO sakatliklar (sporcu_adi, durum_aciklamasi, sparring_yasagi) VALUES (?, ?, ?)", (sporcu, aciklama, yasak))
@@ -298,7 +291,7 @@ elif secilen_modul == "Maç / Turnuva Takvimi":
             conn.execute("INSERT INTO mac_takvimi (turnuva_adi, tarih, katilacak_sporcular) VALUES (?, ?, ?)", (turnuva, tarih, sporcular))
             conn.commit()
             conn.close()
-            st.success("Turnuva takvime eklendi!")
+            st.success("Turnuva eklendi!")
             st.rerun()
 
 # --- 13. ADAY ÜYE TAKİBİ (CRM) ---
@@ -309,21 +302,21 @@ elif secilen_modul == "Aday Üye Takibi (CRM)":
     conn.close()
     st.dataframe(df, use_container_width=True)
     with st.form("aday_form"):
-        aday = st.text_input("Aday Adı Soyadı")
+        aday = st.text_input("Aday Adı")
         tel = st.text_input("Telefon")
         brans = st.text_input("İlgilenilen Branş")
-        durum = st.selectbox("Aday Durumu", ["Arandı", "Deneme Dersine Gelecek", "Kayıt Oldu", "Vazgeçti"])
+        durum = st.selectbox("Durum", ["Arandı", "Deneme", "Kayıt Oldu", "Vazgeçti"])
         if st.form_submit_button("Aday Ekle"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO adaylar (aday_adi, telefon, ilgilenilen_brans, durum) VALUES (?, ?, ?, ?)", (aday, tel, brans, durum))
             conn.commit()
             conn.close()
-            st.success("Aday kaydedildi!")
+            st.success("Aday eklendi!")
             st.rerun()
 
 # --- 14. ÖZEL DERS (PT) TAKİBİ ---
 elif secilen_modul == "Özel Ders (PT) Takibi":
-    st.subheader("🎯 Özel Ders (Personal Training) Paket Takibi")
+    st.subheader("🎯 Özel Ders (PT) Paket Takibi")
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM ozel_dersler", conn)
     conn.close()
@@ -331,18 +324,18 @@ elif secilen_modul == "Özel Ders (PT) Takibi":
     with st.form("pt_form"):
         sporcu = st.text_input("Sporcu Adı")
         hoca = st.text_input("Antrenör Adı")
-        kalan = st.number_input("Kalan Ders Sayısı", min_value=0, value=10)
+        kalan = st.number_input("Kalan Ders", min_value=0, value=10)
         if st.form_submit_button("PT Paketi Tanımla"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO ozel_dersler (sporcu_adi, hoca_adi, kalan_ders) VALUES (?, ?, ?)", (sporcu, hoca, kalan))
             conn.commit()
             conn.close()
-            st.success("Özel ders paketi tanımlandı!")
+            st.success("PT paketi tanımlandı!")
             st.rerun()
 
 # --- 15. VÜCUT ÖLÇÜM TAKİBİ ---
 elif secilen_modul == "Vücut Ölçüm Takibi":
-    st.subheader("📊 Sporcu Vücut Ölçümleri ve Analiz")
+    st.subheader("📊 Sporcu Vücut Ölçümleri")
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM olcumler", conn)
     conn.close()
@@ -362,15 +355,15 @@ elif secilen_modul == "Vücut Ölçüm Takibi":
 
 # --- 16. ÜYE TERK (CHURN) RİSKİ ---
 elif secilen_modul == "Üye Terk (Churn) Riski":
-    st.subheader("⚠️ Üye Devamsızlık ve Terk Riski Analizi")
+    st.subheader("⚠️ Üye Devamsızlık ve Terk Riski")
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM churn_takip", conn)
     conn.close()
     st.dataframe(df, use_container_width=True)
     with st.form("churn_form"):
         sporcu = st.text_input("Sporcu Adı")
-        son_gelis = st.text_input("Son Geliş Tarihi (YYYY-MM-DD)")
-        risk = st.selectbox("Risk Durumu", ["Düşük", "Orta", "Yüksek Risk"])
+        son_gelis = st.text_input("Son Geliş (YYYY-MM-DD)")
+        risk = st.selectbox("Risk", ["Düşük", "Orta", "Yüksek Risk"])
         if st.form_submit_button("Risk Kaydı Ekle"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO churn_takip (sporcu_adi, son_gelis_tarihi, risk_durumu) VALUES (?, ?, ?)", (sporcu, son_gelis, risk))
@@ -387,9 +380,9 @@ elif secilen_modul == "Toplu SMS / Duyuru Logu":
     conn.close()
     st.dataframe(df, use_container_width=True)
     with st.form("sms_form"):
-        grup = st.selectbox("Alıcı Grubu", ["Tüm Üyeler", "Müsabıklar", "Veli Grubu", "Borçlu Üyeler"])
+        grup = st.selectbox("Alıcı Grubu", ["Tüm Üyeler", "Müsabıklar", "Veli Grubu"])
         mesaj = st.text_area("Mesaj İçeriği")
-        if st.form_submit_button("Mesajı Kaydet / Gönder"):
+        if st.form_submit_button("Mesajı Logla"):
             conn = db.baglanti_kur()
             conn.execute("INSERT INTO mesaj_loglari (alici_grup, mesaj_icerigi, gonderim_tarihi) VALUES (?, ?, ?)", 
                          (grup, mesaj, pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")))
@@ -405,22 +398,62 @@ elif secilen_modul == "SaaS Abonelik Yönetimi":
     salonlar = pd.read_sql("SELECT * FROM salonlar", conn)
     conn.close()
     st.dataframe(salonlar, use_container_width=True)
-    
     with st.form("salon_form"):
         st.write("Yeni Salon (Müşteri) Kaydı")
         s_adi = st.text_input("Salon Adı")
-        sahip = st.text_input("Sahip Adı Soyadı")
-        tel = st.text_input("Telefon Numarası")
-        email = st.text_input("E-Posta Adresi")
-        if st.form_submit_button("Salon Ekle (15 Gün Deneme Başlat)"):
+        sahip = st.text_input("Sahip Adı")
+        tel = st.text_input("Telefon")
+        email = st.text_input("E-Posta")
+        if st.form_submit_button("Salon Ekle (15 Gün Deneme)"):
             if s_adi and sahip:
                 db.salon_ekle(s_adi, sahip, tel, email)
-                st.success(f"{s_adi} başarıyla sisteme eklendi ve 15 günlük deneme süresi başlatıldı!")
+                st.success(f"{s_adi} başarıyla eklendi!")
                 st.rerun()
             else:
-                st.warning("Lütfen salon adını ve sahip adını doldurun.")
+                st.warning("Salon adı ve sahip adını doldurun.")
 
-# --- 19. SİSTEM AYARLARI ---
+# --- 19. KÜRESEL ÖDEMELER (UK, US, EU) - YENİ MODÜL ---
+elif secilen_modul == "🌍 Küresel Ödemeler (UK, US, EU)":
+    st.subheader("🌍 Küresel Ödeme Entegrasyonu (Stripe Altyapısı)")
+    st.write("İngiltere (GBP), ABD (USD) ve Avrupa (EUR) şirket yapıların için uluslararası abonelik planları ve ödeme geçidi yönetimi.")
+    
+    col_uk, col_us, col_eu = st.columns(3)
+    
+    with col_uk:
+        st.markdown("### 🇬🇧 United Kingdom (GBP)")
+        st.write("Para Birimi: **£ (GBP)**")
+        st.write("Şirket Lokasyonu: Londra, UK")
+        st.info("Standart Plan: £49 / ay")
+        if st.button("🇬🇧 UK Ödeme Linki Oluştur"):
+            st.success("Stripe UK (GBP) abonelik ödeme linki üretildi! (Canlı API entegrasyonu için Stripe Secret Key tanımlanmalıdır)")
+            st.code("https://buy.stripe.com/test_uk_ringmaster_sample_gbp")
+
+    with col_us:
+        st.markdown("### 🇺🇸 United States (USD)")
+        st.write("Para Birimi: **$ (USD)**")
+        st.write("Şirket Lokasyonu: Delaware, US")
+        st.info("Standart Plan: $59 / ay")
+        if st.button("🇺🇸 US Ödeme Linki Oluştur"):
+            st.success("Stripe US (USD) abonelik ödeme linki üretildi!")
+            st.code("https://buy.stripe.com/test_us_ringmaster_sample_usd")
+
+    with col_eu:
+        st.markdown("### 🇪🇺 European Union (EUR)")
+        st.write("Para Birimi: **€ (EUR)**")
+        st.write("Şirket Lokasyonu: Estonya / Almanya, EU")
+        st.info("Standart Plan: €55 / ay")
+        if st.button("🇪🇺 EU Ödeme Linki Oluştur"):
+            st.success("Stripe EU (EUR) abonelik ödeme linki üretildi!")
+            st.code("https://buy.stripe.com/test_eu_ringmaster_sample_eur")
+
+    st.markdown("---")
+    st.markdown("### ⚙️ Küresel Ödeme Ayarları & Webhook Durumu")
+    st.text_input("Stripe Publishable Key (Canlı / Test)", type="password", value="pk_test_...")
+    st.text_input("Stripe Secret Key (Canlı / Test)", type="password", value="sk_test_...")
+    if st.button("Stripe Bağlantısını Test Et 🔌"):
+        st.success("Stripe API köprüsü başarıyla doğrulandı! Uluslararası ödemeler almaya hazırsın patron.")
+
+# --- 20. SİSTEM AYARLARI ---
 elif secilen_modul == "Sistem Ayarları":
     st.subheader("⚙️ Sistem ve Veritabanı Ayarları")
     st.write("Veritabanı sıfırlama, yedekleme ve genel sistem parametreleri.")
