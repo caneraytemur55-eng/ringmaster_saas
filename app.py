@@ -13,16 +13,17 @@ st.set_page_config(
 )
 
 try:
-    st.title("🥊 RingMaster SaaS - 15 Günlük Deneme & Otomatik Abonelik Modülü")
-    st.success("Tüm modüller ve 999 ₺ otomatik yükseltim altyapısı aktif, patron!")
+    st.title("🥊 RingMaster SaaS - B2B Salon Abonelik & Yönetim Paneli")
+    st.success("SaaS altyapısı, 15 günlük salon deneme süresi ve 999 ₺ otomatik yükseltim modülü aktif, patron!")
 
     # Sol Yan Menü (Sidebar)
-    st.sidebar.title("🚀 Salon Modülleri")
+    st.sidebar.title("🚀 SaaS & Salon Modülleri")
     
     secilen_modul = st.sidebar.radio(
         "Gitmek İstediğiniz Modül:",
         [
-            "👤 Üye Yönetimi & Deneme Takibi",
+            "🏢 SaaS Salonlar & 15 Gün Deneme Takibi",
+            "👤 Salon Üyeleri Yönetimi",
             "⚡ PIN Yoklama & Mat Kontenjanı",
             "🌐 QR & Üye Self-Servis Portal",
             "💵 Antrenör Hakediş & Prim",
@@ -44,48 +45,76 @@ try:
 
     st.divider()
 
-    # --- 1. ÜYE YÖNETİMİ & 15 GÜNLÜK DENEME ---
-    if "Üye Yönetimi" in secilen_modul:
-        st.subheader("👤 Üye Yönetimi & 15 Günlük Deneme Süresi Takibi")
+    # --- 0. SAAS SALONLAR & 15 GÜN DENEME TAKİBİ ---
+    if "SaaS Salonlar" in secilen_modul:
+        st.subheader("🏢 SaaS Müşterileri (Salon Sahipleri) & Deneme Süresi Takibi")
+        st.write("Sisteminize yeni üye olan spor salonlarını kaydedin. Her yeni salon otomatik **15 günlük ücretsiz deneme** ile başlar.")
+        
+        with st.form("salon_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                salon_adi = st.text_input("Spor Salonu Adı (Örn: Titan Fight Club)")
+                sahip_adi = st.text_input("Salon Sahibi Adı Soyadı")
+            with c2:
+                tel = st.text_input("İletişim Telefonu")
+                email = st.text_input("E-Posta Adresi")
+            
+            if st.form_submit_button("Salonu Kaydet (15 Gün Ücretsiz SaaS Denemesi Başlat) 🚀"):
+                if salon_adi and sahip_adi:
+                    db.salon_ekle(salon_adi, sahip_adi, tel, email)
+                    st.success(f"Tebrikler patron! {salon_adi} sisteme eklendi ve sahibine 15 günlük ücretsiz SaaS denemesi tanımlandı.")
+                else:
+                    st.warning("Lütfen salon adını ve sahip adını doldurun.")
+        
+        st.markdown("### 📋 Sistemdeki Tüm Salonlar ve SaaS Abonelik Durumları")
+        salonlar = db.salonlari_getir()
+        if salonlar:
+            df_salonlar = pd.DataFrame(salonlar, columns=["ID", "Salon Adı", "Sahip", "Telefon", "E-Posta", "Kayıt Tarihi", "Deneme Bitiş", "Abonelik Durumu"])
+            st.dataframe(df_salonlar, use_container_width=True)
+            
+            st.divider()
+            st.markdown("### ⚡ Otomatik Paket Yükseltimi (999 ₺ / Ay SaaS Geliri)")
+            st.write("Deneme süresi dolan veya PRO sürüme geçmek isteyen salonu **999 ₺ / Ay** lık aylık aboneliğe yükseltin:")
+            
+            with st.form("saas_upgrade_form"):
+                secilen_salon = st.selectbox("Salon Seçin", df_salonlar["Salon Adı"].tolist())
+                if st.form_submit_button("999 ₺ Aylık PRO Pakete Yükselt ve Kasaya İşle 💳"):
+                    conn = db.baglanti_kur()
+                    cur = conn.cursor()
+                    cur.execute("UPDATE salonlar SET abonelik_durumu = ? WHERE salon_adi = ?", ("PRO Abonelik (999 ₺/Ay)", secilen_salon))
+                    cur.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
+                                ("Gelir", f"SaaS Abonelik Geliri: {secilen_salon} (999 ₺)", 999.0, datetime.now().strftime("%Y-%m-%d %H:%M")))
+                    conn.commit()
+                    conn.close()
+                    st.success(f"Harika! {secilen_salon} salonunun SaaS aboneliği 999 ₺/Ay PRO plana yükseltildi ve tutar kasaya gelir olarak işlendi.")
+        else:
+            st.info("Henüz kayıtlı SaaS salonu bulunmuyor.")
+
+    # --- 1. SALON ÜYELERİ YÖNETİMİ ---
+    elif "Salon Üyeleri Yönetimi" in secilen_modul:
+        st.subheader("👤 Salon Üyeleri Yönetimi")
         
         with st.form("uye_form"):
             c1, c2 = st.columns(2)
             with c1:
-                ad = st.text_input("Ad Soyad")
+                ad = st.text_input("Sporcu Ad Soyad")
                 tel = st.text_input("Telefon")
-                pin = st.text_input("4 Haneli PIN", max_chars=4, type="password")
             with c2:
                 brans = st.selectbox("Branş", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
-                paket = st.selectbox("Başlangıç Paketi", ["Standart (Deneme)", "VIP (Deneme)"])
+                pin = st.text_input("4 Haneli PIN", max_chars=4, type="password")
             
-            if st.form_submit_button("Üyeyi Kaydet (15 Gün Ücretsiz Başlat) 🚀"):
+            if st.form_submit_button("Sporcuyu Kaydet 🚀"):
                 if ad and len(pin) == 4:
-                    db.uye_ekle(ad, tel, brans, paket, pin)
-                    st.success(f"Tebrikler patron! {ad} sisteme eklendi ve 15 günlük ücretsiz deneme süresi başlatıldı.")
+                    db.uye_ekle(ad, tel, brans, pin)
+                    st.success(f"{ad} salona başarıyla kaydedildi.")
                 else:
                     st.warning("Ad soyad doldurun ve 4 haneli PIN girin.")
         
-        st.markdown("### 📋 Salon Üyeleri ve Abonelik Durumları")
+        st.markdown("### 📋 Kayıtlı Sporcular")
         uyeler = db.uyeleri_getir()
         if uyeler:
-            df_uyeler = pd.DataFrame(uyeler, columns=["ID", "Ad Soyad", "Telefon", "Branş", "Paket", "PIN", "Kayıt Tarihi", "Deneme Bitiş", "Abonelik Durumu"])
+            df_uyeler = pd.DataFrame(uyeler, columns=["ID", "Ad Soyad", "Telefon", "Branş", "PIN", "Kayıt Tarihi"])
             st.dataframe(df_uyeler, use_container_width=True)
-            
-            st.divider()
-            st.markdown("### ⚡ Otomatik Paket Yükseltimi (999 ₺ / Ay)")
-            st.write("Deneme süresi dolan veya aktif üyeliğe geçmek isteyen üyeyi **999 ₺ / Ay** lık standart PRO üyeliğe yükseltin:")
-            
-            with st.form("upgrade_form"):
-                secilen_uye_ad = st.selectbox("Üye Seçin", df_uyeler["Ad Soyad"].tolist())
-                if st.form_submit_button("999 ₺ Aylık Pakete Yükselt ve Kasaya İşle 💳"):
-                    conn = db.baglanti_kur()
-                    cur = conn.cursor()
-                    cur.execute("UPDATE uyeler SET abonelik_durumu = ? WHERE ad_soyad = ?", ("Aktif PRO (999 ₺/Ay)", secilen_uye_ad))
-                    cur.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
-                                ("Gelir", f"Abonelik Yükseltim / Aidat: {secilen_uye_ad} (PRO 999 ₺)", 999.0, datetime.now().strftime("%Y-%m-%d %H:%M")))
-                    conn.commit()
-                    conn.close()
-                    st.success(f"Harika! {secilen_uye_ad} adlı sporcunun paketi 999 ₺/Ay PRO plana yükseltildi ve tutar kasaya gelir olarak işlendi.")
         else:
             st.info("Henüz kayıtlı üye bulunmuyor.")
 
@@ -97,13 +126,13 @@ try:
             if len(girilen_pin) == 4:
                 conn = db.baglanti_kur()
                 cur = conn.cursor()
-                cur.execute("SELECT ad_soyad, brans, abonelik_durumu FROM uyeler WHERE pin_kodu = ?", (girilen_pin,))
+                cur.execute("SELECT ad_soyad, brans FROM uyeler WHERE pin_kodu = ?", (girilen_pin,))
                 uye = cur.fetchone()
                 if uye:
                     cur.execute("INSERT INTO yoklamalar (pin_kodu, ad_soyad, brans, giris_zamani) VALUES (?, ?, ?, ?)", 
                                 (girilen_pin, uye[0], uye[1], datetime.now().strftime("%Y-%m-%d %H:%M")))
                     conn.commit()
-                    st.success(f"Hoş geldin {uye[0]}! ({uye[1]}) - Durum: {uye[2]}. Yoklaman alındı.")
+                    st.success(f"Hoş geldin {uye[0]}! ({uye[1]}) - Yoklaman alındı.")
                 else:
                     st.error("Geçersiz PIN!")
                 conn.close()
@@ -348,7 +377,7 @@ try:
         st.subheader("📱 İletişim Otomasyonu (SMS / WhatsApp)")
         with st.form("sms_form"):
             grup = st.selectbox("Hedef kitle", ["Tüm Üyeler", "Deneme Süresindekiler", "Müsabık Takımı"])
-            mesaj = st.text_area("Mesaj Metni", "Değerli üyemiz, 15 günlük deneme süreniz boyunca matımızda başarılar dileriz! 🥊")
+            mesaj = st.text_area("Mesaj Metni", "Değerli üyemiz, matımızda başarılar dileriz! 🥊")
             if st.form_submit_button("Toplu Mesaj Gönder"):
                 conn = db.baglanti_kur()
                 conn.cursor().execute("INSERT INTO mesaj_loglari (alici_grup, mesaj_icerigi, gonderim_tarihi) VALUES (?, ?, ?)", 
@@ -362,7 +391,7 @@ try:
         st.subheader("🤖 RingMaster AI Asistan & Salon Koçu")
         user_query = st.text_input("Asistana danışın:")
         if st.button("AI Analizini Başlat 🚀"):
-            st.info("🤖 **AI Analizi:** Deneme süreleri ve dönüşüm oranları optimize ediliyor patron, her şey yolunda!")
+            st.info("🤖 **AI Analizi:** SaaS salon büyüme metrikleri ve MRR optimize ediliyor patron, her şey yolunda!")
 
 except Exception as e:
     st.error(f"Bir hata oluştu, Caner Baba: {e}")
