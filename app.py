@@ -1,7 +1,18 @@
-# Ana menü yapısı genelde böyledir:
+import streamlit as st
+import pandas as pd
+import database as db
+
+# --- 1. MENÜ TANIMLAMASI (ÖNCE BU OLMALI) ---
+st.sidebar.title("🥊 Ringmaster SaaS")
+secilen_modul = st.sidebar.selectbox(
+    "Modül Seçin", 
+    ["Ana Sayfa", "Salon Üyeleri Yönetimi", "Yoklama Sistemi", "Stok Takibi", "Kasa / Finans"] # (Diğer modüllerin de burada olmalı)
+)
+
+# --- 2. MODÜL YÖNLENDİRMELERİ (BURADAN SONRA GELMELİ) ---
 if secilen_modul == "Ana Sayfa":
-    # Ana sayfa kodları...
-    pass
+    st.subheader("Ana Sayfa / Dashboard")
+    st.info("Hoş geldin patron, sistem aktif!")
 
 elif "Salon Üyeleri Yönetimi" in secilen_modul:
     st.subheader("👤 Salon Üyeleri Yönetimi")
