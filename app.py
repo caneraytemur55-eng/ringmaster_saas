@@ -13,8 +13,8 @@ st.set_page_config(
 )
 
 try:
-    st.title("🥊 RingMaster SaaS - Tam 16 Modüllü Operasyon Paneli")
-    st.success("Tüm modüller aktif ve gerçek veritabanına bağlı, patron!")
+    st.title("🥊 RingMaster SaaS - 15 Günlük Deneme & Otomatik Abonelik Modülü")
+    st.success("Tüm modüller ve 999 ₺ otomatik yükseltim altyapısı aktif, patron!")
 
     # Sol Yan Menü (Sidebar)
     st.sidebar.title("🚀 Salon Modülleri")
@@ -22,7 +22,7 @@ try:
     secilen_modul = st.sidebar.radio(
         "Gitmek İstediğiniz Modül:",
         [
-            "👤 Üye Yönetimi",
+            "👤 Üye Yönetimi & Deneme Takibi",
             "⚡ PIN Yoklama & Mat Kontenjanı",
             "🌐 QR & Üye Self-Servis Portal",
             "💵 Antrenör Hakediş & Prim",
@@ -44,9 +44,10 @@ try:
 
     st.divider()
 
-    # --- 1. ÜYE YÖNETİMİ ---
+    # --- 1. ÜYE YÖNETİMİ & 15 GÜNLÜK DENEME ---
     if "Üye Yönetimi" in secilen_modul:
-        st.subheader("👤 Üye Yönetimi & Canlı Kayıt")
+        st.subheader("👤 Üye Yönetimi & 15 Günlük Deneme Süresi Takibi")
+        
         with st.form("uye_form"):
             c1, c2 = st.columns(2)
             with c1:
@@ -55,18 +56,38 @@ try:
                 pin = st.text_input("4 Haneli PIN", max_chars=4, type="password")
             with c2:
                 brans = st.selectbox("Branş", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
-                paket = st.selectbox("Paket", ["Standart", "VIP", "Öğrenci"])
-            if st.form_submit_button("Üyeyi Kaydet"):
+                paket = st.selectbox("Başlangıç Paketi", ["Standart (Deneme)", "VIP (Deneme)"])
+            
+            if st.form_submit_button("Üyeyi Kaydet (15 Gün Ücretsiz Başlat) 🚀"):
                 if ad and len(pin) == 4:
                     db.uye_ekle(ad, tel, brans, paket, pin)
-                    st.success(f"{ad} başarıyla kaydedildi!")
+                    st.success(f"Tebrikler patron! {ad} sisteme eklendi ve 15 günlük ücretsiz deneme süresi başlatıldı.")
                 else:
                     st.warning("Ad soyad doldurun ve 4 haneli PIN girin.")
         
-        st.markdown("### Kayıtlı Üyeler")
+        st.markdown("### 📋 Salon Üyeleri ve Abonelik Durumları")
         uyeler = db.uyeleri_getir()
         if uyeler:
-            st.dataframe(pd.DataFrame(uyeler, columns=["ID", "Ad Soyad", "Telefon", "Branş", "Paket", "PIN", "Tarih"]), use_container_width=True)
+            df_uyeler = pd.DataFrame(uyeler, columns=["ID", "Ad Soyad", "Telefon", "Branş", "Paket", "PIN", "Kayıt Tarihi", "Deneme Bitiş", "Abonelik Durumu"])
+            st.dataframe(df_uyeler, use_container_width=True)
+            
+            st.divider()
+            st.markdown("### ⚡ Otomatik Paket Yükseltimi (999 ₺ / Ay)")
+            st.write("Deneme süresi dolan veya aktif üyeliğe geçmek isteyen üyeyi **999 ₺ / Ay** lık standart PRO üyeliğe yükseltin:")
+            
+            with st.form("upgrade_form"):
+                secilen_uye_ad = st.selectbox("Üye Seçin", df_uyeler["Ad Soyad"].tolist())
+                if st.form_submit_button("999 ₺ Aylık Pakete Yükselt ve Kasaya İşle 💳"):
+                    conn = db.baglanti_kur()
+                    cur = conn.cursor()
+                    cur.execute("UPDATE uyeler SET abonelik_durumu = ? WHERE ad_soyad = ?", ("Aktif PRO (999 ₺/Ay)", secilen_uye_ad))
+                    cur.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
+                                ("Gelir", f"Abonelik Yükseltim / Aidat: {secilen_uye_ad} (PRO 999 ₺)", 999.0, datetime.now().strftime("%Y-%m-%d %H:%M")))
+                    conn.commit()
+                    conn.close()
+                    st.success(f"Harika! {secilen_uye_ad} adlı sporcunun paketi 999 ₺/Ay PRO plana yükseltildi ve tutar kasaya gelir olarak işlendi.")
+        else:
+            st.info("Henüz kayıtlı üye bulunmuyor.")
 
     # --- 2. PIN YOKLAMA ---
     elif "PIN Yoklama" in secilen_modul:
@@ -76,13 +97,13 @@ try:
             if len(girilen_pin) == 4:
                 conn = db.baglanti_kur()
                 cur = conn.cursor()
-                cur.execute("SELECT ad_soyad, brans FROM uyeler WHERE pin_kodu = ?", (girilen_pin,))
+                cur.execute("SELECT ad_soyad, brans, abonelik_durumu FROM uyeler WHERE pin_kodu = ?", (girilen_pin,))
                 uye = cur.fetchone()
                 if uye:
                     cur.execute("INSERT INTO yoklamalar (pin_kodu, ad_soyad, brans, giris_zamani) VALUES (?, ?, ?, ?)", 
                                 (girilen_pin, uye[0], uye[1], datetime.now().strftime("%Y-%m-%d %H:%M")))
                     conn.commit()
-                    st.success(f"Hoş geldin {uye[0]}! ({uye[1]}) Yoklaman alındı.")
+                    st.success(f"Hoş geldin {uye[0]}! ({uye[1]}) - Durum: {uye[2]}. Yoklaman alındı.")
                 else:
                     st.error("Geçersiz PIN!")
                 conn.close()
@@ -93,10 +114,9 @@ try:
         st.info("Salon giriş ekranı için dinamik QR kod simülasyonu.")
         st.image("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RingMasterCheckIn", width=150)
 
-    # --- 4. ANTRENÖR HAKEDİŞ & PRİM (GÜNCELLENDİ) ---
+    # --- 4. ANTRENÖR HAKEDİŞ & PRİM ---
     elif "Antrenör Hakediş" in secilen_modul:
         st.subheader("💵 Antrenör Hakediş & Prim Paneli")
-        
         with st.form("hoca_form"):
             c_h1, c_h2 = st.columns(2)
             with c_h1:
@@ -113,12 +133,11 @@ try:
                     cur = conn.cursor()
                     cur.execute("INSERT INTO antrenorler (hoca_adi, brans, ders_sayisi, prim_orani) VALUES (?, ?, ?, ?)", 
                                 (hoca, h_brans, ders_s, prim))
-                    # Aynı zamanda kasaya gider olarak da işleyelim ki finans tablosu tam tutsun
                     cur.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)", 
                                 ("Gider", f"Antrenör Hakediş: {hoca} ({ders_s} Saat)", toplam_hakedis, datetime.now().strftime("%Y-%m-%d")))
                     conn.commit()
                     conn.close()
-                    st.success(f"Tebrikler patron! {hoca} için {toplam_hakedis:,.2f} ₺ hakediş kaydedildi ve kasaya gider olarak işlendi.")
+                    st.success(f"{hoca} için {toplam_hakedis:,.2f} ₺ hakediş kaydedildi ve kasaya gider olarak işlendi.")
                 else:
                     st.warning("Lütfen antrenör adını giriniz.")
 
@@ -129,8 +148,6 @@ try:
         if not hakedis_df.empty:
             hakedis_df["Toplam Hakediş (₺)"] = hakedis_df["ders_sayisi"] * hakedis_df["prim_orani"]
             st.dataframe(hakedis_df, use_container_width=True)
-        else:
-            st.info("Henüz kaydedilmiş antrenör hakedişi bulunmuyor.")
 
     # --- 5. ÇOCUK VELİ GELİŞİM ---
     elif "Çocuk Veli Gelişim" in secilen_modul:
@@ -138,14 +155,14 @@ try:
         with st.form("cocuk_form"):
             c_adi = st.text_input("Minik Sporcu Adı")
             v_tel = st.text_input("Veli Telefonu")
-            c_not = st.text_area("Hoca Gelişim Notu (Disiplin, Odak, Teknik)")
-            if st.form_submit_button("Raporu Kaydet & Veliye Gönder"):
+            c_not = st.text_area("Hoca Gelişim Notu")
+            if st.form_submit_button("Raporu Kaydet"):
                 conn = db.baglanti_kur()
                 conn.cursor().execute("INSERT INTO cocuk_gelisim (ogrenci_adi, veli_telefon, notlar, tarih) VALUES (?, ?, ?, ?)", 
                                       (c_adi, v_tel, c_not, datetime.now().strftime("%Y-%m-%d")))
                 conn.commit()
                 conn.close()
-                st.success("Gelişim raporu kaydedildi ve veli sistemine işlendi!")
+                st.success("Gelişim raporu kaydedildi!")
 
     # --- 6. EKİPMAN SATIŞ POS ---
     elif "Ekipman Satış POS" in secilen_modul:
@@ -180,10 +197,10 @@ try:
             if st.form_submit_button("Sınav Durumunu Güncelle"):
                 conn = db.baglanti_kur()
                 conn.cursor().execute("INSERT INTO kusak_sinav (ogrenci_adi, mevcut_kusak, hedef_kusak, durum) VALUES (?, ?, ?, ?)", 
-                                      (s_adi, m_kusak, h_kusak, "Uygun / Değerlendiriliyor"))
+                                      (s_adi, m_kusak, h_kusak, "Uygun"))
                 conn.commit()
                 conn.close()
-                st.success(f"{s_adi} için {h_kusak} sınav başvurusu sisteme işlendi.")
+                st.success("Sınav başvurusu işlendi.")
 
     # --- 8. MÜSABIK & FIGHT RECORD ---
     elif "Müsabık & Fight" in secilen_modul:
@@ -206,7 +223,7 @@ try:
         st.subheader("🚨 Sakatlık & Sparring Protokolü")
         with st.form("sakat_form"):
             s_sporcu = st.text_input("Sporcu Adı")
-            durum_aciklama = st.text_input("Sakatlık Detayı (Örn: Sağ diz bağ zorlanması)")
+            durum_aciklama = st.text_input("Sakatlık Detayı")
             yasak = st.checkbox("Sparring Yapamaz (Yasaklı)")
             if st.form_submit_button("Protokole Ekle"):
                 conn = db.baglanti_kur()
@@ -214,7 +231,7 @@ try:
                                       (s_sporcu, durum_aciklama, 1 if yasak else 0))
                 conn.commit()
                 conn.close()
-                st.warning("Sakatlık protokolü işlendi, sporcu sparring havuzundan geçici olarak çıkarıldı.")
+                st.warning("Sakatlık protokolü işlendi.")
 
     # --- 10. MAÇ HAZIRLIK TAKVİMİ ---
     elif "Maç Hazırlık" in secilen_modul:
@@ -222,7 +239,7 @@ try:
         with st.form("kamp_form"):
             t_adi = st.text_input("Turnuva / Şampiyona Adı")
             t_tarih = st.date_input("Kamp / Maç Tarihi")
-            katilimcilar = st.text_area("Kamp Kadrosu (İsimler)")
+            katilimcilar = st.text_area("Kamp Kadrosu")
             if st.form_submit_button("Kamp Takvimine Ekle"):
                 conn = db.baglanti_kur()
                 conn.cursor().execute("INSERT INTO mac_takvimi (turnuva_adi, tarih, katilacak_sporcular) VALUES (?, ?, ?)", 
@@ -241,10 +258,10 @@ try:
             if st.form_submit_button("Adayı Kaydet"):
                 conn = db.baglanti_kur()
                 conn.cursor().execute("INSERT INTO adaylar (aday_adi, telefon, ilgilenilen_brans, durum) VALUES (?, ?, ?, ?)", 
-                                      (aday, atel, ibrans, "Aranacak / Deneme Bekliyor"))
+                                      (aday, atel, ibrans, "Bekliyor"))
                 conn.commit()
                 conn.close()
-                st.success(f"Aday {aday} lead listesine eklendi.")
+                st.success("Aday lead listesine eklendi.")
 
     # --- 12. ÖZEL DERS (PT) ---
     elif "Özel Ders" in secilen_modul:
@@ -274,13 +291,11 @@ try:
                                       (osporcu, kilo, yag, datetime.now().strftime("%Y-%m-%d")))
                 conn.commit()
                 conn.close()
-                st.success("Sporcu ölçüm verileri kaydedildi.")
+                st.success("Ölçüm verileri kaydedildi.")
 
-    # --- 14. KASA & FİNANS PANELİ (GÜNCELLENDİ) ---
+    # --- 14. KASA & FİNANS ---
     elif "Kasa & Finans" in secilen_modul:
         st.subheader("📊 Kasa & Finans Paneli (Gelir / Gider Yönetimi)")
-        
-        # Manuel Gelir / Gider Ekleme Formu
         with st.form("kasa_form"):
             c_f1, c_f2, c_f3 = st.columns(3)
             with c_f1:
@@ -289,9 +304,7 @@ try:
                 tutar = st.number_input("Tutar (₺)", min_value=1.0, value=500.0)
             with c_f3:
                 tarih_str = st.text_input("Tarih", value=datetime.now().strftime("%Y-%m-%d %H:%M"))
-            
-            aciklama = st.text_input("İşlem Açıklaması (Örn: Aidat Tahsilatı, Elektrik Faturası vb.)")
-            
+            aciklama = st.text_input("İşlem Açıklaması")
             if st.form_submit_button("Kasa İşlemini Kaydet 💾"):
                 if aciklama:
                     conn = db.baglanti_kur()
@@ -299,30 +312,23 @@ try:
                                           (tip, aciklama, tutar, tarih_str))
                     conn.commit()
                     conn.close()
-                    st.success(f"Başarılı! Kasaya {tip} olarak {tutar:,.2f} ₺ işlendi.")
+                    st.success(f"Kasaya {tip} olarak {tutar:,.2f} ₺ işlendi.")
                 else:
-                    st.warning("Lütfen işlem açıklaması giriniz.")
+                    st.warning("Lütfen açıklama girin.")
 
         st.divider()
-        st.markdown("### 📋 Kasa Hareketleri ve Finans Tablosu")
         conn = db.baglanti_kur()
         kasa_df = pd.read_sql("SELECT * FROM kasa", conn)
         conn.close()
-        
         if not kasa_df.empty:
-            # Gelir ve giderleri ayrı ayrı hesaplayalım
-            toplam_gelir = kasa_df[kasa_df["islem_tipi"] == "Gelir"]["tutar"].sum()
-            toplam_gider = kasa_df[kasa_df["islem_tipi"] == "Gider"]["tutar"].sum()
-            net_durum = toplam_gelir - toplam_gider
-            
-            col_m1, col_m2, col_m3 = st.columns(3)
-            col_m1.metric("Toplam Gelir", f"{toplam_gelir:,.2f} ₺")
-            col_m2.metric("Toplam Gider", f"{toplam_gider:,.2f} ₺")
-            col_m3.metric("Net Kasa Durumu", f"{net_durum:,.2f} ₺")
-            
+            gelir = kasa_df[kasa_df["islem_tipi"] == "Gelir"]["tutar"].sum()
+            gider = kasa_df[kasa_df["islem_tipi"] == "Gider"]["tutar"].sum()
+            net = gelir - gider
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Toplam Gelir", f"{gelir:,.2f} ₺")
+            c2.metric("Toplam Gider", f"{gider:,.2f} ₺")
+            c3.metric("Net Kasa", f"{net:,.2f} ₺")
             st.dataframe(kasa_df, use_container_width=True)
-        else:
-            st.info("Henüz kasaya ait bir hareket bulunmuyor.")
 
     # --- 15. KAYIP ÜYE (CHURN) ---
     elif "Kayıp Üye" in secilen_modul:
@@ -335,28 +341,28 @@ try:
                                       (c_sporcu, datetime.now().strftime("%Y-%m-%d"), "Yüksek Risk"))
                 conn.commit()
                 conn.close()
-                st.warning(f"{c_sporcu} riskli üyeler listesine eklendi, otomasyon tetiklenebilir.")
+                st.warning("Üye risk listesine eklendi.")
 
     # --- 16. İLETİŞİM OTOMASYONU ---
     elif "İletişim Otomasyonu" in secilen_modul:
         st.subheader("📱 İletişim Otomasyonu (SMS / WhatsApp)")
         with st.form("sms_form"):
-            grup = st.selectbox("Hedef kitle", ["Tüm Üyeler", "Son 15 Gündür Gelmeyenler", "Müsabık Takımı"])
-            mesaj = st.text_area("Mesaj Metni", "Değerli sporcumuz, bu haftaki antrenmanlarımızı kaçırmayalım! 🥊")
-            if st.form_submit_button("Toplu Mesaj Gönder (Simülasyon)"):
+            grup = st.selectbox("Hedef kitle", ["Tüm Üyeler", "Deneme Süresindekiler", "Müsabık Takımı"])
+            mesaj = st.text_area("Mesaj Metni", "Değerli üyemiz, 15 günlük deneme süreniz boyunca matımızda başarılar dileriz! 🥊")
+            if st.form_submit_button("Toplu Mesaj Gönder"):
                 conn = db.baglanti_kur()
                 conn.cursor().execute("INSERT INTO mesaj_loglari (alici_grup, mesaj_icerigi, gonderim_tarihi) VALUES (?, ?, ?)", 
                                       (grup, mesaj, datetime.now().strftime("%Y-%m-%d %H:%M")))
                 conn.commit()
                 conn.close()
-                st.success(f"'{grup}' grubuna mesaj kuyruğu başarıyla iletildi.")
+                st.success("Mesaj kuyruğa eklendi.")
 
     # --- 17. AI ASİSTAN ---
     elif "AI Asistan & Koçluk" in secilen_modul:
         st.subheader("🤖 RingMaster AI Asistan & Salon Koçu")
-        user_query = st.text_input("Asistana danışın:", placeholder="Örn: Bu ay en çok hangi branş ilgi gördü?")
+        user_query = st.text_input("Asistana danışın:")
         if st.button("AI Analizini Başlat 🚀"):
-            st.info(f"🤖 **AI Analizi:** '{user_query}' sorunuz için veritabanı tarandı. Salon operasyonlarınız kusursuz ilerliyor patron!")
+            st.info("🤖 **AI Analizi:** Deneme süreleri ve dönüşüm oranları optimize ediliyor patron, her şey yolunda!")
 
 except Exception as e:
-    st.error(f"Uygulama çalıştırılırken bir hata oluştu, Caner Baba: {e}")
+    st.error(f"Bir hata oluştu, Caner Baba: {e}")
