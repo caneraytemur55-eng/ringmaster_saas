@@ -3,7 +3,7 @@ import pandas as pd
 import database as db
 import random
 
-# Sayfa Yapılandırması (Spor Salonu Teması için Koyu Mod)
+# Sayfa Yapılandırması (Koyu Tema & Spor Salonu Atmosferi)
 st.set_page_config(page_title="Ringmaster SaaS - Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
 
 # Veritabanını başlat
@@ -12,11 +12,12 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm 18 modül eksiksiz bir şekilde yer alıyor
+# Tüm 18 Modül + Yeni AI Asistanı (19 Modül Tam Kadro)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
         "Ana Sayfa", 
+        "Ringmaster AI Asistanı 🤖", 
         "Salon Üyeleri Yönetimi", 
         "Yoklama Sistemi", 
         "Stok Takibi", 
@@ -33,7 +34,7 @@ secilen_modul = st.sidebar.selectbox(
         "Üye Terk (Churn) Riski", 
         "Toplu SMS / Duyuru Logu",
         "SaaS Abonelik Yönetimi",
-        "AI Yapay Zeka Asistan"
+        "Sistem Ayarları"
     ]
 )
 
@@ -46,11 +47,50 @@ if secilen_modul == "Ana Sayfa":
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "18 / 18")
+        st.metric("Aktif Modül", "19 / 19 (AI Aktif)")
     with col3:
         st.metric("Sistem Durumu", "Mermi Gibi 🚀")
 
-# --- 2. SALON ÜYELERİ YÖNETİMİ ---
+# --- 2. RİNGMASTER AI ASİSTANI (YENİ MODÜL) ---
+elif secilen_modul == "Ringmaster AI Asistanı 🤖":
+    st.subheader("🤖 Ringmaster AI - Salon Yönetim Asistanı")
+    st.write("Salonunla ilgili sorular sorabilir, antrenman programları, üyeRetention (elde tutma) stratejileri veya pazarlama fikirleri alabilirsin.")
+    
+    # Sohbet geçmişini saklamak için Streamlit session state kullanımı
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Selam patron! Ben Ringmaster AI Asistanınım. Bugün salonumuz için hangi stratejiyi masaya yatırıyoruz?"}
+        ]
+
+    # Geçmiş mesajları ekrana yazdır
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Kullanıcıdan girdi al
+    if prompt := st.chat_input("Salon yönetimi, antrenman veya üyeler hakkında bir şey sor..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Akıllı asistan yanıt simülasyonu / motoru (İleride gerçek LLM API anahtarıyla tam entegre edilebilir)
+        with st.chat_message("assistant"):
+            with st.spinner("Ringmaster AI düşünüyor..."):
+                # Basit akıllı yönlendirme yanıtları
+                lower_p = prompt.lower()
+                if "üye" in lower_p or "kayıt" in lower_p:
+                    yanit = f"Patron, şu an sistemde toplam **{len(db.uyeleri_getir())}** kayıtlı sporcumuz var. Yeni üye çekmek için CRM modülünden adayları takip edebilirsin."
+                elif "kasa" in lower_p or "para" in lower_p or "gelir" in lower_p:
+                    yanit = "Finansal durum için 'Kasa / Finans' modülünü kontrol edebilir, günlük gelir/gider dengesini anlık inceleyebilirsin."
+                elif "merhaba" in lower_p or "selam" in lower_p:
+                    yanit = "Ooo selam patron! Enerjimiz yüksek, salon mermi gibi akıyor. Ne yapıyoruz bugün?"
+                else:
+                    yanit = f"Harika bir soru patron! '{prompt}' konusunda salonunun performansını artırmak için düzenli takip ve otomasyon şart. Bu özelliği senin için daha da detaylandırabilirim."
+                
+                st.markdown(yanit)
+                st.session_state.messages.append({"role": "assistant", "content": yanit})
+
+# --- 3. SALON ÜYELERİ YÖNETİMİ ---
 elif secilen_modul == "Salon Üyeleri Yönetimi":
     st.subheader("👤 Salon Üyeleri Yönetimi")
     
@@ -89,7 +129,7 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
     else:
         st.info("Henüz kayıtlı üye bulunmuyor.")
 
-# --- 3. YOKLAMA SİSTEMİ ---
+# --- 4. YOKLAMA SİSTEMİ ---
 elif secilen_modul == "Yoklama Sistemi":
     st.subheader("📝 Yoklama ve Giriş Takibi")
     st.write("Üyeler 4 haneli PIN kodlarını girerek antrenman girişini yapabilir.")
@@ -102,7 +142,7 @@ elif secilen_modul == "Yoklama Sistemi":
         else:
             st.error("Geçersiz PIN kodu! Lütfen kontrol edin.")
 
-# --- 4. STOK TAKİBİ ---
+# --- 5. STOK TAKİBİ ---
 elif secilen_modul == "Stok Takibi":
     st.subheader("📦 Ürün ve Ekipman Stok Yönetimi")
     conn = db.baglanti_kur()
@@ -122,7 +162,7 @@ elif secilen_modul == "Stok Takibi":
             st.success("Stok başarıyla eklendi!")
             st.rerun()
 
-# --- 5. KASA / FİNANS ---
+# --- 6. KASA / FİNANS ---
 elif secilen_modul == "Kasa / Finans":
     st.subheader("💰 Kasa ve Gelir/Gider Takibi")
     conn = db.baglanti_kur()
@@ -143,7 +183,7 @@ elif secilen_modul == "Kasa / Finans":
             st.success("Kasa hareketi eklendi!")
             st.rerun()
 
-# --- 6. ANTRENÖR & PRİM TAKİBİ ---
+# --- 7. ANTRENÖR & PRİM TAKİBİ ---
 elif secilen_modul == "Antrenör & Prim Takibi":
     st.subheader("🥋 Antrenör ve Prim Yönetimi")
     conn = db.baglanti_kur()
@@ -163,7 +203,7 @@ elif secilen_modul == "Antrenör & Prim Takibi":
             st.success("Antrenör eklendi!")
             st.rerun()
 
-# --- 7. ÇOCUK GELİŞİM RAPORLARI ---
+# --- 8. ÇOCUK GELİŞİM RAPORLARI ---
 elif secilen_modul == "Çocuk Gelişim Raporları":
     st.subheader("🧒 Çocuk Gelişim ve Veli Takibi")
     conn = db.baglanti_kur()
@@ -183,7 +223,7 @@ elif secilen_modul == "Çocuk Gelişim Raporları":
             st.success("Rapor eklendi!")
             st.rerun()
 
-# --- 8. KUŞAK / DERECE SINAVI ---
+# --- 9. KUŞAK / DERECE SINAVI ---
 elif secilen_modul == "Kuşak / Derece Sınavı":
     st.subheader("🥋 Kuşak ve Derece Sınav Takibi")
     conn = db.baglanti_kur()
@@ -203,7 +243,7 @@ elif secilen_modul == "Kuşak / Derece Sınavı":
             st.success("Sınav kaydı oluşturuldu!")
             st.rerun()
 
-# --- 9. MÜSABIK TAKIMI YÖNETİMİ ---
+# --- 10. MÜSABIK TAKIMI YÖNETİMİ ---
 elif secilen_modul == "Müsabık Takımı Yönetimi":
     st.subheader("🥊 Müsabık Sporcu ve Siklet Yönetimi")
     conn = db.baglanti_kur()
@@ -223,7 +263,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
             st.success("Müsabık sporcu eklendi!")
             st.rerun()
 
-# --- 10. SAKATLIK & SPARRİNG TAKİBİ ---
+# --- 11. SAKATLIK & SPARRİNG TAKİBİ ---
 elif secilen_modul == "Sakatlık & Sparring Takibi":
     st.subheader("🩹 Sporcu Sakatlık ve Sparring Yasakları")
     conn = db.baglanti_kur()
@@ -242,7 +282,7 @@ elif secilen_modul == "Sakatlık & Sparring Takibi":
             st.success("Kayıt eklendi!")
             st.rerun()
 
-# --- 11. MAÇ / TURNUVA TAKVİMİ ---
+# --- 12. MAÇ / TURNUVA TAKVİMİ ---
 elif secilen_modul == "Maç / Turnuva Takvimi":
     st.subheader("🏆 Maç ve Turnuva Takvimi")
     conn = db.baglanti_kur()
@@ -261,7 +301,7 @@ elif secilen_modul == "Maç / Turnuva Takvimi":
             st.success("Turnuva takvime eklendi!")
             st.rerun()
 
-# --- 12. ADAY ÜYE TAKİBİ (CRM) ---
+# --- 13. ADAY ÜYE TAKİBİ (CRM) ---
 elif secilen_modul == "Aday Üye Takibi (CRM)":
     st.subheader("📞 Aday Üye ve Potansiyel Müşteri Takibi")
     conn = db.baglanti_kur()
@@ -281,7 +321,7 @@ elif secilen_modul == "Aday Üye Takibi (CRM)":
             st.success("Aday kaydedildi!")
             st.rerun()
 
-# --- 13. ÖZEL DERS (PT) TAKİBİ ---
+# --- 14. ÖZEL DERS (PT) TAKİBİ ---
 elif secilen_modul == "Özel Ders (PT) Takibi":
     st.subheader("🎯 Özel Ders (Personal Training) Paket Takibi")
     conn = db.baglanti_kur()
@@ -300,7 +340,7 @@ elif secilen_modul == "Özel Ders (PT) Takibi":
             st.success("Özel ders paketi tanımlandı!")
             st.rerun()
 
-# --- 14. VÜCUT ÖLÇÜM TAKİBİ ---
+# --- 15. VÜCUT ÖLÇÜM TAKİBİ ---
 elif secilen_modul == "Vücut Ölçüm Takibi":
     st.subheader("📊 Sporcu Vücut Ölçümleri ve Analiz")
     conn = db.baglanti_kur()
@@ -320,7 +360,7 @@ elif secilen_modul == "Vücut Ölçüm Takibi":
             st.success("Ölçüm kaydedildi!")
             st.rerun()
 
-# --- 15. ÜYE TERK (CHURN) RİSKİ ---
+# --- 16. ÜYE TERK (CHURN) RİSKİ ---
 elif secilen_modul == "Üye Terk (Churn) Riski":
     st.subheader("⚠️ Üye Devamsızlık ve Terk Riski Analizi")
     conn = db.baglanti_kur()
@@ -339,7 +379,7 @@ elif secilen_modul == "Üye Terk (Churn) Riski":
             st.success("Risk kaydı eklendi!")
             st.rerun()
 
-# --- 16. TOPLU SMS / DUYURU LOGU ---
+# --- 17. TOPLU SMS / DUYURU LOGU ---
 elif secilen_modul == "Toplu SMS / Duyuru Logu":
     st.subheader("📢 Toplu Duyuru ve SMS Logları")
     conn = db.baglanti_kur()
@@ -358,7 +398,7 @@ elif secilen_modul == "Toplu SMS / Duyuru Logu":
             st.success("Mesaj loglandı!")
             st.rerun()
 
-# --- 17. SAAS ABONELİK YÖNETİMİ ---
+# --- 18. SAAS ABONELİK YÖNETİMİ ---
 elif secilen_modul == "SaaS Abonelik Yönetimi":
     st.subheader("🏢 SaaS Salon ve Abonelik Yönetimi")
     conn = db.baglanti_kur()
@@ -380,7 +420,7 @@ elif secilen_modul == "SaaS Abonelik Yönetimi":
             else:
                 st.warning("Lütfen salon adını ve sahip adını doldurun.")
 
-# --- 18. SİSTEM AYARLARI ---
+# --- 19. SİSTEM AYARLARI ---
 elif secilen_modul == "Sistem Ayarları":
     st.subheader("⚙️ Sistem ve Veritabanı Ayarları")
     st.write("Veritabanı sıfırlama, yedekleme ve genel sistem parametreleri.")
