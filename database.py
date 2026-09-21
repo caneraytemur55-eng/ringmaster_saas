@@ -10,7 +10,6 @@ def veritabani_baslat():
     conn = baglanti_kur()
     cursor = conn.cursor()
     
-    # 1. SaaS Müşterileri (Salon Sahipleri) Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS salonlar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +23,6 @@ def veritabani_baslat():
         )
     """)
 
-    # 2. Salon Üyeleri Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +34,6 @@ def veritabani_baslat():
         )
     """)
     
-    # Emniyet Sübabları: Eskiden kalan tablolarda eksik sütunlar varsa otomatik ekle
     try:
         cursor.execute("ALTER TABLE uyeler ADD COLUMN pin_kodu TEXT")
         conn.commit()
@@ -49,7 +46,6 @@ def veritabani_baslat():
     except sqlite3.OperationalError:
         pass 
 
-    # Diğer tablolar
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS yoklamalar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -197,29 +193,6 @@ def veritabani_baslat():
     conn.commit()
     conn.close()
 
-def salon_ekle(salon_adi, sahip_adi, telefon, email):
-    conn = baglanti_kur()
-    cursor = conn.cursor()
-    simdi = datetime.now()
-    kayit_tarihi = simdi.strftime("%Y-%m-%d %H:%M")
-    deneme_bitis = (simdi + timedelta(days=15)).strftime("%Y-%m-%d")
-    abonelik_durumu = "15 Günlük Deneme Süresi"
-    
-    cursor.execute("""
-        INSERT INTO salonlar (salon_adi, sahip_adi, telefon, email, kayit_tarihi, deneme_bitis, abonelik_durumu) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (salon_adi, sahip_adi, telefon, email, kayit_tarihi, deneme_bitis, abonelik_durumu))
-    conn.commit()
-    conn.close()
-
-def salonlari_getir():
-    conn = baglanti_kur()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, salon_adi, sahip_adi, telefon, email, kayit_tarihi, deneme_bitis, abonelik_durumu FROM salonlar")
-    veriler = cursor.fetchall()
-    conn.close()
-    return veriler
-
 def uye_ekle(ad_soyad, telefon, brans, pin_kodu):
     conn = baglanti_kur()
     cursor = conn.cursor()
@@ -239,6 +212,13 @@ def uyeleri_getir():
     veriler = cursor.fetchall()
     conn.close()
     return veriler
+
+def uye_sil(uye_id):
+    conn = baglanti_kur()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM uyeler WHERE id = ?", (uye_id,))
+    conn.commit()
+    conn.close()
 
 
 
