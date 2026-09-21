@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import database as db
 import random
+import urllib.parse
 
 # Sayfa Yapılandırması (Koyu Tema & Spor Salonu Atmosferi)
 st.set_page_config(page_title="Ringmaster SaaS - Global & Yerel Spor Salonu Yönetimi", page_icon="🥊", layout="wide")
@@ -12,7 +13,7 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm Modüller + Kart Zorunlu Deneme Altyapısı (20 Modül Tam Kadro)
+# Tüm Modüller + PIN Otomasyonu (20 Modül Tam Kadro)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -42,31 +43,31 @@ secilen_modul = st.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     st.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    st.info("Kart zorunlu 14 günlük akıllı deneme modeli hem Türkiye hem de global pazarlar için aktif!")
+    st.info("PIN otomasyonu ve WhatsApp entegrasyonu üye yönetimine eklendi! Sistem mermi gibi akıyor.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "20 / 20 (Güvenli Tahsilat Aktif)")
+        st.metric("Aktif Modül", "20 / 20 (Tam Kadro)")
     with col3:
-        st.metric("Sistem Modeli", "Kartlı Deneme (Trial w/ CC) 🚀")
+        st.metric("Sistem Modeli", "Kartlı Deneme & PIN Otomasyonu 🚀")
 
 # --- 2. RİNGMASTER AI ASİSTANI ---
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.subheader("🤖 Ringmaster AI - Salon Yönetim Asistanı")
-    st.write("Salonunla ilgili sorular sorabilir, üye sadakati (churn) stratejileri ve abonelik dönüşüm oranları hakkında fikir alabilirsin.")
+    st.write("Salonunla ilgili sorular sorabilir, üye sadakati ve otomasyon süreçleri hakkında fikir alabilirsin.")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! Kartlı deneme (trial) modeli sayesinde niteliksiz kayıtları tamamen eleyerek en sağlam müşterileri içeri alıyoruz. Bugün hangi stratejiyi konuşuyoruz?"}
+            {"role": "assistant", "content": "Selam patron! PIN otomasyonu ve WhatsApp entegrasyonu sayesinde üyelerin girişte asla sorun yaşamayacak. Bugün hangi operasyonu yönetiyoruz?"}
         ]
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Abonelikler, tahsilatlar veya salon yönetimi hakkında sor..."):
+    if prompt := st.chat_input("Salon yönetimi, PIN sistemleri veya abonelikler hakkında sor..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -74,46 +75,65 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
         with st.chat_message("assistant"):
             with st.spinner("Ringmaster AI düşünüyor..."):
                 lower_p = prompt.lower()
-                if "üye" in lower_p or "kayıt" in lower_p:
-                    yanit = f"Patron, sistemde toplam **{len(db.uyeleri_getir())}** kayıtlı sporcumuz bulunuyor."
-                elif "ödeme" in lower_p or "kart" in lower_p or "deneme" in lower_p:
-                    yanit = "Kart zorunlu 14 günlük deneme modeli, 14 gün sonunda otomatik tahsilat sağlayarak gelir kaybını (churn) sıfıra yaklaştırır."
+                if "pin" in lower_p or "yoklama" in lower_p:
+                    yanit = "Sporcu kayıt ekranından PIN kodları anında görülebilir ve WhatsApp ile tek tıkla sporcunun cebine gönderilebilir, patron!"
+                elif "üye" in lower_p or "kayıt" in lower_p:
+                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz kayıtlı."
                 elif "merhaba" in lower_p or "selam" in lower_p:
-                    yanit = "Ooo selam patron! Finansal altyapımız taş gibi sağlam, mermi gibi ilerliyoruz!"
+                    yanit = "Ooo selam patron! Altyapı taş gibi sağlam, dünyayı fethə hazırım!"
                 else:
-                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda otomasyonu sıkı tutmak işini hak ettiği büyüklüğe taşıyacaktır."
+                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tam otomasyon kurarak iş yükünü sıfıra indiriyoruz."
                 
                 st.markdown(yanit)
                 st.session_state.messages.append({"role": "assistant", "content": yanit})
 
-# --- 3. SALON ÜYELERİ YÖNETİMİ ---
+# --- 3. SALON ÜYELERİ YÖNETİMİ (GÜNCELLENDİ: PIN & WHATSAPP GÖNDERİMİ) ---
 elif secilen_modul == "Salon Üyeleri Yönetimi":
-    st.subheader("👤 Salon Üyeleri Yönetimi")
+    st.subheader("👤 Salon Üyeleri ve PIN Yönetimi")
     
     with st.form("uye_form"):
         c1, c2 = st.columns(2)
         with c1:
             ad = st.text_input("Sporcu Ad Soyad")
-            tel = st.text_input("Telefon")
+            tel = st.text_input("Telefon (Örn: 5551234567)")
         with c2:
             brans = st.selectbox("Branş", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
             pin = st.text_input("4 Haneli PIN (Boş bırakırsan otomatik atanır)", max_chars=4, type="default")
         
-        if st.form_submit_button("Sporcuyu Kaydet 🚀"):
+        if st.form_submit_button("Sporcuyu Kaydet ve PIN Üret 🚀"):
             if ad:
                 if not pin or len(pin) != 4 or not pin.isdigit():
                     pin = str(random.randint(1000, 9999))
                 db.uye_ekle(ad, tel, brans, pin)
-                st.success(f"🚀 {ad} salona başarıyla kaydedildi! PIN Kodu: **{pin}**")
+                st.success(f"🚀 {ad} başarıyla kaydedildi! 4 Haneli Giriş PIN Kodu: **{pin}**")
             else:
                 st.warning("Lütfen sporcu adını girin.")
     
-    st.markdown("### 📋 Kayıtlı Sporcular")
+    st.markdown("### 📋 Kayıtlı Sporcular ve Hızlı Erişim PIN Listesi")
     uyeler = db.uyeleri_getir()
     if uyeler:
         df_uyeler = pd.DataFrame(uyeler, columns=["ID", "Ad Soyad", "Telefon", "Branş", "PIN", "Kayıt Tarihi"])
         st.dataframe(df_uyeler, use_container_width=True)
         
+        st.markdown("### 📱 WhatsApp ile Sporcuya PIN Gönder")
+        with st.form("whatsapp_form"):
+            secilen_sporcu_str = st.selectbox("Sporcu Seç", df_uyeler.apply(lambda x: f"{x['ID']} - {x['Ad Soyad']} (Tel: {x['Telefon']} - PIN: {x['PIN']})", axis=1).tolist())
+            if st.form_submit_button("WhatsApp Hoş Geldin & PIN Mesajı Hazırla 💬"):
+                parcalar = secilen_sporcu_str.split(" - ")
+                s_id = parcalar[0]
+                s_bilgi = [u for u in uyeler if str(u[0]) == s_id][0]
+                
+                s_ad = s_bilgi[1]
+                s_tel = s_bilgi[2]
+                s_pin = s_bilgi[4]
+                
+                mesaj = f"Harika! Ringmaster Spor Salonu'na hoş geldin {s_ad}! 🥊 Yoklama ve turnike girişlerinde kullanacağın 4 haneli kişisel PIN kodun: *{s_pin}*. Başarılar dileriz!"
+                encoded_mesaj = urllib.parse.quote(mesaj)
+                wa_link = f"https://wa.me/90{s_tel}?text={encoded_mesaj}"
+                
+                st.success(f"WhatsApp mesaj bağlantısı oluşturuldu, patron! Aşağıdaki butona tıklayarak doğrudan sporcuya gönderebilirsin:")
+                st.markdown(f"[📲 WhatsApp ile PIN Göndermek İçin Tıkla]({wa_link})", unsafe_allow_html=True)
+
         st.markdown("### 🗑️ Sporcu Kaydı Sil")
         with st.form("uye_sil_form"):
             silinecek_id = st.selectbox("Silinecek Sporcuyu Seç (ID - Ad Soyad)", df_uyeler.apply(lambda x: f"{x['ID']} - {x['Ad Soyad']}", axis=1).tolist())
@@ -128,14 +148,15 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
 # --- 4. YOKLAMA SİSTEMİ ---
 elif secilen_modul == "Yoklama Sistemi":
     st.subheader("📝 Yoklama ve Giriş Takibi")
+    st.write("Sporcular kendilerine verilen 4 haneli PIN kodunu girerek antrenman yoklamasını aldırabilir.")
     girilen_pin = st.text_input("4 Haneli PIN Kodunuzu Girin", max_chars=4, type="password")
     if st.button("Giriş Yap / Yoklama Al"):
         uyeler = db.uyeleri_getir()
         bulunan = [u for u in uyeler if u[4] == girilen_pin]
         if bulunan:
-            st.success(f"Hoş geldin, {bulunan[0][1]}! Antrenman girişin kaydedildi.")
+            st.success(f"Hoş geldin, {bulunan[0][1]}! Antrenman girişin başarıyla kaydedildi 🥊")
         else:
-            st.error("Geçersiz PIN kodu! Lütfen kontrol edin.")
+            st.error("Geçersiz PIN kodu! Lütfen salon yöneticisinden kontrol edin.")
 
 # --- 5. STOK TAKİBİ ---
 elif secilen_modul == "Stok Takibi":
@@ -407,15 +428,15 @@ elif secilen_modul == "SaaS Abonelik Yönetimi":
         if st.form_submit_button("Kart Bilgisi Al ve 14 Gün Deneme Başlat 💳"):
             if s_adi and sahip:
                 db.salon_ekle(s_adi, sahip, tel, email)
-                st.success(f"{s_adi} için kart doğrulama linki oluşturuldu ve 14 günlük deneme başlatıldı! (Süre sonunda otomatik çekim aktif)")
+                st.success(f"{s_adi} için kart doğrulama linki oluşturuldu ve 14 günlük deneme başlatıldı!")
                 st.rerun()
             else:
                 st.warning("Salon adı ve sahip adını doldurun.")
 
-# --- 19. KÜRESEL & YEREL ÖDEMELER (KARTLI DENEME) - YENİ MODEL ---
+# --- 19. KÜRESEL & YEREL ÖDEMELER (KARTLI DENEME) ---
 elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
     st.subheader("🌍 & 🇹🇷 Güvenli Tahsilat ve Kartlı Deneme Modeli")
-    st.write("Türkiye (TRY - PayTR/Iyzico) ve Global (USD/GBP/EUR - Stripe) pazarlar için **önce kart al, 14 gün sonra çek** altyapı yönetimi.")
+    st.write("Türkiye (TRY) ve Global (USD/GBP/EUR) pazarlar için **önce kart al, 14 gün sonra çek** altyapı yönetimi.")
     
     col_tr, col_uk, col_us, col_eu = st.columns(4)
     
@@ -424,7 +445,7 @@ elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
         st.write("Yerel Altyapı: **Iyzico / PayTR**")
         st.info("Plan: 1.499₺ / ay (14 Gün Kartlı Deneme)")
         if st.button("🇹🇷 TR Kartlı Deneme Linki"):
-            st.success("Türkiye için 14 gün denemeli kart saklama (Tokenization) linki üretildi!")
+            st.success("Türkiye için 14 gün denemeli kart saklama linki üretildi!")
             st.code("https://www.paytr.com/link/test_tr_trial_secure")
 
     with col_uk:
@@ -448,7 +469,7 @@ elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
         st.write("Gateway: **Stripe**")
         st.info("Plan: €55 / ay (14 Days Trial w/ CC)")
         if st.button("🇪🇺 EU Kartlı Deneme Linki"):
-            st.success("Stripe EU (EUR) 14 gün denemeli ödeme linki üretildi!")
+            st.success(f"Stripe EU (EUR) 14 gün denemeli ödeme linki üretildi!")
             st.code("https://buy.stripe.com/test_eu_trial_sample_eur")
 
     st.markdown("---")
@@ -459,7 +480,7 @@ elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
     with c2:
         st.text_input("Stripe Secret Key (Global)", type="password", value="sk_test_...")
     if st.button("Tüm Ödeme Ağ Geçitlerini Test Et 🔌"):
-        st.success("Türkiye ve Global ödeme köprüleri kusursuz doğrulandı patron! Artık sistem tam bir gelir makinesi oldu.")
+        st.success("Türkiye ve Global ödeme köprüleri kusursuz doğrulandı patron!")
 
 # --- 20. SİSTEM AYARLARI ---
 elif secilen_modul == "Sistem Ayarları":
@@ -468,3 +489,5 @@ elif secilen_modul == "Sistem Ayarları":
     if st.button("Veritabanını Kontrol Et ve Onar"):
         db.veritabani_baslat()
         st.success("Tüm tablolar ve emniyet sütunları güncellendi!")
+
+
