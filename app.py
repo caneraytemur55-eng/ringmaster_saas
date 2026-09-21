@@ -146,9 +146,42 @@ else:
     # --- TAB 2: MÜSABIK & DÖVÜŞ SİCİLİ & SAKATLIK ---
     with tab2:
         st.subheader("🏆 Müsabık Sporcu, Sıklet, Dövüş Sicili & Sakatlık Protokolü")
+        
+        # --- EN ÜSTTE SALON GENEL MAÇ HAZIRLIK TAKVİMİ AKIŞI ---
+        st.markdown("### 📅 Salon Genel Maç Hazırlık Takvimi & Geri Sayım")
+        maclar_listesi = tum_yaklasan_maclari_getir()
+        if maclar_listesi:
+            for mc in maclar_listesi:
+                mc_ad, mc_brans, mc_siklet, mc_tarih_str, mc_org, mc_tel = mc
+                try:
+                    mc_dt = datetime.datetime.strptime(mc_tarih_str, "%Y-%m-%d").date()
+                    kalan_mac_gunu = (mc_dt - datetime.date.today()).days
+                except Exception:
+                    kalan_mac_gunu = 0
+
+                c_m1, c_m2, c_m3 = st.columns([3, 3, 2])
+                c_m1.write(f"🥊 **{mc_ad}** ({mc_brans} - {mc_siklet} kg)\n\n🏆 Organizasyon: **{mc_org}**")
+                
+                if kalan_mac_gunu > 7:
+                    c_m2.info(f"🗓️ Maç Tarihi: **{mc_tarih_str}**\n\n⏳ Kalan Süre: **{kalan_mac_gunu} Gün**")
+                elif kalan_mac_gunu >= 0:
+                    c_m2.warning(f"🚨 **MAÇA SON {kalan_mac_gunu} GÜN!** (Kilo düşme & Lapa Dönemi)")
+                else:
+                    c_m2.success(f"✅ Maç Tamamlandı / Tarih Geçti ({mc_tarih_str})")
+                    
+                msg_mac = f"Selam {mc_ad}! RingMaster Salonu'nda {mc_org} organizasyonundaki maçına son {kalan_mac_gunu} gün kaldı! Sıkletini korumayı ve lapa antrenmanlarını aksatmamayı unutma! 🥊"
+                enc_mc = urllib.parse.quote(msg_mac)
+                wa_mc_url = f"https://wa.me/{mc_tel}?text={enc_mc}"
+                c_m3.markdown(f'<a href="{wa_mc_url}" target="_blank"><button style="background-color:#007AFF;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 Maç Motivasyon Bildirimi At</button></a>', unsafe_allow_html=True)
+                st.markdown("---")
+        else:
+            st.info("Henüz eklenmiş yaklaşan bir maç bulunmuyor. Aşağıdan sporcu seçip yeni maç tarihi ekleyebilirsiniz.")
+
+        st.markdown("---")
+        
         uyeler = uyeleri_getir()
         if uyeler:
-            secilen_f_str = st.selectbox("Sporcu Seçiniz", [f"{u[1]} ({u[3]})" for u in uyeler])
+            secilen_f_str = st.selectbox("Düzenlenecek Sporcuyu Seçiniz", [f"{u[1]} ({u[3]})" for u in uyeler])
             f_id = [u[0] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_f_str][0]
             f_ad = [u[1] for u in uyeler if f"{u[1]} ({u[3]})" == secilen_f_str][0]
 
@@ -179,10 +212,10 @@ else:
                     f_mac_tarihi = st.date_input("Yaklaşan Maç Tarihi", mac_t_def)
                     f_org = st.text_input("Organizasyon / Şampiyona Adı", org_def)
                     
-                    submit_musabik = st.form_submit_button("💾 Dövüş Sicilini Güncelle")
+                    submit_musabik = st.form_submit_button("💾 Dövüş Sicilini & Maç Tarihini Güncelle")
                     if submit_musabik:
                         musabik_ekle_guncelle(f_id, f_stili, f_siklet, f_win, f_loss, f_draw, f_ko, f_mac_tarihi, f_org)
-                        st.success("Sporcunun dövüş profili ve sicili güncellendi!")
+                        st.success("Sporcunun dövüş profili, sicili ve yaklaşan maç tarihi güncellendi!")
                         st.rerun()
 
                 st.markdown("---")
@@ -222,38 +255,6 @@ else:
                         st.markdown("---")
                 else:
                     st.info("Bu sporcunun aktif bir sakatlık veya sparring kısıtlaması bulunmuyor.")
-
-            # --- YENİ EKLENEN MAÇ HAZIRLIK TAKVİMİ AKIŞI ---
-            st.markdown("---")
-            st.subheader("📅 Salon Genel Maç Hazırlık Takvimi & Geri Sayım")
-            maclar_listesi = tum_yaklasan_maclari_getir()
-            if maclar_listesi:
-                for mc in maclar_listesi:
-                    mc_ad, mc_brans, mc_siklet, mc_tarih_str, mc_org, mc_tel = mc
-                    try:
-                        mc_dt = datetime.datetime.strptime(mc_tarih_str, "%Y-%m-%d").date()
-                        kalan_mac_gunu = (mc_dt - datetime.date.today()).days
-                    except Exception:
-                        kalan_mac_gunu = 0
-
-                    c_m1, c_m2, c_m3 = st.columns([3, 3, 2])
-                    c_m1.write(f"🥊 **{mc_ad}** ({mc_brans} - {mc_siklet} kg)\n\n🏆 Organizasyon: **{mc_org}**")
-                    
-                    if kalan_mac_gunu > 7:
-                        c_m2.info(f"🗓️ Maç Tarihi: **{mc_tarih_str}**\n\n⏳ Kalan Süre: **{kalan_mac_gunu} Gün**")
-                    elif kalan_mac_gunu >= 0:
-                        c_m2.warning(f"🚨 **MAÇA SON {kalan_mac_gunu} GÜN!** (Kilo düşme & Lapa Dönemi)")
-                    else:
-                        c_m2.success(f"✅ Maç Tamamlandı / Tarih Geçti ({mc_tarih_str})")
-                        
-                    msg_mac = f"Selam {mc_ad}! RingMaster Salonu'nda {mc_org} organizasyonundaki maçına son {kalan_mac_gunu} gün kaldı! Sıkletini korumayı ve lapa antrenmanlarını aksatmamayı unutma! 🥊"
-                    enc_mc = urllib.parse.quote(msg_mac)
-                    wa_mc_url = f"https://wa.me/{mc_tel}?text={enc_mc}"
-                    c_m3.markdown(f'<a href="{wa_mc_url}" target="_blank"><button style="background-color:#007AFF;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 Maç Motivasyon Bildirimi At</button></a>', unsafe_allow_html=True)
-                    st.markdown("---")
-            else:
-                st.info("Henüz yaklaşan bir maç kaydı girilmemiş.")
-
         else:
             st.warning("Önce 'Üye Yönetimi' sekmesinden sporcu kaydı yapmalısınız.")
 
@@ -521,6 +522,7 @@ else:
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
                 st.markdown(response)
+
             
     
 
