@@ -2,20 +2,20 @@ import streamlit as st
 import datetime
 import urllib.parse
 from database import (
-    init_db, uye_ekle, uyeleri_getir, randevu_ekle, 
-    randevulari_getir, randevu_sayisi, aidat_durum_guncelle, kusak_guncelle,
+    init_db, uye_ekle, uyeleri_getir, randevulari_getir,
     deneme_ekle, denemeleri_getir,
     ozel_ders_ekle, ozel_dersleri_getir, ozel_ders_seans_dus, ozel_ders_ucret_guncelle,
     kurulum_tarihi_getir, kasa_islem_ekle, kasa_ozet_getir, kasa_islemleri_getir,
-    olcum_ekle, olcumleri_getir, uykudaki_uyeleri_getir
+    olcum_ekle, olcumleri_getir, uykudaki_uyeleri_getir,
+    pin_ile_yoklama_al, ders_sayisi_arttir, kusak_yukselt_sifirla
 )
 
 # Veritabanı Kurulumu
 init_db()
 
-st.set_page_config(page_title="RingMaster SaaS v4.0 Ultimate", page_icon="🥊", layout="wide")
+st.set_page_config(page_title="RingMaster SaaS v4.1", page_icon="🥊", layout="wide")
 
-st.title("🥊 RingMaster SaaS v4.0 Ultimate Edition")
+st.title("🥊 RingMaster SaaS v4.1 - Kuşak & Mat Kontenjan Sürümü")
 
 # --- 15 GÜNLÜK DENEME SÜRESİ MANTIĞI ---
 kurulum_str = kurulum_tarihi_getir()
@@ -40,11 +40,12 @@ else:
 
 st.sidebar.markdown("---")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+    "⚡ PIN Yoklama & Mat Kontenjanı",
+    "🥋 Kuşak Sınav Uygunluk Takibi",
     "🥊 Deneme Dersi (Lead)",
     "🎯 Özel Ders (PT) & Ücret",
-    "👤 Üye Yönetimi & Kuşak", 
-    "📅 Randevu & Ders", 
+    "👤 Üye Yönetimi", 
     "📈 Sporcu Ölçüm Takibi",
     "📊 Kasa & Finans Paneli", 
     "🚨 Kayıp Üye (Churn) Uyarısı",
@@ -61,11 +62,88 @@ KUSAKLAR = [
     "Siyah Kuşak / Müsabık / İleri Seviye"
 ]
 
+BARAJ_DERS_SAYISI = 24  # Sınav için gereken ders sayısı barajı
+
 if not IS_PRO and kalan_deneme_gunu <= 0:
     st.error("⛔ **Deneme Süreniz Dolmuştur!** 15 günlük ücretsiz deneme periyodunuz sona ermiştir. Lütfen yönetici ile iletişime geçip PRO pakete geçiniz.")
 else:
-    # --- TAB 1: DENEME DERSİ ---
+
+    # --- TAB 0: PIN YOKLAMA & MAT KONTENJANI ---
+    with tab0:
+        st.subheader("⚡ Hızlı PIN/QR Yoklama ve Mat Kontenjan Paneli")
+        
+        col_m1, col_m2 = st.columns(2)
+        mat_kapasite = col_m1.number_input("🤼‍♂️ Mat / Ring Maksimum Kapasitesi (Kişi)", min_value=5, max_value=100, value=15)
+        
+        if "mat_mevcut" not in st.session_state:
+            st.session_state.mat_mevcut = 0
+
+        col_m1.metric("Mevcut Mat Kalabalığı", f"{st.session_state.mat_mevcut} / {mat_kapasite} Kişi")
+        if st.session_state.mat_mevcut >= mat_kapasite:
+            col_m1.error("🚨 MAT KONTENJANI DOLDU! Yeni sporcu girmeden sıra bekletilmeli.")
+        
+        if col_m1.button("🧹 Matı Temizle / Dersi Bitir"):
+            st.session_state.mat_mevcut = 0
+            st.rerun()
+
+        st.markdown("---")
+        st.write("📲 **Sporcu Giriş Ekranı (PIN Girişi)**")
+        pin_giris = st.text_input("Sporcu PIN Kodunu Giriniz (Varsayılan: 1234)", type="password")
+        if st.button("✅ Derse Check-in Yap"):
+            if pin_giris:
+                basari, ad, yeni_ders, brans = pin_ile_yoklama_al(pin_giris)
+                if basari:
+                    st.session_state.mat_mevcut += 1
+                    st.success(f"🎉 **{ad}** ({brans}) Başarıyla Derse Katıldı! Toplam Katıldığı Ders: **{yeni_ders}**")
+                    st.rerun()
+                else:
+                    st.error("❌ Hatalı PIN Kodu! Kayıtlı sporcu bulunamadı.")
+
+    # --- TAB 1: KUŞAK SINAV UYGUNLUK TAKİBİ ---
     with tab1:
+        st.subheader("🥋 Otomatik Kuşak Derece Sınavı Uygunluk Takibi")
+        st.caption(f"Bir sonraki kuşak sınavına girmek için baraj: **{BARAJ_DERS_SAYISI} Katılım Dersi**")
+        
+        uyeler = uyeleri_getir()
+        if uyeler:
+            for u in uyeler:
+                u_id, u_ad, u_tel, u_brans, u_kusak, u_aidat_t, u_aidat_d, u_sinav_t, u_pin, u_ders = u
+                
+                c_k1, c_k2, c_k3 = st.columns([3, 3, 2])
+                c_k1.write(f"👤 **{u_ad}** ({u_brans})\n\n🥋 Mevcut: **{u_kusak}** | PIN: `{u_pin}`")
+                
+                kalan_ders = max(0, BARAJ_DERS_SAYISI - u_ders)
+                if u_ders >= BARAJ_DERS_SAYISI:
+                    c_k2.success(f"🟢 **SINAVA GİRMEYE HAK KAZANDI!**\n\nToplanan: **{u_ders} / {BARAJ_DERS_SAYISI} Ders**")
+                else:
+                    c_k2.warning(f"⏳ **Sınava Kalan: {kalan_ders} Ders**\n\nTamamlanan: {u_ders} / {BARAJ_DERS_SAYISI}")
+                
+                if c_k3.button("🥋 +1 Manuel Derse Katıldı", key=f"btn_ders_{u_id}"):
+                    ders_sayisi_arttir(u_id)
+                    st.success(f"{u_ad} için +1 ders işlendi!")
+                    st.rerun()
+                
+                # Kuşak Yükseltme İşlemi
+                if u_ders >= BARAJ_DERS_SAYISI:
+                    yeni_k = c_k3.selectbox("Yeni Kuşak Seç", KUSAKLAR, key=f"sel_k_{u_id}")
+                    if c_k3.button("🎓 Kuşağı Yükselt & Sıfırla", key=f"btn_yuks_{u_id}"):
+                        kusak_yukselt_sifirla(u_id, yeni_k)
+                        st.balloons()
+                        st.success(f"{u_ad} resmen **{yeni_k}** seviyesine yükseltildi!")
+                        st.rerun()
+                        
+                    # Sınav Davetiye Mesajı
+                    msg_sinav = f"Tebrikler {u_ad}! RingMaster Salonu'nda {BARAJ_DERS_SAYISI} derslik devamlılığını tamamlayarak Kuşak Sınavı'na girmeye hak kazandın! Sınav saatini öğrenmek için dönüş yapabilirsin. 🥋"
+                    enc_s = urllib.parse.quote(msg_sinav)
+                    wa_sinav_url = f"https://wa.me/{u_tel}?text={enc_s}"
+                    c_k3.markdown(f'<a href="{wa_sinav_url}" target="_blank"><button style="background-color:#25D366;color:white;width:100%;padding:8px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">📲 Sınav Davetiyesi At</button></a>', unsafe_allow_html=True)
+                
+                st.markdown("---")
+        else:
+            st.info("Kayıtlı sporcu bulunmuyor.")
+
+    # --- TAB 2: DENEME DERSİ ---
+    with tab2:
         st.subheader("🥊 Potansiyel Sporcu Deneme Dersi Kaydı")
         with st.form("deneme_form", clear_on_submit=True):
             col_d1, col_d2 = st.columns(2)
@@ -90,8 +168,8 @@ else:
         else:
             st.info("Planlanmış deneme dersi yok.")
 
-    # --- TAB 2: ÖZEL DERS (PT) & ÜCRET TAKİBİ ---
-    with tab2:
+    # --- TAB 3: ÖZEL DERS (PT) & ÜCRET TAKİBİ ---
+    with tab3:
         st.subheader("🥊 Birebir Özel Ders (PT) Paketi Tanımla")
         with st.form("pt_form", clear_on_submit=True):
             col_p1, col_p2 = st.columns(2)
@@ -141,8 +219,8 @@ else:
         else:
             st.info("Kayıtlı özel ders paketi bulunmuyor.")
 
-    # --- TAB 3: ÜYE YÖNETİMİ ---
-    with tab3:
+    # --- TAB 4: ÜYE YÖNETİMİ ---
+    with tab4:
         st.subheader("Yeni Sporcu Kaydı")
         with st.form("uye_form", clear_on_submit=True):
             col1, col2 = st.columns(2)
@@ -150,13 +228,14 @@ else:
             telefon = col1.text_input("Telefon (örn: 905xxxxxxxxx)")
             brans = col1.selectbox("Branş", ["Boks", "Kickboks", "Muay Thai", "Karate", "Fitness"])
             kusak = col2.selectbox("Mevcut Kuşak", KUSAKLAR)
+            pin_kod = col2.text_input("Yoklama PIN Kodu (Örn: 1234)", "1234")
             aidat_tarihi = col2.date_input("Son Aidat Tarihi", datetime.date.today())
             aidat_durumu = col2.selectbox("Aidat Durumu", ["Ödendi", "Ödeme Bekliyor"])
             aidat_tutari = col2.number_input("Aylık Aidat Tutarı (TL)", min_value=0, value=1500)
             
             submit = st.form_submit_button("➕ Sporcuyu Kaydet")
             if submit and ad_soyad and telefon:
-                uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu, str(datetime.date.today()))
+                uye_ekle(ad_soyad, telefon, brans, kusak, str(aidat_tarihi), aidat_durumu, str(datetime.date.today()), pin_kod)
                 if aidat_durumu == "Ödendi":
                     kasa_islem_ekle("Gelir", "Aidat", aidat_tutari, f"{ad_soyad} Üyelik Aidatı")
                 st.success(f"{ad_soyad} başarıyla eklendi!")
@@ -166,19 +245,9 @@ else:
         uyeler = uyeleri_getir()
         if uyeler:
             for u in uyeler:
-                st.write(f"🥊 **{u[1]}** | Branş: {u[3]} | 🥋 Kuşak: **{u[4]}** | Aidat: `{u[6]}`")
+                st.write(f"🥊 **{u[1]}** | Branş: {u[3]} | 🥋 Kuşak: **{u[4]}** | PIN: `{u[8]}` | Aidat: `{u[6]}`")
         else:
             st.info("Kayıtlı sporcu yok.")
-
-    # --- TAB 4: RANDEVULAR ---
-    with tab4:
-        st.subheader("Randevu Takvimi")
-        randevular = randevulari_getir()
-        if randevular:
-            for r in randevular:
-                st.write(f"🗓️ **{r[3]} {r[4]}** - 🥊 **{r[1]}** ({r[2]})")
-        else:
-            st.info("Randevu bulunmuyor.")
 
     # --- TAB 5: SPORCU ÖLÇÜM TAKİBİ ---
     with tab5:
@@ -254,7 +323,7 @@ else:
         else:
             st.info("Kasada henüz işlem kaydı yok.")
 
-    # --- TAB 7: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ (YENİ!) ---
+    # --- TAB 7: KAYIP ÜYE (CHURN RISK) UYARI MODÜLÜ ---
     with tab7:
         st.subheader("🚨 Riskli & Uykudaki Üye Erken Uyarı Paneli")
         st.write("Aidatı geciken veya salona gelmeyi aksatan üyeleri buradan tek tıkla geri kazanın.")
@@ -268,7 +337,6 @@ else:
                 c_r1.write(f"👤 **{u_ad}** ({u_brans})\n\n📞 {u_tel}")
                 c_r2.write(f"🚨 Durum: **{u_durum}**\n\n🗓️ Son Tarih: {u_tarih}")
                 
-                # Geri Kazanım Mesajı Fırlatıcı
                 mesaj = f"Merhaba {u_ad}, RingMaster Salonu'nda antrenmanları aksattığını fark ettik! 🥊 Sağlığın ve hedeflerin için salona geri dönme vakti. Bu haftaki ders programı için dönüşünü bekliyoruz!"
                 enc_m = urllib.parse.quote(mesaj)
                 wa_churn_url = f"https://wa.me/{u_tel}?text={enc_m}"
@@ -276,7 +344,7 @@ else:
                 c_r3.markdown(f'<a href="{wa_churn_url}" target="_blank"><button style="background-color:#FF3B30;color:white;width:100%;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold;">🔥 Üyeyi Geri Çağır</button></a>', unsafe_allow_html=True)
                 st.markdown("---")
         else:
-            st.success("🎉 Harika! ŞŞŞ-ŞAK! Şu an aidatı geciken veya kayıp riski taşıyan üye bulunmuyor.")
+            st.success("🎉 Harika! Şu an aidatı geciken veya kayıp riski taşıyan üye bulunmuyor.")
 
     # --- TAB 8: WHATSAPP / SMS İLETİŞİM ---
     with tab8:
