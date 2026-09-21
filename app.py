@@ -1,4 +1,9 @@
 import streamlit as st
+from datetime import datetime
+import database as db
+
+# Veritabanını başlat
+db.veritabani_baslat()
 
 # 1. Sayfa Yapılandırması (En üstte olmalı!)
 st.set_page_config(
@@ -9,7 +14,7 @@ st.set_page_config(
 
 try:
     st.title("🥊 RingMaster SaaS - Salon Yönetim ve Operasyon Paneli")
-    st.success("Sistem kararlı sürümünde çalışıyor, adım adım ilerliyoruz Caner Baba!")
+    st.success("Canlı SQLite Veritabanı Bağlantısı Aktif - Adım Adım İlerliyoruz Caner Baba!")
 
     # Sol Yan Menü (Sidebar) - Modül Seçimi
     st.sidebar.title("🚀 Salon Modülleri")
@@ -41,30 +46,57 @@ try:
 
     # Seçilen Modüle Göre Ekran İçerikleri
     if "Üye Yönetimi" in secilen_modul:
-        st.subheader("👤 Üye Yönetimi & Yeni Kayıt")
+        st.subheader("👤 Üye Yönetimi & Canlı Kayıt Paneli")
+        
         with st.form("uye_kayit_formu"):
             col_a, col_b = st.columns(2)
             with col_a:
                 ad_soyad = st.text_input("Sporcu Adı Soyadı")
                 telefon = st.text_input("Telefon Numarası")
+                pin_kodu = st.text_input("4 Haneli Giriş PIN Kodu", max_chars=4, type="password")
             with col_b:
                 brans = st.selectbox("Branş / Ders", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
-                paket = st.selectbox("Abonelik Tipi", ["Standart", "VIP Sınırsız"])
+                paket = st.selectbox("Abonelik Tipi", ["Standart (Aylık)", "VIP Sınırsız", "Çocuk Grubu"])
             
-            if st.form_submit_button("Üyeyi Kaydet"):
-                if ad_soyad:
-                    st.success(f"Başarıyla kaydedildi: {ad_soyad} ({brans}) - {paket}")
+            kayit_butonu = st.form_submit_button("Üyeyi Veritabanına Kaydet 💾")
+            
+            if kayit_butonu:
+                if ad_soyad and len(pin_kodu) == 4:
+                    db.uye_ekle(ad_soyad, telefon, brans, paket, pin_kodu)
+                    st.success(f"Tebrikler patron! {ad_soyad} ({brans}) başarıyla veritabanına kaydedildi.")
                 else:
-                    st.warning("Lütfen sporcu adını boş bırakmayın.")
+                    st.warning("Lütfen sporcu adını doldurun ve 4 haneli bir PIN kodu belirleyin.")
+
+        st.markdown("### 📋 Mevcut Salon Üyeleri Listesi")
+        uyeler = db.uyeleri_getir()
+        if uyeler:
+            # Tablo olarak gösterim için veriyi düzenleyelim
+            import pandas as pd
+            df_uyeler = pd.DataFrame(uyeler, columns=["ID", "Ad Soyad", "Telefon", "Branş", "Paket", "PIN", "Kayıt Tarihi"])
+            st.dataframe(df_uyeler, use_container_width=True)
+        else:
+            st.info("Henüz kayıtlı üye bulunmuyor. Yukarıdaki formdan ilk üyeyi ekleyebilirsin.")
 
     elif "PIN Yoklama" in secilen_modul:
         st.subheader("⚡ PIN Yoklama & Mat Kontenjanı")
-        girilen_pin = st.text_input("Sporcu 4 Haneli PIN Kodunu Girin", type="password")
-        if st.button("Yoklama Al"):
+        st.write("Sporcuların salon girişinde 4 haneli PIN kodunu girerek yoklama vermesini sağlayın.")
+        
+        girilen_pin = st.text_input("Sporcu 4 Haneli PIN Kodunu Girin", type="password", max_chars=4)
+        if st.button("Yoklamayı Onayla ✅"):
             if len(girilen_pin) == 4:
-                st.success(f"PIN ({girilen_pin}) doğrulandı! Mat kontenjanı güncellendi.")
+                # Veritabanında PIN'i arayalım
+                conn = db.baglanti_kur()
+                cursor = conn.cursor()
+                cursor.execute("SELECT ad_soyad, brans FROM uyeler WHERE pin_kodu = ?", (girilen_pin,))
+                bulunan_uye = cursor.fetchone()
+                conn.close()
+                
+                if bulunan_uye:
+                    st.success(f"🥊 Hoş geldin, {bulunan_uye[0]}! ({bulunan_uye[1]} sınıfı) Yoklamanız başarıyla alındı, mat kontenjanı güncellendi.")
+                else:
+                    st.error("❌ Bu PIN koduna ait kayıtlı bir üye bulunamadı!")
             else:
-                st.error("Geçersiz PIN kodu.")
+                st.warning("Lütfen geçerli 4 haneli bir PIN kodu girin.")
 
     elif "QR & Üye Self-Servis" in secilen_modul:
         st.subheader("🌐 QR & Üye Self-Servis Portal")
