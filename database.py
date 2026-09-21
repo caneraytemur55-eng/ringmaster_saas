@@ -36,12 +36,18 @@ def veritabani_baslat():
         )
     """)
     
-    # Emniyet Sübabı: Eskiden kalan uyeler tablosunda pin_kodu sütunu yoksa otomatik ekle
+    # Emniyet Sübabları: Eskiden kalan tablolarda eksik sütunlar varsa otomatik ekle
     try:
         cursor.execute("ALTER TABLE uyeler ADD COLUMN pin_kodu TEXT")
         conn.commit()
     except sqlite3.OperationalError:
-        pass # Sütun zaten varsa hata verme, devam et
+        pass 
+
+    try:
+        cursor.execute("ALTER TABLE uyeler ADD COLUMN kayit_tarihi TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass 
 
     # Diğer tablolar
     cursor.execute("""
