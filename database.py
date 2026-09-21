@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu
+    # 1. Üyeler Tablosu (Veli Bilgileri ve Çocuk Grubu Alanları Eklendi)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,6 +20,10 @@ def init_db():
             son_sinav_tarihi TEXT,
             pin_kod TEXT DEFAULT '1234',
             katilinan_ders INTEGER DEFAULT 0,
+            grup_tipi TEXT DEFAULT 'Yetişkin / Genel',
+            veli_adi TEXT DEFAULT '',
+            veli_telefonu TEXT DEFAULT '',
+            gelisim_notu TEXT DEFAULT 'Gelişimi düzenli takip ediliyor.',
             kayit_tarihi DATE DEFAULT CURRENT_DATE
         )
     ''')
@@ -66,7 +70,7 @@ def init_db():
         )
     ''')
     
-    # 5. Kasa / Gelir-Gider Tablosu
+    # 5. Kasa Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS kasa (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,12 +82,12 @@ def init_db():
         )
     ''')
 
-    # 6. Sporcu Ölçüm Takip Tablosu
+    # 6. Ölçüm Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS olcumler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             uye_id INTEGER NOT NULL,
-            tarih DEFAULT CURRENT_DATE,
+            tarih DATE DEFAULT CURRENT_DATE,
             kilo REAL,
             yag_orani REAL,
             bel REAL,
@@ -94,7 +98,7 @@ def init_db():
         )
     ''')
     
-    # 7. Müsabık Sporcu Tablosu
+    # 7. Müsabık Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS musabiklar (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,7 +129,7 @@ def init_db():
         )
     ''')
 
-    # 9. Ürün & Stok Takip Tablosu (YENİ!)
+    # 9. Ürün & Stok Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS urunler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,7 +141,7 @@ def init_db():
         )
     ''')
 
-    # 10. Sistem Ayarları Tablosu
+    # 10. Sistem Ayarları
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -161,7 +165,13 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# STOK & ÜRÜN POS FONKSİYONLARI (YENİ!)
+def cocuk_rapor_guncelle(uye_id, yeni_not):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE uyeler SET gelisim_notu = ? WHERE id = ?", (yeni_not, uye_id))
+    conn.commit()
+    conn.close()
+
 def urun_ekle(urun_adi, kategori, stok_miktari, alis_fiyati, satis_fiyati):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -186,23 +196,17 @@ def urunleri_getir():
 def urun_satisi_yap(urun_id, adet, toplam_tutar, odeme_tipi):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # Stok Düş
     cursor.execute("UPDATE urunler SET stok_miktari = MAX(0, stok_miktari - ?) WHERE id = ?", (adet, urun_id))
-    
-    # Kasaya Gelir İşle
     cursor.execute("SELECT urun_adi FROM urunler WHERE id = ?", (urun_id,))
     row = cursor.fetchone()
     u_adi = row[0] if row else "Ekipman"
-    
     cursor.execute(
         "INSERT INTO kasa (islem_tipi, kategori, tutar, aciklama) VALUES (?, ?, ?, ?)",
         ("Gelir", "Ekipman Satışı", toplam_tutar, f"POS Satış: {adet}x {u_adi} ({odeme_tipi})")
     )
-    
     conn.commit()
     conn.close()
 
-# DİĞER FONKSİYONLAR
 def musabik_ekle_guncelle(uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -373,12 +377,12 @@ def kasa_islemleri_getir():
     conn.close()
     return islemler
 
-def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod="1234"):
+def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod="1234", grup_tipi="Yetişkin / Genel", veli_adi="", veli_telefonu="", gelisim_notu=""):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO uyeler (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod)
+        "INSERT INTO uyeler (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod, grup_tipi, veli_adi, veli_telefonu, gelisim_notu) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod, grup_tipi, veli_adi, veli_telefonu, gelisim_notu)
     )
     conn.commit()
     conn.close()
@@ -387,7 +391,7 @@ def uyeleri_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id, ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod, katilinan_ders FROM uyeler")
+        cursor.execute("SELECT id, ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod, katilinan_ders, grup_tipi, veli_adi, veli_telefonu, gelisim_notu FROM uyeler")
         uyeler = cursor.fetchall()
     except Exception:
         uyeler = []
