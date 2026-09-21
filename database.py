@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu (PIN ve Katılan Ders Sayısı eklendi)
+    # 1. Üyeler Tablosu (PIN ve Katılan Ders Sayısı)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,7 +94,38 @@ def init_db():
         )
     ''')
     
-    # 7. Sistem Lisans/Abonelik Tablosu
+    # 7. Müsabık Sporcu & Dövüş Sicili Tablosu (YENİ!)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS musabiklar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uye_id INTEGER NOT NULL,
+            stili TEXT DEFAULT 'Ortodoks (Sağak)',
+            hedef_siklet REAL DEFAULT 70.0,
+            galibiyet INTEGER DEFAULT 0,
+            maglubiyet INTEGER DEFAULT 0,
+            beraberlik INTEGER DEFAULT 0,
+            ko_tko INTEGER DEFAULT 0,
+            yaklasan_mac_tarihi DATE,
+            organizasyon TEXT,
+            FOREIGN KEY (uye_id) REFERENCES uyeler (id)
+        )
+    ''')
+
+    # 8. Sakatlık & Sparring Protokol Tablosu (YENİ!)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sakatliklar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uye_id INTEGER NOT NULL,
+            sakatlik_bolgesi TEXT NOT NULL,
+            sparring_yasak_gun INTEGER DEFAULT 14,
+            izin_verilen_antrenman TEXT,
+            baslangic_tarihi DATE DEFAULT CURRENT_DATE,
+            durum TEXT DEFAULT 'Aktif Sakatlık 🔴',
+            FOREIGN KEY (uye_id) REFERENCES uyeler (id)
+        )
+    ''')
+
+    # 9. Sistem Lisans/Abonelik Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sistem_ayarlari (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -118,7 +149,66 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# PIN İLE YOKLAMA VE DERS SAYISI ARTTIRMA
+# MÜSABIK VE DÖVÜŞ SİCİLİ FONKSİYONLARI
+def musabik_ekle_guncelle(uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM musabiklar WHERE uye_id = ?", (uye_id,))
+    row = cursor.fetchone()
+    if row:
+        cursor.execute('''
+            UPDATE musabiklar SET stili=?, hedef_siklet=?, galibiyet=?, maglubiyet=?, beraberlik=?, ko_tko=?, yaklasan_mac_tarihi=?, organizasyon=?
+            WHERE uye_id=?
+        ''', (stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, str(yaklasan_mac_tarihi), organizasyon, uye_id))
+    else:
+        cursor.execute('''
+            INSERT INTO musabiklar (uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (uye_id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, str(yaklasan_mac_tarihi), organizasyon))
+    conn.commit()
+    conn.close()
+
+def musabik_getir(uye_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, stili, hedef_siklet, galibiyet, maglubiyet, beraberlik, ko_tko, yaklasan_mac_tarihi, organizasyon FROM musabiklar WHERE uye_id = ?", (uye_id,))
+        res = cursor.fetchone()
+    except Exception:
+        res = None
+    conn.close()
+    return res
+
+# SAKATLIK FONKSİYONLARI
+def sakatlik_ekle(uye_id, sakatlik_bolgesi, sparring_yasak_gun, izin_verilen_antrenman):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO sakatliklar (uye_id, sakatlik_bolgesi, sparring_yasak_gun, izin_verilen_antrenman)
+        VALUES (?, ?, ?, ?)
+    ''', (uye_id, sakatlik_bolgesi, sparring_yasak_gun, izin_verilen_antrenman))
+    conn.commit()
+    conn.close()
+
+def sakatliklari_getir(uye_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, sakatlik_bolgesi, sparring_yasak_gun, izin_verilen_antrenman, baslangic_tarihi, durum FROM sakatliklar WHERE uye_id = ? ORDER BY id DESC", (uye_id,))
+        rows = cursor.fetchall()
+    except Exception:
+        rows = []
+    conn.close()
+    return rows
+
+def sakatlik_kapat(sakatlik_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE sakatliklar SET durum = 'İyileşti 🟢' WHERE id = ?", (sakatlik_id,))
+    conn.commit()
+    conn.close()
+
+# DİĞER FONKSİYONLAR
 def pin_ile_yoklama_al(pin):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -148,7 +238,6 @@ def kusak_yukselt_sifirla(uye_id, yeni_kusak):
     conn.commit()
     conn.close()
 
-# CHURN RISK / KAYIP ÜYE
 def uykudaki_uyeleri_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -160,7 +249,6 @@ def uykudaki_uyeleri_getir():
     conn.close()
     return uykudakiler
 
-# ÖLÇÜM FONKSİYONLARI
 def olcum_ekle(uye_id, kilo, yag_orani, bel, gogus, pazu, notlar):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -182,7 +270,6 @@ def olcumleri_getir(uye_id):
     conn.close()
     return olcumler
 
-# KASA FONKSİYONLARI
 def kasa_islem_ekle(islem_tipi, kategori, tutar, aciklama):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -218,7 +305,6 @@ def kasa_islemleri_getir():
     conn.close()
     return islemler
 
-# ÜYE FONKSİYONLARI
 def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod="1234"):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
