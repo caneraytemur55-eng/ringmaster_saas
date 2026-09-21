@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Üyeler Tablosu
+    # 1. Üyeler Tablosu (PIN ve Katılan Ders Sayısı eklendi)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS uyeler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,11 +18,13 @@ def init_db():
             aidat_tarihi TEXT,
             aidat_durumu TEXT DEFAULT 'Ödendi',
             son_sinav_tarihi TEXT,
+            pin_kod TEXT DEFAULT '1234',
+            katilinan_ders INTEGER DEFAULT 0,
             kayit_tarihi DATE DEFAULT CURRENT_DATE
         )
     ''')
     
-    # 2. Randevular Tablosu
+    # 2. Randevular / Ders Katılım Tablosu
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS randevular (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,12 +118,41 @@ def kurulum_tarihi_getir():
     conn.close()
     return tarih_str
 
-# CHURN RISK / KAYIP ÜYE ALTYAPISI
+# PIN İLE YOKLAMA VE DERS SAYISI ARTTIRMA
+def pin_ile_yoklama_al(pin):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, ad_soyad, katilinan_ders, brans FROM uyeler WHERE pin_kod = ?", (pin,))
+    row = cursor.fetchone()
+    if row:
+        u_id, ad, ders_sayisi, brans = row
+        yeni_ders = ders_sayisi + 1
+        cursor.execute("UPDATE uyeler SET katilinan_ders = ? WHERE id = ?", (yeni_ders, u_id))
+        conn.commit()
+        conn.close()
+        return True, ad, yeni_ders, brans
+    conn.close()
+    return False, None, 0, None
+
+def ders_sayisi_arttir(uye_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE uyeler SET katilinan_ders = katilinan_ders + 1 WHERE id = ?", (uye_id,))
+    conn.commit()
+    conn.close()
+
+def kusak_yukselt_sifirla(uye_id, yeni_kusak):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE uyeler SET kusak = ?, katilinan_ders = 0, son_sinav_tarihi = ? WHERE id = ?", (yeni_kusak, str(datetime.date.today()), uye_id))
+    conn.commit()
+    conn.close()
+
+# CHURN RISK / KAYIP ÜYE
 def uykudaki_uyeleri_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
-        # Aidat süresi geçmiş veya ödeme bekleyen üyeler
         cursor.execute("SELECT id, ad_soyad, telefon, brans, aidat_tarihi, aidat_durumu FROM uyeler WHERE aidat_durumu = 'Ödeme Bekliyor'")
         uykudakiler = cursor.fetchall()
     except Exception:
@@ -187,13 +218,13 @@ def kasa_islemleri_getir():
     conn.close()
     return islemler
 
-# DİĞER FONKSİYONLARI
-def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi):
+# ÜYE FONKSİYONLARI
+def uye_ekle(ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod="1234"):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO uyeler (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi)
+        "INSERT INTO uyeler (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod)
     )
     conn.commit()
     conn.close()
@@ -202,7 +233,7 @@ def uyeleri_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id, ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi FROM uyeler")
+        cursor.execute("SELECT id, ad_soyad, telefon, brans, kusak, aidat_tarihi, aidat_durumu, son_sinav_tarihi, pin_kod, katilinan_ders FROM uyeler")
         uyeler = cursor.fetchall()
     except Exception:
         uyeler = []
@@ -265,27 +296,6 @@ def ozel_ders_ucret_guncelle(pt_id, yeni_durum):
     conn.commit()
     conn.close()
 
-def aidat_durum_guncelle(uye_id, yeni_durum):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE uyeler SET aidat_durumu = ? WHERE id = ?", (yeni_durum, uye_id))
-    conn.commit()
-    conn.close()
-
-def kusak_guncelle(uye_id, yeni_kusak, yeni_sinav_tarihi):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE uyeler SET kusak = ?, son_sinav_tarihi = ? WHERE id = ?", (yeni_kusak, yeni_sinav_tarihi, uye_id))
-    conn.commit()
-    conn.close()
-
-def randevu_ekle(uye_id, tarih, saat):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO randevular (uye_id, tarih, saat) VALUES (?, ?, ?)", (uye_id, tarih, saat))
-    conn.commit()
-    conn.close()
-
 def randevulari_getir():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -301,15 +311,4 @@ def randevulari_getir():
         randevular = []
     conn.close()
     return randevular
-
-def randevu_sayisi():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT COUNT(*) FROM randevular")
-        count = cursor.fetchone()[0]
-    except Exception:
-        count = 0
-    conn.close()
-    return countt
 
