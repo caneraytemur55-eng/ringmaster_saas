@@ -83,12 +83,12 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm Modüller + Yeni Oryantasyon Modülü (21 Modül Tam Kadro)
+# Tüm Modüller (21 Modül Tam Kadro)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
         "Ana Sayfa", 
-        "🚀 Sistem Oryantasyonu & Tur Rehberi",
+        "🚀 Sistem Oryantasyonu & 50s Tur Rehberi",
         "Ringmaster AI Asistanı 🤖", 
         "Salon Üyeleri Yönetimi", 
         "Yoklama Sistemi", 
@@ -120,34 +120,60 @@ if secilen_modul == "Ana Sayfa":
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "21 / 21 (Oryantasyon Dahil)")
+        st.metric("Aktif Modül", "21 / 21 (50s Oryantasyon Dahil)")
     with col3:
-        st.metric("Sistem Modeli", "Kartlı Deneme & PIN Otomasyonu 🚀")
+        st.metric("Sistem Modeli", "Kartlı Deneme & Kapsamlı Otomasyon 🚀")
 
-# --- 2. SİSTEM ORYANTASYONU & TUR REHBERİ ---
-elif secilen_modul == "🚀 Sistem Oryantasyonu & Tur Rehberi":
-    st.subheader("🚀 Ringmaster SaaS İnteraktif Tur ve Kullanım Rehberi")
-    st.write("Salonunu dijitalleştirmek ve yazılımı ustaca kullanmak için adım adım rehberin aşağıda!")
+# --- 2. SİSTEM ORYANTASYONU & 50s TUR REHBERİ ---
+elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Tur Rehberi":
+    st.subheader("🚀 Ringmaster SaaS - 50 Saniyelik Kapsamlı Sistem Turu")
+    st.write("Salon sahipleri için tüm modülleri (Üye, Yoklama, Antrenör Primi ve Veli Bilgilendirme dahil) özetleyen 50 saniyelik masterclass akış.")
 
-    tab1, tab2, tab3, tab4 = st.tabs(["🎯 1. Adım: Hızlı Başlangıç", "🤖 2. Adım: AI ve Otomasyon", "💳 3. Adım: Finans ve Ödemeler", "💡 Video / Görsel Simülasyon Simülasyonu"])
+    tab1, tab2, tab3 = st.tabs(["🎥 50 Saniyelik Video & Modül Turu", "📋 4 Aşamalı Tam Akış", "💡 Modül Kılavuzları"])
 
     with tab1:
-        st.markdown("### Salonunuzu 3 Dakikada Dijitalize Edin")
-        st.info("1. **Salon Üyeleri Yönetimi** modülüne gidin.\n2. Sporcunun adını, telefonunu ve branşını girip kaydedin.\n3. Sistem otomatik 4 haneli PIN üretir. **WhatsApp ile PIN Gönder** butonuna basarak sporcunun cebine direkt şifresini yollayın!")
+        st.markdown("### ⏱️ 50 Saniyede Tüm Salon Yönetimi Akışı")
+        st.info("Bu 50 saniyelik rehber video/akış ile salon sahipleri tüm operasyonu anında kavrar:")
+        
+        # 50 Saniyelik Genişletilmiş Görsel Zaman Çizelgesi (Timeline)
+        col_a, col_b, col_c, col_d = st.columns(4)
+        with col_a:
+            st.markdown("#### 1️⃣ (0-12 sn)")
+            st.write("**Üye & PIN Kaydı**")
+            st.caption("Ad, tel, branş girilir; sistem otomatik 4 haneli PIN üretir ve WhatsApp ile yollanır.")
+        with col_b:
+            st.markdown("#### 2️⃣ (12-25 sn)")
+            st.write("**Yoklama & Kasa**")
+            st.caption("Tablet üzerinden PIN ile saniyelik yoklama alınır, kasa ve stok takibi anlık işlenir.")
+        with col_c:
+            st.markdown("#### 3️⃣ (25-38 sn)")
+            st.write("**Antrenör Primleri**")
+            st.caption("Hocaların ders sayıları ve yüzdelik prim hesaplamaları otomatik raporlanır.")
+        with col_d:
+            st.markdown("#### 4️⃣ (38-50 sn)")
+            st.write("**Veli & AI Asistan**")
+            st.caption("Çocuk gelişim raporları velilere iletilir, AI asistanı ile salona stratejik sorular sorulur.")
+
+        st.markdown("---")
+        st.markdown("### 📹 50 Saniyelik Tanıtım / Ekran Kaydı Oynatıcı")
+        st.write("Tüm modülleri (Antrenör primleri ve veli bilgilendirme dahil) anlatan 50 saniyelik videonuzu buraya bağlayabilirsiniz:")
+        
+        # Hazır video oynatıcı
+        st.video("https://www.w3schools.com/html/mov_bbb.mp4")
+        st.caption("💡 İpucu: Kendi 50 saniyelik profesyonel tanıtım videonuzun linkini buraya ekleyebilirsiniz.")
 
     with tab2:
-        st.markdown("### Ringmaster AI Asistanını Nasıl Kullanırsınız?")
-        st.info("Sol menüden **Ringmaster AI Asistanı 🤖** sekmesine tıklayarak salonunuzun doluluk oranı, üye sayıları ve yönetim stratejileri hakkında anında yapay zeka desteği alabilirsiniz.")
+        st.markdown("### 🎯 Tüm Modülleri Kapsayan 4 Adımlı Rehber")
+        st.success("""
+        1. **Temel Operasyon:** Sporcuyu kaydedip WhatsApp ile PIN kodunu iletin, turnike/yoklama otomatik çalışsın.
+        2. **Finans & Stok:** Kasa hareketleri ve ürün stoklarını tek ekrandan kontrol edin.
+        3. **Antrenör Yönetimi:** Ders bazlı prim takipleriyle hoca hak edişlerini şeffaf yönetin.
+        4. **İletişim & Gelişim:** Çocuk sporcular için veli bilgilendirme ve gelişim raporlarıyla memnuniyeti zirveye taşıyın.
+        """)
 
     with tab3:
-        st.markdown("### Küresel ve Yerel Ödeme Sistemleri")
-        st.info("**SaaS Abonelik Yönetimi** ve **Küresel & Yerel Ödemeler** modülleriyle ister Türkiye'den PayTR/Iyzico (TRY) ister dünyadan Stripe (USD/GBP/EUR) üzerinden 14 gün kartlı deneme başlatarak tahsilat yapabilirsiniz.")
-
-    with tab4:
-        st.markdown("### 🎥 Tanıtım ve Oryantasyon Vitrini")
-        st.write("Yeni başlayan salon personeli veya antrenörler için kısa sistem tanıtım akışı:")
-        st.video("https://www.w3schools.com/html/mov_bbb.mp4") # Örnek akış videosu / simülasyonu
-        st.success("Tüm modüllerin içinde ayrıca **'💡 Nasıl Kullanılır?'** rehber kutucukları eklenmiştir.")
+        st.markdown("### 💡 Her Modülde Otomatik Kılavuz")
+        st.write("Yazılımdaki 20 modülün her birinin üst kısmında **'💡 Bu Modül Nasıl Kullanılır?'** rehberi hazır bulunur.")
 
 # --- 3. RİNGMASTER AI ASİSTANI ---
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
@@ -155,18 +181,18 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.write("Salonunla ilgili stratejik sorular sorabilir, operasyonel hız hakkında bilgi alabilirsin.")
     
     with st.expander("💡 Bu Modül Nasıl Kullanılır? (Oryantasyon Rehberi)"):
-        st.write("Bu asistan doğrudan veritabanınızla konuşur. Üye istatistikleri, PIN sistemleri veya salon içi optimizasyonlar hakkında soru sorarak anında stratejik yanıtlar alabilirsiniz.")
+        st.write("Bu asistan doğrudan veritabanınızla konuşur. Üye istatistikleri, prim sistemleri veya salon içi optimizasyonlar hakkında soru sorabilirsiniz.")
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! Koyu lacivert ferah temamız ve yeni interaktif oryantasyon rehberimiz devrede. Bugün ringde hangi operasyonu yönetiyoruz?"}
+            {"role": "assistant", "content": "Selam patron! 50 saniyelik kapsamlı oryantasyon rehberimiz ve tüm modüllerimiz (primler ve veli raporları dahil) tam kadro devrede. Bugün neyi optimize ediyoruz?"}
         ]
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Salon yönetimi, PIN sistemleri veya abonelikler hakkında sor..."):
+    if prompt := st.chat_input("Salon yönetimi, antrenör primleri veya veli raporları hakkında sor..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -174,14 +200,14 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
         with st.chat_message("assistant"):
             with st.spinner("Ringmaster AI düşünüyor..."):
                 lower_p = prompt.lower()
-                if "pin" in lower_p or "yoklama" in lower_p:
-                    yanit = "Sporcu kayıt ekranından PIN kodları anında üretiliyor ve WhatsApp ile tek tıkla cebine gönderiliyor, patron!"
+                if "prim" in lower_p or "antrenör" in lower_p:
+                    yanit = "Antrenör prim modülü üzerinden ders sayıları ve yüzdelik oranlar saniyeler içinde hesaplanıyor, patron!"
+                elif "veli" in lower_p or "çocuk" in lower_p:
+                    yanit = "Çocuk gelişim modülü sayesinde veli bilgilendirmeleri kusursuz şekilde arşivleniyor."
                 elif "üye" in lower_p or "kayıt" in lower_p:
-                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz gururla ter döküyor."
-                elif "merhaba" in lower_p or "selam" in lower_p:
-                    yanit = "Ooo selam patron! Yeni lacivert tema, turuncu butonlar ve oryantasyon rehberi harika duruyor, altyapı mermi gibi!"
+                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz bulunuyor."
                 else:
-                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tam otomasyon devrede."
+                    yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tüm otomasyon devrede."
                 
                 st.markdown(yanit)
                 st.session_state.messages.append({"role": "assistant", "content": yanit})
@@ -192,8 +218,8 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
     
     with st.expander("💡 Bu Modül Nasıl Kullanılır ve Veri Girilir? (Rehber)"):
         st.write("""
-        1. **Sporcu Ekleme:** Ad soyad, telefon ve branş seçip 'Sporcuyu Kaydet' butonuna basın. Sistem otomatik 4 haneli PIN üretir.
-        2. **WhatsApp Entegrasyonu:** Kayıttan sonra alttaki formdan sporcuyu seçip WhatsApp mesaj bağlantısıyla giriş PIN'ini anında telefonuna yollayın.
+        1. **Sporcu Ekleme:** Ad soyad, telefon ve branş girip 'Sporcuyu Kaydet' butonuna basın.
+        2. **WhatsApp Entegrasyonu:** Kayıttan sonra alttaki formdan sporcuyu seçip WhatsApp mesaj bağlantısıyla giriş PIN'ini iletin.
         """)
 
     with st.form("uye_form"):
@@ -254,7 +280,7 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
 elif secilen_modul == "Yoklama Sistemi":
     st.subheader("📝 Yoklama ve Giriş Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Sporcular turnike ekranında veya salondaki tablette 4 haneli kişisel PIN kodunu girerek antrenman yoklamasını otomatik olarak sisteme işler.")
+        st.write("Sporcular salondaki tablette 4 haneli kişisel PIN kodunu girerek antrenman yoklamasını otomatik işler.")
     
     girilen_pin = st.text_input("4 Haneli PIN Kodunuzu Girin", max_chars=4, type="password")
     if st.button("Giriş Yap / Yoklama Al"):
@@ -269,7 +295,7 @@ elif secilen_modul == "Yoklama Sistemi":
 elif secilen_modul == "Stok Takibi":
     st.subheader("📦 Ürün ve Ekipman Stok Yönetimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Eldiven, bandaj, protein tozu veya ekipman stoklarını buradan takip edebilir, yeni ürün ekleyebilirsiniz.")
+        st.write("Eldiven, bandaj, protein tozu veya ekipman stoklarını buradan takip edin.")
     
     conn = db.baglanti_kur()
     stoklar = pd.read_sql("SELECT * FROM stok", conn)
@@ -291,7 +317,7 @@ elif secilen_modul == "Stok Takibi":
 elif secilen_modul == "Kasa / Finans":
     st.subheader("💰 Kasa ve Gelir/Gider Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Salonun günlük gelir ve gider hareketlerini kaydederek finansal durumu anlık gözlemleyebilirsiniz.")
+        st.write("Salonun günlük gelir ve gider hareketlerini kaydederek finansal durumu gözlemleyin.")
     
     conn = db.baglanti_kur()
     kasa_df = pd.read_sql("SELECT * FROM kasa", conn)
@@ -312,7 +338,7 @@ elif secilen_modul == "Kasa / Finans":
 
 # --- 8. ANTRENÖR & PRİM TAKİBİ ---
 elif secilen_modul == "Antrenör & Prim Takibi":
-    st.subheader("🥋 Antrenör ve Prim Yönetimi")
+    st.subheader("🥋 Antrenör ve Prim Yönetimi (50s Tur Vurgusu)")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
         st.write("Antrenörlerin verdikleri ders sayılarını ve prim oranlarını belirleyerek hak ediş hesaplamalarını yapın.")
     
@@ -335,7 +361,7 @@ elif secilen_modul == "Antrenör & Prim Takibi":
 
 # --- 9. ÇOCUK GELİŞİM RAPORLARI ---
 elif secilen_modul == "Çocuk Gelişim Raporları":
-    st.subheader("🧒 Çocuk Gelişim ve Veli Takibi")
+    st.subheader("🧒 Çocuk Gelişim ve Veli Bilgilendirme Modülü")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
         st.write("Çocuk sporcuların gelişim notlarını girerek velilerle düzenli geri bildirim paylaşımı sağlayın.")
     
@@ -360,7 +386,7 @@ elif secilen_modul == "Çocuk Gelişim Raporları":
 elif secilen_modul == "Kuşak / Derece Sınavı":
     st.subheader("🥋 Kuşak ve Derece Sınav Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Sporcuların kuşak geçiş sınavlarını, mevcut ve hedef derecelerini kayıt altında tutun.")
+        st.write("Sporcuların kuşak geçiş sınavlarını ve hedef derecelerini kayıt altında tutun.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM kusak_sinav", conn)
@@ -383,7 +409,7 @@ elif secilen_modul == "Kuşak / Derece Sınavı":
 elif secilen_modul == "Müsabık Takımı Yönetimi":
     st.subheader("🥊 Müsabık Sporcu ve Siklet Yönetimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Lisanslı müsabık sporcuların sikletlerini, galibiyet ve mağlubiyet istatistiklerini takip edin.")
+        st.write("Lisanslı müsabık sporcuların sikletlerini ve galibiyet istatistiklerini takip edin.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM musabiklar", conn)
@@ -406,7 +432,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
 elif secilen_modul == "Sakatlık & Sparring Takibi":
     st.subheader("🩹 Sporcu Sakatlık ve Sparring Yasakları")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Sakatlığı bulunan sporcuların sparring (serbest dövüş) yapmasını engellemek için güvenli kısıtlama modülü.")
+        st.write("Sakatlığı bulunan sporcuların sparring yapmasını engellemek için güvenlik modülü.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM sakatliklar", conn)
@@ -428,7 +454,7 @@ elif secilen_modul == "Sakatlık & Sparring Takibi":
 elif secilen_modul == "Maç / Turnuva Takvimi":
     st.subheader("🏆 Maç ve Turnuva Takvimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Önümüzdeki şampiyonaları, turnuva tarihlerini ve katılacak sporcu kadrolarını organize edin.")
+        st.write("Önümüzdeki şampiyonaları ve katılacak sporcu kadrolarını organize edin.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM mac_takvimi", conn)
@@ -473,7 +499,7 @@ elif secilen_modul == "Aday Üye Takibi (CRM)":
 elif secilen_modul == "Özel Ders (PT) Takibi":
     st.subheader("🎯 Özel Ders (PT) Paket Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Birebir özel ders alan sporcuların kalan ders haklarını ve antrenör eşleşmelerini takip edin.")
+        st.write("Birebir özel ders alan sporcuların kalan ders haklarını takip edin.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM ozel_dersler", conn)
@@ -495,7 +521,7 @@ elif secilen_modul == "Özel Ders (PT) Takibi":
 elif secilen_modul == "Vücut Ölçüm Takibi":
     st.subheader("📊 Sporcu Vücut Ölçümleri")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Sporcuların kilo ve yağ oranı değişimlerini periyodik olarak kaydederek gelişim eğrilerini izleyin.")
+        st.write("Sporcuların kilo ve yağ oranı değişimlerini periyodik olarak kaydedin.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM olcumler", conn)
@@ -518,7 +544,7 @@ elif secilen_modul == "Vücut Ölçüm Takibi":
 elif secilen_modul == "Üye Terk (Churn) Riski":
     st.subheader("⚠️ Üye Devamsızlık ve Terk Riski")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Uzun süredir antrenmana gelmeyen sporcuları tespit edip erken müdahale ile üyeliği kurtarın.")
+        st.write("Uzun süredir antrenmana gelmeyen sporcuları tespit edip erken müdahale edin.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM churn_takip", conn)
@@ -619,7 +645,7 @@ elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
         st.write("Gateway: **Stripe**")
         st.info("Plan: €55 / ay (14 Days Trial w/ CC)")
         if st.button("🇪🇺 EU Kartlı Deneme Linki"):
-            st.success(f"Stripe EU (EUR) 14 gün denemeli ödeme linki üretildi!")
+            st.success("Stripe EU (EUR) 14 gün denemeli ödeme linki üretildi!")
             st.code("https://buy.stripe.com/test_eu_trial_sample_eur")
 
     st.markdown("---")
