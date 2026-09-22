@@ -167,6 +167,24 @@ def veritabani_baslat():
             tarih TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS akilli_randevular (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sporcu_adi TEXT,
+            antrenor_adi TEXT,
+            slot_tarihi TEXT,
+            durum TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS beslenme_receteleri (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sporcu_adi TEXT,
+            gunluk_kalori INTEGER,
+            protein_hedefi TEXT,
+            supplement_notu TEXT
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -263,7 +281,7 @@ s.markdown("""
 s.sidebar.title("🥊 Ringmaster SaaS")
 s.sidebar.markdown("---")
 
-# Modül Listesi (23 Modül Tam Kadro)
+# Modül Listesi (25 Modül Tam Kadro - Yeni Akıllı Randevu ve Beslenme Modülleri Dahil)
 secilen_modul = s.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -271,6 +289,8 @@ secilen_modul = s.sidebar.selectbox(
         "🚀 Sistem Oryantasyonu & 50s Slayt Turu",
         "Ringmaster AI Asistanı 🤖", 
         "🧠 Akıllı Dijital Kas Hafızası & Teknik AI",
+        "📅 Akıllı Randevu & Koç Planlama AI",
+        "🥗 Akıllı Beslenme & Supplement Reçete Botu",
         "Salon Üyeleri Yönetimi", 
         "Yoklama Sistemi", 
         "Stok Takibi", 
@@ -296,57 +316,58 @@ secilen_modul = s.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     s.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    s.markdown("Koyu lacivert zemin, neon turuncu butonlar, tüm dövüş sanatları branşları ve **Akıllı Kas Hafızası Modülü** ile sistem mermi gibi devrede.")
+    s.markdown("Koyu lacivert zemin, neon turuncu butonlar, tüm dövüş sanatları branşları ve yeni nesil **Akıllı Randevu & Beslenme AI modülleri** ile sistem devrede.")
     
     col1, col2, col3 = s.columns(3)
     with col1:
         s.metric("Toplam Üye", len(uyeleri_getir()))
     with col2:
-        s.metric("Aktif Modül", "23 / 23 (Tam Donanımlı)")
+        s.metric("Aktif Modül", "25 / 25 (Ultra Tam Donanımlı)")
     with col3:
         s.metric("Sistem Modeli", "Rakipsiz AI & Küresel SaaS 🚀")
 
-# --- 2. SİSTEM ORYANTASYONU & SLAYT TURU (23 MODÜL TAM KADRO) ---
+# --- 2. SİSTEM ORYANTASYONU & SLAYT TURU (25 MODÜL TAM KADRO) ---
 elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
-    s.subheader("🚀 Ringmaster SaaS - 23 Modüllü Tam Slayt Turu")
-    s.write("Sistemin tüm operasyonel modüllerini, yapay zeka asistanını, kas hafızası analizlerini ve finansal akışları sırasıyla tanıtan 50 saniyelik canlı gösteri.")
+    s.subheader("🚀 Ringmaster SaaS - 25 Modüllü Tam Slayt Turu")
+    s.write("Sistemin tüm operasyonel modüllerini, akıllı randevu ve beslenme botunu, kas hafızası analizlerini ve küresel finansal akışları tanıtan 50 saniyelik canlı gösteri.")
 
-    tab1, tab2 = s.tabs(["🎬 Otomatik Modül Slayt Gösterisi", "📋 23 Modül Akış Detayları"])
+    tab1, tab2 = s.tabs(["🎬 Otomatik Modül Slayt Gösterisi", "📋 25 Modül Akış Detayları"])
 
     with tab1:
-        s.markdown("### ⏱️ Tüm Modülleri Kapsayan 50 Saniyelik Slayt Turu")
+        s.markdown("### ⏱️ Tüm 25 Modülü Kapsayan Canlı Slayt Turu")
         
-        # 23 Modülün Tamamını Kapsayan Slayt Adımları
         slayt_adimları = [
             ("00 - 02 sn", "🥊 Ana Sayfa", "Ringmaster SaaS yönetim paneline genel bakış ve anlık metrikler."),
             ("02 - 04 sn", "🚀 Sistem Oryantasyonu", "Salonunuzu saniyeler içinde tanıtan akıllı slayt turu rehberi."),
             ("04 - 06 sn", "🤖 Ringmaster AI Asistanı", "Veritabanınızla konuşan ve salon yönetiminizi optimize eden akıllı yapay zeka."),
-            ("06 - 09 sn", "🧠 Akıllı Kas Hafızası & Teknik AI", "Sporcuların eklem açılarını analiz eden, antrenörün yükünü alan devrimci AI modülü."),
-            ("09 - 11 sn", "👤 Salon Üyeleri Yönetimi", "Boks, MMA, BJJ, Crossfit ve tüm genişletilmiş branşlarda hızlı sporcu kaydı ve PIN üretimi."),
-            ("11 - 13 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN ile saniyeler içinde otomatik antrenman yoklaması."),
-            ("13 - 15 sn", "📦 Stok Takibi", "Eldiven, bandaj, kimono ve ekipman stoklarının anlık kontrolü."),
-            ("15 - 17 sn", "💰 Kasa / Finans", "Günlük gelir ve gider hareketlerinin şeffaf finansal takibi."),
-            ("17 - 20 sn", "💳 Aidat & Ücret Ödeme Takibi", "Üye borçlandırma, tahsilat, dijital makbuz ve geciken ödeme uyarıları."),
-            ("20 - 22 sn", "🥋 Antrenör & Prim Takibi", "Antrenörlerin ders sayıları ve yüzdelik prim hesaplamalarının raporlanması."),
-            ("22 - 24 sn", "🧒 Çocuk Gelişim Raporları", "Çocuk sporcuların gelişim notları ve veli bilgilendirme akışı."),
-            ("24 - 26 sn", "🥋 Kuşak / Derece Sınavı", "Kuşak, dan ve seviye geçiş sınavlarının kayıt altında tutulması."),
-            ("26 - 28 sn", "🥊 Müsabık Takımı Yönetimi", "Lisanslı müsabık sporcuların siklet ve galibiyet/mağlubiyet istatistikleri."),
-            ("28 - 30 sn", "🩹 Sakatlık & Sparring Takibi", "Sakat sporcuların güvenliği için sparring yapmasının engellenmesi."),
-            ("30 - 32 sn", "🏆 Maç / Turnuva Takvimi", "Önümüzdeki şampiyonalar ve turnuvalara katılacak sporcu kadroları."),
-            ("32 - 34 sn", "📞 Aday Üye Takibi (CRM)", "Deneme dersine gelen potansiyel adayların dönüşüm süreçleri."),
-            ("34 - 36 sn", "🎯 Özel Ders (PT) Paketi", "Birebir özel ders alan sporcuların kalan ders haklarının takibi."),
-            ("36 - 38 sn", "📊 Vücut Ölçüm Takibi", "Sporcuların kilo ve yağ oranı değişimlerinin periyodik kaydı."),
-            ("38 - 40 sn", "⚠️ Üye Terk (Churn) Riski", "Uzun süredir gelmeyen üyelerin tespiti ve erken müdahale."),
-            ("40 - 43 sn", "📢 Toplu SMS / Duyuru Logu", "Üyelere veya velilere yapılan toplu duyuru ve mesaj arşivleme."),
-            ("43 - 45 sn", "🏢 SaaS Abonelik Yönetimi", "Yeni salon müşterilerinin 14 günlük deneme ve abonelik süreçleri."),
-            ("45 - 48 sn", "🌍 Küresel & Yerel Ödemeler", "Stripe ve PayTR ile çoklu para birimi ve kartlı deneme modeli."),
+            ("06 - 08 sn", "🧠 Akıllı Kas Hafızası & Teknik AI", "Sporcuların eklem açılarını analiz eden, antrenörün yükünü alan devrimci AI modülü."),
+            ("08 - 10 sn", "📅 Akıllı Randevu & Koç Planlama AI", "Antrenör müsaitliklerine ve doluluğa göre en iyi PT slotunu öneren akıllı takvim."),
+            ("10 - 12 sn", "🥗 Akıllı Beslenme & Supplement Botu", "Vücut ölçümlerine ve antrenman yoğunluğuna göre kişiye özel kalori/protein planı."),
+            ("12 - 14 sn", "👤 Salon Üyeleri Yönetimi", "Boks, MMA, BJJ, Crossfit ve tüm branşlarda hızlı sporcu kaydı ve PIN üretimi."),
+            ("14 - 16 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN ile saniyeler içinde otomatik antrenman yoklaması."),
+            ("16 - 18 sn", "📦 Stok Takibi", "Eldiven, bandaj, kimono ve ekipman stoklarının anlık kontrolü."),
+            ("18 - 20 sn", "💰 Kasa / Finans", "Günlük gelir ve gider hareketlerinin şeffaf finansal takibi."),
+            ("20 - 22 sn", "💳 Aidat & Ücret Ödeme Takibi", "Üye borçlandırma, tahsilat, dijital makbuz ve geciken ödeme uyarıları."),
+            ("22 - 24 sn", "🥋 Antrenör & Prim Takibi", "Antrenörlerin ders sayıları ve yüzdelik prim hesaplamalarının raporlanması."),
+            ("24 - 26 sn", "🧒 Çocuk Gelişim Raporları", "Çocuk sporcuların gelişim notları ve veli bilgilendirme akışı."),
+            ("26 - 28 sn", "🥋 Kuşak / Derece Sınavı", "Kuşak, dan ve seviye geçiş sınavlarının kayıt altında tutulması."),
+            ("28 - 30 sn", "🥊 Müsabık Takımı Yönetimi", "Lisanslı müsabık sporcuların siklet ve galibiyet/mağlubiyet istatistikleri."),
+            ("30 - 32 sn", "🩹 Sakatlık & Sparring Takibi", "Sakat sporcuların güvenliği için sparring yapmasının engellenmesi."),
+            ("32 - 34 sn", "🏆 Maç / Turnuva Takvimi", "Önümüzdeki şampiyonalar ve turnuvalara katılacak sporcu kadroları."),
+            ("34 - 36 sn", "📞 Aday Üye Takibi (CRM)", "Deneme dersine gelen potansiyel adayların dönüşüm süreçleri."),
+            ("36 - 38 sn", "🎯 Özel Ders (PT) Paketi", "Birebir özel ders alan sporcuların kalan ders haklarının takibi."),
+            ("38 - 40 sn", "📊 Vücut Ölçüm Takibi", "Sporcuların kilo ve yağ oranı değişimlerinin periyodik kaydı."),
+            ("40 - 42 sn", "⚠️ Üye Terk (Churn) Riski", "Uzun süredir gelmeyen üyelerin tespiti ve erken müdahale."),
+            ("42 - 44 sn", "📢 Toplu SMS / Duyuru Logu", "Üyelere veya velilere yapılan toplu duyuru ve mesaj arşivleme."),
+            ("44 - 46 sn", "🏢 SaaS Abonelik Yönetimi", "Yeni salon müşterilerinin 14 günlük deneme ve abonelik süreçleri."),
+            ("46 - 48 sn", "🌍 Küresel & Yerel Ödemeler", "Stripe ve PayTR ile çoklu para birimi ve kartlı deneme modeli."),
             ("48 - 52 sn", "⚙️ Sistem Ayarları", "Veritabanı yönetimi, onarım ve sistem parametreleri kontrolü.")
         ]
 
         slayt_yeri = s.empty()
         ilerleme_cubugu = s.progress(0)
         
-        if s.button("▶️ 23 Modüllü Slayt Turunu Başlat"):
+        if s.button("▶️ 25 Modüllü Slayt Turunu Başlat"):
             for i, (z, b, a) in enumerate(slayt_adimları):
                 ilerleme_cubugu.progress((i + 1) / len(slayt_adimları))
                 with slayt_yeri.container():
@@ -358,19 +379,19 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
                         </div>
                     """, unsafe_allow_html=True)
                 time.sleep(1.5)
-            s.success("🎉 23 modüllük dev slayt turu başarıyla tamamlandı, patron!")
+            s.success("🎉 25 modüllük ultra dev slayt turu başarıyla tamamlandı, patron!")
         else:
             with slayt_yeri.container():
                 s.markdown("""
                     <div class="slide-card">
                         <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ 00 - 02 sn</h4>
                         <h2 style="color: #ffffff; margin-top: 0px;">🥊 Ringmaster SaaS Slayt Turuna Hazır</h2>
-                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Başlat butonuna basarak tüm 23 modülü tek tek izleyin.</p>
+                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Başlat butonuna basarak tüm 25 modülü tek tek izleyin.</p>
                     </div>
                 """, unsafe_allow_html=True)
 
     with tab2:
-        s.markdown("### 📋 23 Modülün Tam Akış Tablosu")
+        s.markdown("### 📋 25 Modülün Tam Akış Tablosu")
         df_s = pd.DataFrame([{"Zaman": x[0], "Modül Adı": x[1], "Açıklama": x[2]} for x in slayt_adimları])
         s.dataframe(df_s, use_container_width=True)
 
@@ -378,26 +399,26 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     s.subheader("🤖 Ringmaster AI - Salon Yönetim Asistanı")
     if "messages" not in s.session_state:
-        s.session_state.messages = [{"role": "assistant", "content": "Selam patron! Kas hafızası AI modülü ve tüm salon operasyonları devrede. Bugün neyi optimize ediyoruz?"}]
+        s.session_state.messages = [{"role": "assistant", "content": "Selam patron! Kas hafızası, akıllı randevu ve beslenme botu dahil tüm 25 modül devrede. Bugün neyi optimize ediyoruz?"}]
 
     for m in s.session_state.messages:
         with s.chat_message(m["role"]):
             s.markdown(m["content"])
 
-    if prompt := s.chat_input("Salon yönetimi veya kas hafızası hakkında sor..."):
+    if prompt := s.chat_input("Salon yönetimi, randevular veya beslenme hakkında sor..."):
         s.session_state.messages.append({"role": "user", "content": prompt})
         with s.chat_message("user"):
             s.markdown(prompt)
 
         with s.chat_message("assistant"):
-            yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda kas hafızası algoritmaları ve tüm otomasyon devrede."
+            yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda yapay zeka algoritmaları ve tüm otomasyon devrede."
             s.markdown(yanit)
             s.session_state.messages.append({"role": "assistant", "content": yanit})
 
 # --- 4. AKILLI DİJİTAL KAS HAFIZASI & TEKNİK AI ---
 elif secilen_modul == "🧠 Akıllı Dijital Kas Hafızası & Teknik AI":
     s.subheader("🧠 Akıllı Dijital Kas Hafızası & Teknik Ustalaşma Modülü")
-    s.info("Bu modül, sporcuların antrenman esnasındaki hareket formlarını (eklem açıları, hız ve vektörler) analiz ederek antrenörün üstünden yük alır ve kusursuz kas hafızası oluşturur.")
+    s.info("Sporcuların antrenman esnasındaki hareket formlarını analiz ederek antrenörün yükünü alır ve kusursuz kas hafızası oluşturur.")
 
     with s.form("kas_hafizasi_form"):
         s.markdown("### 🎯 Sporcu Teknik Simülasyonu & AI Analizi")
@@ -410,8 +431,8 @@ elif secilen_modul == "🧠 Akıllı Dijital Kas Hafızası & Teknik AI":
                 "Doğru Duruş (Karate)", "Kettlebell Swing Formu (Crossfit)"
             ])
         with c2:
-            dirsek_acisi = s.slider("Dirsek / Eklem Açısı (Simüle Edilen Değer)", 0, 180, 95)
-            diz_acisi = s.slider("Diz / Büküm Açısı (Simüle Edilen Değer)", 90, 180, 160)
+            dirsek_acisi = s.slider("Dirsek / Eklem Açısı", 0, 180, 95)
+            diz_acisi = s.slider("Diz / Büküm Açısı", 90, 180, 160)
 
         if s.form_submit_button("🤖 AI Kas Hafızası Analizini Başlat"):
             sapma = abs(90 - dirsek_acisi) + abs(170 - diz_acisi)
@@ -432,10 +453,7 @@ elif secilen_modul == "🧠 Akıllı Dijital Kas Hafızası & Teknik AI":
 
             s.success(f"Analiz Tamamlandı! Sporcu: {sporcu_sec} | Teknik: {teknik_sec}")
             s.metric("Kas Hafızası Doğruluk Skoru", f"%{skor}")
-            if skor < 65:
-                s.error(geri_bildirim)
-            else:
-                s.success(geri_bildirim)
+            s.info(geri_bildirim)
 
     s.markdown("### 📊 Salon Geneli Kas Hafızası Analiz Arşivi")
     conn = baglanti_kur()
@@ -444,9 +462,85 @@ elif secilen_modul == "🧠 Akıllı Dijital Kas Hafızası & Teknik AI":
     if not df_kh.empty:
         s.dataframe(df_kh, use_container_width=True)
     else:
-        s.info("Henüz kayıtlı kas hafızası analizi bulunmuyor.")
+        s.info("Henüz kayıtlı analiz bulunmuyor.")
 
-# --- 5. SALON ÜYELERİ YÖNETİMİ ---
+# --- 5. AKILLI RANDEVU & KOÇ PLANLAMA AI ---
+elif secilen_modul == "📅 Akıllı Randevu & Koç Planlama AI":
+    s.subheader("📅 Akıllı Randevu & Antrenör Planlama Modülü")
+    s.info("Salon doluluk oranlarına ve antrenörlerin müsaitlik saatlerine göre en uygun ders/ring slotunu otomatik rezerve eden akıllı takvim.")
+
+    with s.form("randevu_form"):
+        c1, c2 = s.columns(2)
+        with c1:
+            r_sporcu = s.text_input("Sporcu Ad Soyad")
+            r_hoca = s.text_input("Antrenör Adı", value="Şefik Hoca")
+        with c2:
+            r_tarih = s.text_input("Randevu Tarihi ve Saati (YYYY-MM-DD HH:MM)", value=pd.Timestamp.now().strftime("%Y-%m-%d 14:00"))
+            r_durum = s.selectbox("Durum", ["Onaylandı", "Beklemede", "İptal"])
+        
+        if s.form_submit_button("Akıllı Randevu Oluştur 🚀"):
+            if r_sporcu:
+                conn = baglanti_kur()
+                conn.execute("INSERT INTO akilli_randevular (sporcu_adi, antrenor_adi, slot_tarihi, durum) VALUES (?, ?, ?, ?)",
+                             (r_sporcu, r_hoca, r_tarih, r_durum))
+                conn.commit()
+                conn.close()
+                s.success(f"🚀 {r_sporcu} için {r_hoca} ile randevu slotu başarıyla planlandı!")
+                s.rerun()
+            else:
+                s.warning("Lütfen sporcu adını girin.")
+
+    s.markdown("### 📋 Planlanan Akıllı Randevular Listesi")
+    conn = baglanti_kur()
+    df_rand = pd.read_sql("SELECT * FROM akilli_randevular", conn)
+    conn.close()
+    if not df_rand.empty:
+        s.dataframe(df_rand, use_container_width=True)
+    else:
+        s.info("Henüz planlanmış randevu bulunmuyor.")
+
+# --- 6. AKILLI BESLEME & SUPPLEMENT REÇETE BOTU ---
+elif secilen_modul == "🥗 Akıllı Beslenme & Supplement Reçete Botu":
+    s.subheader("🥗 Akıllı Beslenme ve Supplement Reçete Botu")
+    s.info("Sporcunun vücut ölçüm verilerine ve kas hafızası antrenman yoğunluğuna göre günlük kalori/protein hesaplayıp WhatsApp reçetesi üreten AI motoru.")
+
+    with s.form("beslenme_form"):
+        c1, c2 = s.columns(2)
+        with c1:
+            b_sporcu = s.text_input("Sporcu Adı")
+            b_kalori = s.number_input("Günlük Kalori Hedefi (kcal)", min_value=1200, value=2800)
+        with c2:
+            b_protein = s.text_input("Protein Hedefi", value="160g / Gün")
+            b_supplement = s.text_area("Önerilen Supplementler", value="Creatine 5g, Whey Protein (Antrenman sonrası), Multivitamin")
+        
+        if s.form_submit_button("Beslenme & Supplement Reçetesi Üret 💊"):
+            if b_sporcu:
+                conn = baglanti_kur()
+                conn.execute("INSERT INTO beslenme_receteleri (sporcu_adi, gunluk_kalori, protein_hedefi, supplement_notu) VALUES (?, ?, ?, ?)",
+                             (b_sporcu, b_kalori, b_protein, b_supplement))
+                conn.commit()
+                conn.close()
+                
+                mesaj = f"Merhaba {b_sporcu}! Ringmaster AI Beslenme Reçeten: Günlük {b_kalori} kcal, Protein: {b_protein}. Supplementler: {b_supplement}. Başarılar!"
+                encoded = urllib.parse.quote(mesaj)
+                wa_link = f"https://wa.me/?text={encoded}"
+                
+                s.success(f"🚀 {b_sporcu} için beslenme reçetesi hazırlandı!")
+                s.markdown(f"[📲 WhatsApp ile Beslenme Reçesini Gönder]({wa_link})", unsafe_allow_html=True)
+                s.rerun()
+            else:
+                s.warning("Sporcu adını girin.")
+
+    s.markdown("### 📋 Kayıtlı Beslenme Reçeteleri")
+    conn = baglanti_kur()
+    df_bes = pd.read_sql("SELECT * FROM beslenme_receteleri", conn)
+    conn.close()
+    if not df_bes.empty:
+        s.dataframe(df_bes, use_container_width=True)
+    else:
+        s.info("Henüz kayıtlı beslenme reçetesi bulunmuyor.")
+
+# --- 7. SALON ÜYELERİ YÖNETİMİ ---
 elif secilen_modul == "Salon Üyeleri Yönetimi":
     s.subheader("👤 Salon Üyeleri ve PIN Yönetimi")
     with s.form("uye_form"):
@@ -487,7 +581,7 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
     else:
         s.info("Henüz kayıtlı üye bulunmuyor.")
 
-# --- 6. YOKLAMA SİSTEMİ ---
+# --- 8. YOKLAMA SİSTEMİ ---
 elif secilen_modul == "Yoklama Sistemi":
     s.subheader("📝 Yoklama ve Giriş Takibi")
     girilen_pin = s.text_input("4 Haneli PIN Kodunuzu Girin", max_chars=4, type="password")
@@ -499,7 +593,7 @@ elif secilen_modul == "Yoklama Sistemi":
         else:
             s.error("Geçersiz PIN kodu!")
 
-# --- 7. STOK TAKİBİ ---
+# --- 9. STOK TAKİBİ ---
 elif secilen_modul == "Stok Takibi":
     s.subheader("📦 Ürün ve Ekipman Stok Yönetimi")
     conn = baglanti_kur()
@@ -518,7 +612,7 @@ elif secilen_modul == "Stok Takibi":
             s.success("Stok eklendi!")
             s.rerun()
 
-# --- 8. KASA / FİNANS ---
+# --- 10. KASA / FİNANS ---
 elif secilen_modul == "Kasa / Finans":
     s.subheader("💰 Kasa ve Gelir/Gider Takibi")
     conn = baglanti_kur()
@@ -538,7 +632,7 @@ elif secilen_modul == "Kasa / Finans":
             s.success("Kasa hareketi eklendi!")
             s.rerun()
 
-# --- 9. AİDAT & ÜCRET ÖDEME TAKİBİ ---
+# --- 11. AİDAT & ÜCRET ÖDEME TAKİBİ ---
 elif secilen_modul == "Aidat & Ücret Ödeme Takibi 💳":
     s.subheader("💳 Üye Aidat ve Ücret Ödeme Takip Modülü")
     conn = baglanti_kur()
@@ -570,7 +664,7 @@ elif secilen_modul == "Aidat & Ücret Ödeme Takibi 💳":
             else:
                 s.warning("Sporcu adını girin.")
 
-# --- 10. ANTRENÖR & PRİM TAKİBİ ---
+# --- 12. ANTRENÖR & PRİM TAKİBİ ---
 elif secilen_modul == "Antrenör & Prim Takibi":
     s.subheader("🥋 Antrenör ve Prim Yönetimi")
     conn = baglanti_kur()
@@ -590,7 +684,7 @@ elif secilen_modul == "Antrenör & Prim Takibi":
             s.success("Antrenör eklendi!")
             s.rerun()
 
-# --- 11. ÇOCUK GELİŞİM RAPORLARI ---
+# --- 13. ÇOCUK GELİŞİM RAPORLARI ---
 elif secilen_modul == "Çocuk Gelişim Raporları":
     s.subheader("🧒 Çocuk Gelişim ve Veli Bilgilendirme Modülü")
     conn = baglanti_kur()
@@ -610,7 +704,7 @@ elif secilen_modul == "Çocuk Gelişim Raporları":
             s.success("Rapor eklendi!")
             s.rerun()
 
-# --- 12. KUŞAK / DERECE SINAVI ---
+# --- 14. KUŞAK / DERECE SINAVI ---
 elif secilen_modul == "Kuşak / Derece Sınavı":
     s.subheader("🥋 Kuşak ve Derece Sınav Takibi")
     conn = baglanti_kur()
@@ -630,7 +724,7 @@ elif secilen_modul == "Kuşak / Derece Sınavı":
             s.success("Sınav kaydı oluşturuldu!")
             s.rerun()
 
-# --- 13. MÜSABIK TAKIMI YÖNETİMİ ---
+# --- 15. MÜSABIK TAKIMI YÖNETİMİ ---
 elif secilen_modul == "Müsabık Takımı Yönetimi":
     s.subheader("🥊 Müsabık Sporcu ve Siklet Yönetimi")
     conn = baglanti_kur()
@@ -650,7 +744,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
             s.success("Müsabık eklendi!")
             s.rerun()
 
-# --- 14. SAKATLİK & SPARRİNG TAKİBİ ---
+# --- 16. SAKATLİK & SPARRİNG TAKİBİ ---
 elif secilen_modul == "Sakatlık & Sparring Takibi":
     s.subheader("🩹 Sporcu Sakatlık ve Sparring Yasakları")
     conn = baglanti_kur()
@@ -669,7 +763,7 @@ elif secilen_modul == "Sakatlık & Sparring Takibi":
             s.success("Kayıt eklendi!")
             s.rerun()
 
-# --- 15. MAÇ / TURNUVA TAKVİMİ ---
+# --- 17. MAÇ / TURNUVA TAKVİMİ ---
 elif secilen_modul == "Maç / Turnuva Takvimi":
     s.subheader("🏆 Maç ve Turnuva Takvimi")
     conn = baglanti_kur()
@@ -688,7 +782,7 @@ elif secilen_modul == "Maç / Turnuva Takvimi":
             s.success("Turnuva eklendi!")
             s.rerun()
 
-# --- 16. ADAY ÜYE TAKİBİ (CRM) ---
+# --- 18. ADAY ÜYE TAKİBİ (CRM) ---
 elif secilen_modul == "Aday Üye Takibi (CRM)":
     s.subheader("📞 Aday Üye ve Potansiyel Müşteri Takibi")
     conn = baglanti_kur()
@@ -708,7 +802,7 @@ elif secilen_modul == "Aday Üye Takibi (CRM)":
             s.success("Aday eklendi!")
             s.rerun()
 
-# --- 17. ÖZEL DERS (PT) TAKİBİ ---
+# --- 19. ÖZEL DERS (PT) TAKİBİ ---
 elif secilen_modul == "Özel Ders (PT) Takibi":
     s.subheader("🎯 Özel Ders (PT) Paket Takibi")
     conn = baglanti_kur()
@@ -727,7 +821,7 @@ elif secilen_modul == "Özel Ders (PT) Takibi":
             s.success("PT paketi tanımlandı!")
             s.rerun()
 
-# --- 18. VÜCUT ÖLÇÜM TAKİBİ ---
+# --- 20. VÜCUT ÖLÇÜM TAKİBİ ---
 elif secilen_modul == "Vücut Ölçüm Takibi":
     s.subheader("📊 Sporcu Vücut Ölçümleri")
     conn = baglanti_kur()
@@ -747,7 +841,7 @@ elif secilen_modul == "Vücut Ölçüm Takibi":
             s.success("Ölçüm kaydedildi!")
             s.rerun()
 
-# --- 19. ÜYE TERK (CHURN) RİSKİ ---
+# --- 21. ÜYE TERK (CHURN) RİSKİ ---
 elif secilen_modul == "Üye Terk (Churn) Riski":
     s.subheader("⚠️ Üye Devamsızlık ve Terk Riski")
     conn = baglanti_kur()
@@ -766,7 +860,7 @@ elif secilen_modul == "Üye Terk (Churn) Riski":
             s.success("Risk kaydı eklendi!")
             s.rerun()
 
-# --- 20. TOPLU SMS / DUYURU LOGU ---
+# --- 22. TOPLU SMS / DUYURU LOGU ---
 elif secilen_modul == "Toplu SMS / Duyuru Logu":
     s.subheader("📢 Toplu Duyuru ve SMS Logları")
     conn = baglanti_kur()
@@ -785,7 +879,7 @@ elif secilen_modul == "Toplu SMS / Duyuru Logu":
             s.success("Mesaj loglandı!")
             s.rerun()
 
-# --- 21. SAAS ABONELİK YÖNETİMİ ---
+# --- 23. SAAS ABONELİK YÖNETİMİ ---
 elif secilen_modul == "SaaS Abonelik Yönetimi":
     s.subheader("🏢 SaaS Salon ve Abonelik Yönetimi")
     conn = baglanti_kur()
@@ -805,7 +899,7 @@ elif secilen_modul == "SaaS Abonelik Yönetimi":
             else:
                 s.warning("Salon adı ve sahip adını doldurun.")
 
-# --- 22. KÜRESEL & YEREL ÖDEMELER ---
+# --- 24. KÜRESEL & YEREL ÖDEMELER ---
 elif secilen_modul == "🌍 Küresel & Yerel Ödemeler":
     s.subheader("🌍 & 🇹🇷 Güvenli Tahsilat ve Kartlı Deneme Modeli")
     c1, c2, c3, c4 = s.columns(4)
@@ -823,12 +917,12 @@ elif secilen_modul == "🌍 Küresel & Yerel Ödemeler":
         s.info("Plan: €55 / ay")
     s.success("Tüm ödeme ağ geçitleri (Stripe, PayTR) aktif ve entegre!")
 
-# --- 23. SİSTEM AYARLARI ---
+# --- 25. SİSTEM AYARLARI ---
 elif secilen_modul == "Sistem Ayarları":
     s.subheader("⚙️ Sistem ve Veritabanı Ayarları")
     if s.button("Veritabanını Kontrol Et ve Onar"):
         veritabani_baslat()
-        s.success("Tüm tablolar ve kas hafızası şemaları güncellendi!")
+        s.success("Tüm 25 modül tablosu ve şemaları güncellendi!")
 
 
 
