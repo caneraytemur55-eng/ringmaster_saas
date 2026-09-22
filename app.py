@@ -88,7 +88,7 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm Modüller (21 Modül Tam Kadro)
+# Tüm Modüller (22 Modül Tam Kadro - Aidat & Ücret Takibi Dahil)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -99,6 +99,7 @@ secilen_modul = st.sidebar.selectbox(
         "Yoklama Sistemi", 
         "Stok Takibi", 
         "Kasa / Finans", 
+        "Aidat & Ücret Ödeme Takibi 💳",
         "Antrenör & Prim Takibi", 
         "Çocuk Gelişim Raporları", 
         "Kuşak / Derece Sınavı", 
@@ -125,22 +126,22 @@ if secilen_modul == "Ana Sayfa":
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "21 / 21 (Animasyonlu Slayt Turu Dahil)")
+        st.metric("Aktif Modül", "22 / 22 (Aidat & Slayt Turu Dahil)")
     with col3:
         st.metric("Sistem Modeli", "Kartlı Deneme & Kapsamlı Otomasyon 🚀")
 
 # --- 2. SİSTEM ORYANTASYONU & 50s SLAYT TURU ---
 elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
-    st.subheader("🚀 Ringmaster SaaS - 50 Saniyelik Otomatik Modül Slayt Turu")
-    st.write("Her 3 saniyede bir modül değiştiren, antrenör primleri ve veli bilgilendirmeyi anlatan canlı slayt animasyon gösterisi.")
+    st.subheader("🚀 Ringmaster SaaS - Otomatik Modül Slayt Turu")
+    st.write("Modülleri sırayla gösteren, aidat takiplerini, antrenör primlerini ve veli bilgilendirmeyi anlatan canlı slayt animasyon gösterisi.")
 
     tab1, tab2 = st.tabs(["🎬 Otomatik Modül Slayt Gösterisi (Canlı Animasyon)", "📋 Modül Akış Detayları"])
 
     with tab1:
-        st.markdown("### ⏱️ 50 Saniyelik Modül Geçiş Slaytları")
-        st.info("Aşağıdaki butona basarak sistemin modülleri 3'er saniye arayla otomatik slayt şeklinde tanıtmasını başlatabilirsin:")
+        st.markdown("### ⏱️ Modül Geçiş Slaytları (Aidat Takibi Dahil)")
+        st.info("Aşağıdaki butona basarak sistemin modülleri otomatik slayt şeklinde tanıtmasını başlatabilirsin:")
 
-        # 50 saniyelik slayt turunu oluşturan modül listesi (her biri yaklaşık 3 saniye)
+        # Aidat modülü dahil güncellenmiş slayt adımları
         slayt_adimları = [
             ("00 - 03 sn", "🚀 Giriş & Karşılama", "Ringmaster SaaS ekosistemine hoş geldiniz. Salon yönetimi artık parmaklarınızın ucunda."),
             ("03 - 06 sn", "👤 Salon Üyeleri Yönetimi", "Sporcu ad, telefon ve branş bilgileri girilir; sistem anında kayıt oluşturur."),
@@ -148,16 +149,17 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
             ("09 - 12 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN girilerek saniyeler içinde antrenman yoklaması alınır."),
             ("12 - 15 sn", "📦 Stok Takibi", "Eldiven, bandaj, kıyafet ve ekipman stokları anlık olarak kontrol altında tutulur."),
             ("15 - 18 sn", "💰 Kasa / Finans", "Günlük gelir ve gider hareketleri şeffaf bir şekilde kasaya işlenir."),
-            ("18 - 21 sn", "🥋 Antrenör & Prim Takibi", "Antrenörlerin ders sayıları ve yüzdelik prim hesaplamaları otomatik raporlanır."),
-            ("21 - 24 sn", "🧒 Çocuk Gelişim Raporları", "Çocuk sporcuların gelişim notları kayıt altına alınır ve veli bilgilendirmesi sağlanır."),
-            ("24 - 27 sn", "🥋 Kuşak / Derece Sınavı", "Sporcu kuşak geçişleri, mevcut ve hedef derece sınav takipleri yapılır."),
-            ("27 - 30 sn", "🥊 Müsabık Takımı Yönetimi", "Lisanslı müsabık sporcuların sikletleri ve galibiyet/mağlubiyet istatistikleri izlenir."),
-            ("30 - 33 sn", "🩹 Sakatlık & Sparring Takibi", "Sakatlık durumu olan sporcuların sparring yapması emniyetli şekilde engellenir."),
-            ("33 - 36 sn", "🏆 Maç / Turnuva Takvimi", "Önümüzdeki şampiyonalar ve turnuvalara katılacak sporcu kadroları organize edilir."),
-            ("36 - 39 sn", "📞 Aday Üye Takibi (CRM)", "Deneme dersine gelen veya salonu arayan adayların dönüşüm süreçleri yönetilir."),
-            ("39 - 42 sn", "🎯 Özel Ders (PT) Paketi", "Birebir özel ders alan sporcuların kalan ders hakları titizlikle takip edilir."),
-            ("42 - 45 sn", "⚠️ Üye Terk (Churn) Riski", "Uzun süredir antrenmana gelmeyen sporcular tespit edilerek erken müdahale sağlanır."),
-            ("45 - 50 sn", "🌍 Kartlı Deneme & SaaS", "PayTR ve Stripe entegrasyonlarıyla küresel & yerel abonelik modeli tam gaz devrede!")
+            ("18 - 21 sn", "💳 Aidat & Ücret Ödeme Takibi", "Üye borçlandırma, taksitli tahsilat, geciken ödeme uyarıları ve dijital makbuzlar yönetilir."),
+            ("21 - 24 sn", "🥋 Antrenör & Prim Takibi", "Antrenörlerin ders sayıları ve yüzdelik prim hesaplamaları otomatik raporlanır."),
+            ("24 - 27 sn", "🧒 Çocuk Gelişim Raporları", "Çocuk sporcuların gelişim notları kayıt altına alınır ve veli bilgilendirmesi sağlanır."),
+            ("27 - 30 sn", "🥋 Kuşak / Derece Sınavı", "Sporcu kuşak geçişleri, mevcut ve hedef derece sınav takipleri yapılır."),
+            ("30 - 33 sn", "🥊 Müsabık Takımı Yönetimi", "Lisanslı müsabık sporcuların sikletleri ve galibiyet/mağlubiyet istatistikleri izlenir."),
+            ("33 - 36 sn", "🩹 Sakatlık & Sparring Takibi", "Sakatlık durumu olan sporcuların sparring yapması emniyetli şekilde engellenir."),
+            ("36 - 39 sn", "🏆 Maç / Turnuva Takvimi", "Önümüzdeki şampiyonalar ve turnuvalara katılacak sporcu kadroları organize edilir."),
+            ("39 - 42 sn", "📞 Aday Üye Takibi (CRM)", "Deneme dersine gelen veya salonu arayan adayların dönüşüm süreçleri yönetilir."),
+            ("42 - 45 sn", "🎯 Özel Ders (PT) Paketi", "Birebir özel ders alan sporcuların kalan ders hakları titizlikle takip edilir."),
+            ("45 - 48 sn", "⚠️ Üye Terk (Churn) Riski", "Uzun süredir antrenmana gelmeyen sporcular tespit edilerek erken müdahale sağlanır."),
+            ("48 - 52 sn", "🌍 Kartlı Deneme & SaaS", "PayTR ve Stripe entegrasyonlarıyla küresel & yerel abonelik modeli tam gaz devrede!")
         ]
 
         # Slayt konteyneri
@@ -166,7 +168,7 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
 
         col_b1, col_b2 = st.columns(2)
         with col_b1:
-            baslat_btn = st.button("▶️ 50 Saniyelik Slayt Turunu Başlat")
+            baslat_btn = st.button("▶️ Slayt Turunu Başlat")
         with col_b2:
             hizli_gecis = st.checkbox("⚡ Hızlı Mod (Her adım 1 saniye)")
 
@@ -175,10 +177,8 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
         if baslat_btn:
             toplam_adim = len(slayt_adimları)
             for i, (zaman_dilimi, baslik, aciklama) in enumerate(slayt_adimları):
-                # İlerleme yüzdesini güncelle
                 ilerleme_cubugu.progress((i + 1) / toplam_adim)
                 
-                # Slayt Kartını Göster
                 with slayt_yeri.container():
                     st.markdown(f"""
                         <div class="slide-card">
@@ -190,20 +190,19 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
                 
                 time.sleep(bekleme_suresi)
             
-            st.success("🎉 50 saniyelik tam kapsamlı modül slayt turu başarıyla tamamlandı, patron!")
+            st.success("🎉 Slayt turu başarıyla tamamlandı, patron!")
         else:
-            # Varsayılan ilk slayt görünümü
             with slayt_yeri.container():
                 st.markdown(f"""
                     <div class="slide-card">
                         <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ 00 - 03 sn</h4>
                         <h2 style="color: #ffffff; margin-top: 0px;">🚀 Ringmaster SaaS Slayt Turuna Hazır</h2>
-                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Yukarıdaki 'Başlat' butonuna basarak antrenör primleri ve veli bilgilendirme dahil tüm modülleri 3'er saniyelik geçişlerle izleyin.</p>
+                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Yukarıdaki 'Başlat' butonuna basarak aidat takibi, antrenör primleri ve tüm modülleri izleyin.</p>
                     </div>
                 """, unsafe_allow_html=True)
 
     with tab2:
-        st.markdown("### 📋 50 Saniyelik Slayt Akış Tablosu")
+        st.markdown("### 📋 Slayt Akış Tablosu")
         df_slayt = pd.DataFrame([
             {"Zaman": a[0], "Modül Adı": a[1], "Açıklama": a[2]} for a in slayt_adimları
         ])
@@ -215,18 +214,18 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.write("Salonunla ilgili stratejik sorular sorabilir, operasyonel hız hakkında bilgi alabilirsin.")
     
     with st.expander("💡 Bu Modül Nasıl Kullanılır? (Oryantasyon Rehberi)"):
-        st.write("Bu asistan doğrudan veritabanınızla konuşur. Üye istatistikleri, prim sistemleri veya salon içi optimizasyonlar hakkında soru sorabilirsiniz.")
+        st.write("Bu asistan doğrudan veritabanınızla konuşur. Üye istatistikleri, aidat ödemeleri veya prim sistemleri hakkında soru sorabilirsiniz.")
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! 50 saniyelik slayt animasyon turumuz ve tüm modüllerimiz (primler ve veli raporları dahil) tam kadro devrede. Bugün neyi optimize ediyoruz?"}
+            {"role": "assistant", "content": "Selam patron! Aidat takibi, primler ve tüm modüllerimiz tam kadro devrede. Bugün neyi optimize ediyoruz?"}
         ]
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Salon yönetimi, antrenör primleri veya veli raporları hakkında sor..."):
+    if prompt := st.chat_input("Salon yönetimi, aidat ödemeleri veya primler hakkında sor..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -234,10 +233,10 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
         with st.chat_message("assistant"):
             with st.spinner("Ringmaster AI düşünüyor..."):
                 lower_p = prompt.lower()
-                if "prim" in lower_p or "antrenör" in lower_p:
-                    yanit = "Antrenör prim modülü üzerinden ders sayıları ve yüzdelik oranlar saniyeler içinde hesaplanıyor, patron!"
-                elif "veli" in lower_p or "çocuk" in lower_p:
-                    yanit = "Çocuk gelişim modülü sayesinde veli bilgilendirmeleri kusursuz şekilde arşivleniyor."
+                if "aidat" in lower_p or "borç" in lower_p or "ödeme" in lower_p:
+                    yanit = "Aidat ve ücret ödeme takibi modülü üzerinden üye borçlandırmaları ve tahsilatları saniyeler içinde yönetiliyor, patron!"
+                elif "prim" in lower_p or "antrenör" in lower_p:
+                    yanit = "Antrenör prim modülü üzerinden ders sayıları ve oranlar hesaplanıyor."
                 elif "üye" in lower_p or "kayıt" in lower_p:
                     yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz bulunuyor."
                 else:
@@ -370,7 +369,84 @@ elif secilen_modul == "Kasa / Finans":
             st.success("Kasa hareketi eklendi!")
             st.rerun()
 
-# --- 8. ANTRENÖR & PRİM TAKİBİ ---
+# --- 8. AİDAT & ÜCRET ÖDEME TAKİBİ ---
+elif secilen_modul == "Aidat & Ücret Ödeme Takibi 💳":
+    st.subheader("💳 Üye Aidat ve Ücret Ödeme Takip Modülü")
+    with st.expander("💡 Bu Modül Nasıl Kullanılır ve Veri Girilir? (Rehber)"):
+        st.write("""
+        1. **Borçlandırma Tanımı:** Üyenin adı, aylık aidat tutarı ve son ödeme tarihini girerek borç kaydı oluşturun.
+        2. **Tahsilat ve Makbuz:** Ödeme yapan üyelerin durumunu 'Ödendi' olarak güncelleyin ve kasaya otomatik işleyin.
+        3. **Geciken Ödemeler:** Vadesi geçmiş borçlar sistem tarafından kırmızı renkli uyarı bayrağıyla takip edilir.
+        """)
+
+    # Güvenli tablo kontrolü / oluşturulması
+    conn = db.baglanti_kur()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS aidatlar (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sporcu_adi TEXT,
+            donem TEXT,
+            tutar REAL,
+            son_odeme TEXT,
+            durum TEXT
+        )
+    """)
+    conn.commit()
+    
+    aidat_df = pd.read_sql("SELECT * FROM aidatlar", conn)
+    conn.close()
+    
+    if not aidat_df.empty:
+        st.markdown("### 📋 Aktif Aidat ve Borç Listesi")
+        st.dataframe(aidat_df, use_container_width=True)
+    else:
+        st.info("Henüz kayıtlı aidat borçlandırması bulunmuyor.")
+
+    with st.form("aidat_ekle_form"):
+        st.markdown("### ➕ Yeni Aidat / Borç Tanımla")
+        c1, c2 = st.columns(2)
+        with c1:
+            a_sporcu = st.text_input("Sporcu Ad Soyad")
+            a_donem = st.text_input("Dönem (Örn: Eylül 2026)")
+        with c2:
+            a_tutar = st.number_input("Aidat Tutarı (₺)", min_value=0.0, value=1500.0)
+            a_tarih = st.text_input("Son Ödeme Tarihi (YYYY-MM-DD)", value=pd.Timestamp.now().strftime("%Y-%m-%d"))
+        
+        if st.form_submit_button("Aidat Borcu Oluştur 🚀"):
+            if a_sporcu:
+                conn = db.baglanti_kur()
+                conn.execute("INSERT INTO aidatlar (sporcu_adi, donem, tutar, son_odeme, durum) VALUES (?, ?, ?, ?, ?)",
+                             (a_sporcu, a_donem, a_tutar, a_tarih, "Ödenmedi"))
+                conn.commit()
+                conn.close()
+                st.success(f"🚀 {a_sporcu} için {a_donem} dönemi aidat borcu kaydedildi, patron!")
+                st.rerun()
+            else:
+                st.warning("Lütfen sporcu adını girin.")
+
+    if not aidat_df.empty:
+        st.markdown("### ✅ Ödeme Tahsil Et & Durum Güncelle")
+        with st.form("aidat_guncelle_form"):
+            secilen_aidat = st.selectbox("İşlem Yapılacak Kaydı Seç", aidat_df.apply(lambda x: f"ID: {x['id']} - {x['sporcu_adi']} ({x['donem']} - {x['tutar']}₺ - {x['durum']})", axis=1).tolist())
+            yeni_durum = st.selectbox("Yeni Durum", ["Ödendi", "Ödenmedi", "Gecikmede"])
+            
+            if st.form_submit_button("Ödeme Durumunu Güncelle ve Kasaya İşle 💰"):
+                secilen_id = int(secilen_aidat.split(" - ")[0].replace("ID: ", ""))
+                conn = db.baglanti_kur()
+                conn.execute("UPDATE aidatlar SET durum = ? WHERE id = ?", (yeni_durum, secilen_id))
+                
+                # Eğer ödendi seçildiyse kasaya da gelir olarak ekleyelim
+                if yeni_durum == "Ödendi":
+                    ilgili_kayit = aidat_df[aidat_df['id'] == secilen_id].iloc[0]
+                    conn.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)",
+                                 ("Gelir", f"Aidat Tahsilatı: {ilgili_kayit['sporcu_adi']} ({ilgili_kayit['donem']})", ilgili_kayit['tutar'], pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")))
+                
+                conn.commit()
+                conn.close()
+                st.success("Aidat ödeme durumu güncellendi ve finans kasasına işlendi, patron!")
+                st.rerun()
+
+# --- 9. ANTRENÖR & PRİM TAKİBİ ---
 elif secilen_modul == "Antrenör & Prim Takibi":
     st.subheader("🥋 Antrenör ve Prim Yönetimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -393,7 +469,7 @@ elif secilen_modul == "Antrenör & Prim Takibi":
             st.success("Antrenör eklendi!")
             st.rerun()
 
-# --- 9. ÇOCUK GELİŞİM RAPORLARI ---
+# --- 10. ÇOCUK GELİŞİM RAPORLARI ---
 elif secilen_modul == "Çocuk Gelişim Raporları":
     st.subheader("🧒 Çocuk Gelişim ve Veli Bilgilendirme Modülü")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -416,7 +492,7 @@ elif secilen_modul == "Çocuk Gelişim Raporları":
             st.success("Rapor eklendi!")
             st.rerun()
 
-# --- 10. KUŞAK / DERECE SINAVI ---
+# --- 11. KUŞAK / DERECE SINAVI ---
 elif secilen_modul == "Kuşak / Derece Sınavı":
     st.subheader("🥋 Kuşak ve Derece Sınav Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -439,7 +515,7 @@ elif secilen_modul == "Kuşak / Derece Sınavı":
             st.success("Sınav kaydı oluşturuldu!")
             st.rerun()
 
-# --- 11. MÜSABIK TAKIMI YÖNETİMİ ---
+# --- 12. MÜSABIK TAKIMI YÖNETİMİ ---
 elif secilen_modul == "Müsabık Takımı Yönetimi":
     st.subheader("🥊 Müsabık Sporcu ve Siklet Yönetimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -462,7 +538,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
             st.success("Müsabık eklendi!")
             st.rerun()
 
-# --- 12. SAKATLIK & SPARRİNG TAKİBİ ---
+# --- 13. SAKATLİK & SPARRİNG TAKİBİ ---
 elif secilen_modul == "Sakatlık & Sparring Takibi":
     st.subheader("🩹 Sporcu Sakatlık ve Sparring Yasakları")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -484,7 +560,7 @@ elif secilen_modul == "Sakatlık & Sparring Takibi":
             st.success("Kayıt eklendi!")
             st.rerun()
 
-# --- 13. MAÇ / TURNUVA TAKVİMİ ---
+# --- 14. MAÇ / TURNUVA TAKVİMİ ---
 elif secilen_modul == "Maç / Turnuva Takvimi":
     st.subheader("🏆 Maç ve Turnuva Takvimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -506,7 +582,7 @@ elif secilen_modul == "Maç / Turnuva Takvimi":
             st.success("Turnuva eklendi!")
             st.rerun()
 
-# --- 14. ADAY ÜYE TAKİBİ (CRM) ---
+# --- 15. ADAY ÜYE TAKİBİ (CRM) ---
 elif secilen_modul == "Aday Üye Takibi (CRM)":
     st.subheader("📞 Aday Üye ve Potansiyel Müşteri Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -529,7 +605,7 @@ elif secilen_modul == "Aday Üye Takibi (CRM)":
             st.success("Aday eklendi!")
             st.rerun()
 
-# --- 15. ÖZEL DERS (PT) TAKİBİ ---
+# --- 16. ÖZEL DERS (PT) TAKİBİ ---
 elif secilen_modul == "Özel Ders (PT) Takibi":
     st.subheader("🎯 Özel Ders (PT) Paket Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -551,7 +627,7 @@ elif secilen_modul == "Özel Ders (PT) Takibi":
             st.success("PT paketi tanımlandı!")
             st.rerun()
 
-# --- 16. VÜCUT ÖLÇÜM TAKİBİ ---
+# --- 17. VÜCUT ÖLÇÜM TAKİBİ ---
 elif secilen_modul == "Vücut Ölçüm Takibi":
     st.subheader("📊 Sporcu Vücut Ölçümleri")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -574,7 +650,7 @@ elif secilen_modul == "Vücut Ölçüm Takibi":
             st.success("Ölçüm kaydedildi!")
             st.rerun()
 
-# --- 17. ÜYE TERK (CHURN) RİSKİ ---
+# --- 18. ÜYE TERK (CHURN) RİSKİ ---
 elif secilen_modul == "Üye Terk (Churn) Riski":
     st.subheader("⚠️ Üye Devamsızlık ve Terk Riski")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -596,7 +672,7 @@ elif secilen_modul == "Üye Terk (Churn) Riski":
             st.success("Risk kaydı eklendi!")
             st.rerun()
 
-# --- 18. TOPLU SMS / DUYURU LOGU ---
+# --- 19. TOPLU SMS / DUYURU LOGU ---
 elif secilen_modul == "Toplu SMS / Duyuru Logu":
     st.subheader("📢 Toplu Duyuru ve SMS Logları")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -618,7 +694,7 @@ elif secilen_modul == "Toplu SMS / Duyuru Logu":
             st.success("Mesaj loglandı!")
             st.rerun()
 
-# --- 19. SAAS ABONELİK YÖNETİMİ ---
+# --- 20. SAAS ABONELİK YÖNETİMİ ---
 elif secilen_modul == "SaaS Abonelik Yönetimi":
     st.subheader("🏢 SaaS Salon ve Abonelik Yönetimi (Kart Zorunlu 14 Gün Deneme)")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -642,7 +718,7 @@ elif secilen_modul == "SaaS Abonelik Yönetimi":
             else:
                 st.warning("Salon adı ve sahip adını doldurun.")
 
-# --- 20. KÜRESEL & YEREL ÖDEMELER (KARTLI DENEME) ---
+# --- 21. KÜRESEL & YEREL ÖDEMELER (KARTLI DENEME) ---
 elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
     st.subheader("🌍 & 🇹🇷 Güvenli Tahsilat ve Kartlı Deneme Modeli")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
@@ -692,7 +768,7 @@ elif secilen_modul == "🌍 Küresel & Yerel Ödemeler (Kartlı Deneme)":
     if st.button("Tüm Ödeme Ağ Geçitlerini Test Et 🔌"):
         st.success("Türkiye ve Global ödeme köprüleri kusursuz doğrulandı patron!")
 
-# --- 21. SİSTEM AYARLARI ---
+# --- 22. SİSTEM AYARLARI ---
 elif secilen_modul == "Sistem Ayarları":
     st.subheader("⚙️ Sistem ve Veritabanı Ayarları")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
