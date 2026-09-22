@@ -3,11 +3,12 @@ import pandas as pd
 import database as db
 import random
 import urllib.parse
+import time
 
 # Sayfa Yapılandırması
 st.set_page_config(page_title="Ringmaster SaaS - Professional Gym Management", page_icon="🥊", layout="wide")
 
-# --- KOYU LACİVERT & NEON TURUNCU/MERCAN GYM TEMASI (ÖZEL CSS) ---
+# --- KOYU LACİVERT & NEON TURUNCU/MERCAN GYM TEMASI & SLAYT ANİMASYON CSS ---
 st.markdown("""
     <style>
     /* Ana Arka Plan - Derin, asil ve ferah koyu lacivert (Gece Mavisi) */
@@ -60,7 +61,7 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Form Input ve Seçim Kutuları - İç açan, net okunabilir modern gri-lacivert zemin */
+    /* Form Input ve Seçim Kutuları */
     .stTextInput>div>div>input, .stSelectbox>div>div>select, .stTextArea>div>div>textarea {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -68,11 +69,15 @@ st.markdown("""
         border-radius: 8px;
     }
     
-    /* Bilgi ve Başarı Kutuları */
-    .stAlert {
-        background-color: #1e293b;
-        color: #ffffff;
-        border: 1px solid #334155;
+    /* Özel Slayt / Modül Kartı Efekti */
+    .slide-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 2px solid #f97316;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(249, 115, 22, 0.25);
+        text-align: center;
+        margin-bottom: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -88,7 +93,7 @@ secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
         "Ana Sayfa", 
-        "🚀 Sistem Oryantasyonu & 50s Tur Rehberi",
+        "🚀 Sistem Oryantasyonu & 50s Slayt Turu",
         "Ringmaster AI Asistanı 🤖", 
         "Salon Üyeleri Yönetimi", 
         "Yoklama Sistemi", 
@@ -120,60 +125,89 @@ if secilen_modul == "Ana Sayfa":
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "21 / 21 (50s Oryantasyon Dahil)")
+        st.metric("Aktif Modül", "21 / 21 (Animasyonlu Slayt Turu Dahil)")
     with col3:
         st.metric("Sistem Modeli", "Kartlı Deneme & Kapsamlı Otomasyon 🚀")
 
-# --- 2. SİSTEM ORYANTASYONU & 50s TUR REHBERİ ---
-elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Tur Rehberi":
-    st.subheader("🚀 Ringmaster SaaS - 50 Saniyelik Kapsamlı Sistem Turu")
-    st.write("Salon sahipleri için tüm modülleri (Üye, Yoklama, Antrenör Primi ve Veli Bilgilendirme dahil) özetleyen 50 saniyelik masterclass akış.")
+# --- 2. SİSTEM ORYANTASYONU & 50s SLAYT TURU ---
+elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
+    st.subheader("🚀 Ringmaster SaaS - 50 Saniyelik Otomatik Modül Slayt Turu")
+    st.write("Her 3 saniyede bir modül değiştiren, antrenör primleri ve veli bilgilendirmeyi anlatan canlı slayt animasyon gösterisi.")
 
-    tab1, tab2, tab3 = st.tabs(["🎥 50 Saniyelik Video & Modül Turu", "📋 4 Aşamalı Tam Akış", "💡 Modül Kılavuzları"])
+    tab1, tab2 = st.tabs(["🎬 Otomatik Modül Slayt Gösterisi (Canlı Animasyon)", "📋 Modül Akış Detayları"])
 
     with tab1:
-        st.markdown("### ⏱️ 50 Saniyede Tüm Salon Yönetimi Akışı")
-        st.info("Bu 50 saniyelik rehber video/akış ile salon sahipleri tüm operasyonu anında kavrar:")
-        
-        # 50 Saniyelik Genişletilmiş Görsel Zaman Çizelgesi (Timeline)
-        col_a, col_b, col_c, col_d = st.columns(4)
-        with col_a:
-            st.markdown("#### 1️⃣ (0-12 sn)")
-            st.write("**Üye & PIN Kaydı**")
-            st.caption("Ad, tel, branş girilir; sistem otomatik 4 haneli PIN üretir ve WhatsApp ile yollanır.")
-        with col_b:
-            st.markdown("#### 2️⃣ (12-25 sn)")
-            st.write("**Yoklama & Kasa**")
-            st.caption("Tablet üzerinden PIN ile saniyelik yoklama alınır, kasa ve stok takibi anlık işlenir.")
-        with col_c:
-            st.markdown("#### 3️⃣ (25-38 sn)")
-            st.write("**Antrenör Primleri**")
-            st.caption("Hocaların ders sayıları ve yüzdelik prim hesaplamaları otomatik raporlanır.")
-        with col_d:
-            st.markdown("#### 4️⃣ (38-50 sn)")
-            st.write("**Veli & AI Asistan**")
-            st.caption("Çocuk gelişim raporları velilere iletilir, AI asistanı ile salona stratejik sorular sorulur.")
+        st.markdown("### ⏱️ 50 Saniyelik Modül Geçiş Slaytları")
+        st.info("Aşağıdaki butona basarak sistemin modülleri 3'er saniye arayla otomatik slayt şeklinde tanıtmasını başlatabilirsin:")
 
-        st.markdown("---")
-        st.markdown("### 📹 50 Saniyelik Tanıtım / Ekran Kaydı Oynatıcı")
-        st.write("Tüm modülleri (Antrenör primleri ve veli bilgilendirme dahil) anlatan 50 saniyelik videonuzu buraya bağlayabilirsiniz:")
-        
-        # Hazır video oynatıcı
-        st.video("https://www.w3schools.com/html/mov_bbb.mp4")
-        st.caption("💡 İpucu: Kendi 50 saniyelik profesyonel tanıtım videonuzun linkini buraya ekleyebilirsiniz.")
+        # 50 saniyelik slayt turunu oluşturan modül listesi (her biri yaklaşık 3 saniye)
+        slayt_adimları = [
+            ("00 - 03 sn", "🚀 Giriş & Karşılama", "Ringmaster SaaS ekosistemine hoş geldiniz. Salon yönetimi artık parmaklarınızın ucunda."),
+            ("03 - 06 sn", "👤 Salon Üyeleri Yönetimi", "Sporcu ad, telefon ve branş bilgileri girilir; sistem anında kayıt oluşturur."),
+            ("06 - 09 sn", "📱 Otomatik PIN & WhatsApp", "Her sporcuya özel 4 haneli PIN üretilir ve tek tıkla WhatsApp üzerinden gönderilir."),
+            ("09 - 12 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN girilerek saniyeler içinde antrenman yoklaması alınır."),
+            ("12 - 15 sn", "📦 Stok Takibi", "Eldiven, bandaj, kıyafet ve ekipman stokları anlık olarak kontrol altında tutulur."),
+            ("15 - 18 sn", "💰 Kasa / Finans", "Günlük gelir ve gider hareketleri şeffaf bir şekilde kasaya işlenir."),
+            ("18 - 21 sn", "🥋 Antrenör & Prim Takibi", "Antrenörlerin ders sayıları ve yüzdelik prim hesaplamaları otomatik raporlanır."),
+            ("21 - 24 sn", "🧒 Çocuk Gelişim Raporları", "Çocuk sporcuların gelişim notları kayıt altına alınır ve veli bilgilendirmesi sağlanır."),
+            ("24 - 27 sn", "🥋 Kuşak / Derece Sınavı", "Sporcu kuşak geçişleri, mevcut ve hedef derece sınav takipleri yapılır."),
+            ("27 - 30 sn", "🥊 Müsabık Takımı Yönetimi", "Lisanslı müsabık sporcuların sikletleri ve galibiyet/mağlubiyet istatistikleri izlenir."),
+            ("30 - 33 sn", "🩹 Sakatlık & Sparring Takibi", "Sakatlık durumu olan sporcuların sparring yapması emniyetli şekilde engellenir."),
+            ("33 - 36 sn", "🏆 Maç / Turnuva Takvimi", "Önümüzdeki şampiyonalar ve turnuvalara katılacak sporcu kadroları organize edilir."),
+            ("36 - 39 sn", "📞 Aday Üye Takibi (CRM)", "Deneme dersine gelen veya salonu arayan adayların dönüşüm süreçleri yönetilir."),
+            ("39 - 42 sn", "🎯 Özel Ders (PT) Paketi", "Birebir özel ders alan sporcuların kalan ders hakları titizlikle takip edilir."),
+            ("42 - 45 sn", "⚠️ Üye Terk (Churn) Riski", "Uzun süredir antrenmana gelmeyen sporcular tespit edilerek erken müdahale sağlanır."),
+            ("45 - 50 sn", "🌍 Kartlı Deneme & SaaS", "PayTR ve Stripe entegrasyonlarıyla küresel & yerel abonelik modeli tam gaz devrede!")
+        ]
+
+        # Slayt konteyneri
+        slayt_yeri = st.empty()
+        ilerleme_cubugu = st.progress(0)
+
+        col_b1, col_b2 = st.columns(2)
+        with col_b1:
+            baslat_btn = st.button("▶️ 50 Saniyelik Slayt Turunu Başlat")
+        with col_b2:
+            hizli_gecis = st.checkbox("⚡ Hızlı Mod (Her adım 1 saniye)")
+
+        bekleme_suresi = 1.0 if hizli_gecis else 3.0
+
+        if baslat_btn:
+            toplam_adim = len(slayt_adimları)
+            for i, (zaman_dilimi, baslik, aciklama) in enumerate(slayt_adimları):
+                # İlerleme yüzdesini güncelle
+                ilerleme_cubugu.progress((i + 1) / toplam_adim)
+                
+                # Slayt Kartını Göster
+                with slayt_yeri.container():
+                    st.markdown(f"""
+                        <div class="slide-card">
+                            <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ {zaman_dilimi}</h4>
+                            <h2 style="color: #ffffff; margin-top: 0px;">{baslik}</h2>
+                            <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">{aciklama}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                
+                time.sleep(bekleme_suresi)
+            
+            st.success("🎉 50 saniyelik tam kapsamlı modül slayt turu başarıyla tamamlandı, patron!")
+        else:
+            # Varsayılan ilk slayt görünümü
+            with slayt_yeri.container():
+                st.markdown(f"""
+                    <div class="slide-card">
+                        <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ 00 - 03 sn</h4>
+                        <h2 style="color: #ffffff; margin-top: 0px;">🚀 Ringmaster SaaS Slayt Turuna Hazır</h2>
+                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Yukarıdaki 'Başlat' butonuna basarak antrenör primleri ve veli bilgilendirme dahil tüm modülleri 3'er saniyelik geçişlerle izleyin.</p>
+                    </div>
+                """, unsafe_allow_html=True)
 
     with tab2:
-        st.markdown("### 🎯 Tüm Modülleri Kapsayan 4 Adımlı Rehber")
-        st.success("""
-        1. **Temel Operasyon:** Sporcuyu kaydedip WhatsApp ile PIN kodunu iletin, turnike/yoklama otomatik çalışsın.
-        2. **Finans & Stok:** Kasa hareketleri ve ürün stoklarını tek ekrandan kontrol edin.
-        3. **Antrenör Yönetimi:** Ders bazlı prim takipleriyle hoca hak edişlerini şeffaf yönetin.
-        4. **İletişim & Gelişim:** Çocuk sporcular için veli bilgilendirme ve gelişim raporlarıyla memnuniyeti zirveye taşıyın.
-        """)
-
-    with tab3:
-        st.markdown("### 💡 Her Modülde Otomatik Kılavuz")
-        st.write("Yazılımdaki 20 modülün her birinin üst kısmında **'💡 Bu Modül Nasıl Kullanılır?'** rehberi hazır bulunur.")
+        st.markdown("### 📋 50 Saniyelik Slayt Akış Tablosu")
+        df_slayt = pd.DataFrame([
+            {"Zaman": a[0], "Modül Adı": a[1], "Açıklama": a[2]} for a in slayt_adimları
+        ])
+        st.dataframe(df_slayt, use_container_width=True)
 
 # --- 3. RİNGMASTER AI ASİSTANI ---
 elif secilen_modul == "Ringmaster AI Asistanı 🤖":
@@ -185,7 +219,7 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! 50 saniyelik kapsamlı oryantasyon rehberimiz ve tüm modüllerimiz (primler ve veli raporları dahil) tam kadro devrede. Bugün neyi optimize ediyoruz?"}
+            {"role": "assistant", "content": "Selam patron! 50 saniyelik slayt animasyon turumuz ve tüm modüllerimiz (primler ve veli raporları dahil) tam kadro devrede. Bugün neyi optimize ediyoruz?"}
         ]
 
     for message in st.session_state.messages:
@@ -338,7 +372,7 @@ elif secilen_modul == "Kasa / Finans":
 
 # --- 8. ANTRENÖR & PRİM TAKİBİ ---
 elif secilen_modul == "Antrenör & Prim Takibi":
-    st.subheader("🥋 Antrenör ve Prim Yönetimi (50s Tur Vurgusu)")
+    st.subheader("🥋 Antrenör ve Prim Yönetimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
         st.write("Antrenörlerin verdikleri ders sayılarını ve prim oranlarını belirleyerek hak ediş hesaplamalarını yapın.")
     
