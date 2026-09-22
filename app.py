@@ -88,7 +88,7 @@ db.veritabani_baslat()
 st.sidebar.title("🥊 Ringmaster SaaS")
 st.sidebar.markdown("---")
 
-# Tüm Modüller (22 Modül Tam Kadro - Aidat & Ücret Takibi Dahil)
+# Tüm Modüller (22 Modül Tam Kadro)
 secilen_modul = st.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -120,13 +120,13 @@ secilen_modul = st.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     st.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    st.markdown("Koyu lacivert zemin ve canlı neon turuncu butonlarla donatılmış ferah profesyonel tema devrede. Sistem mermi gibi akıyor.")
+    st.markdown("Koyu lacivert zemin, canlı neon turuncu butonlar ve genişletilmiş dövüş sanatları / fitness branşlarıyla sistem mermi gibi akıyor.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Toplam Üye", len(db.uyeleri_getir()))
     with col2:
-        st.metric("Aktif Modül", "22 / 22 (Aidat & Slayt Turu Dahil)")
+        st.metric("Aktif Modül", "22 / 22 (Genişletilmiş Branşlar Dahil)")
     with col3:
         st.metric("Sistem Modeli", "Kartlı Deneme & Kapsamlı Otomasyon 🚀")
 
@@ -138,13 +138,12 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
     tab1, tab2 = st.tabs(["🎬 Otomatik Modül Slayt Gösterisi (Canlı Animasyon)", "📋 Modül Akış Detayları"])
 
     with tab1:
-        st.markdown("### ⏱️ Modül Geçiş Slaytları (Aidat Takibi Dahil)")
+        st.markdown("### ⏱️ Modül Geçiş Slaytları")
         st.info("Aşağıdaki butona basarak sistemin modülleri otomatik slayt şeklinde tanıtmasını başlatabilirsin:")
 
-        # Aidat modülü dahil güncellenmiş slayt adımları
         slayt_adimları = [
             ("00 - 03 sn", "🚀 Giriş & Karşılama", "Ringmaster SaaS ekosistemine hoş geldiniz. Salon yönetimi artık parmaklarınızın ucunda."),
-            ("03 - 06 sn", "👤 Salon Üyeleri Yönetimi", "Sporcu ad, telefon ve branş bilgileri girilir; sistem anında kayıt oluşturur."),
+            ("03 - 06 sn", "👤 Salon Üyeleri Yönetimi", "Sporcu ad, telefon ve genişletilmiş branş (Boks, MMA, BJJ, Crossfit vb.) seçilerek anında kayıt oluşturulur."),
             ("06 - 09 sn", "📱 Otomatik PIN & WhatsApp", "Her sporcuya özel 4 haneli PIN üretilir ve tek tıkla WhatsApp üzerinden gönderilir."),
             ("09 - 12 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN girilerek saniyeler içinde antrenman yoklaması alınır."),
             ("12 - 15 sn", "📦 Stok Takibi", "Eldiven, bandaj, kıyafet ve ekipman stokları anlık olarak kontrol altında tutulur."),
@@ -162,7 +161,6 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
             ("48 - 52 sn", "🌍 Kartlı Deneme & SaaS", "PayTR ve Stripe entegrasyonlarıyla küresel & yerel abonelik modeli tam gaz devrede!")
         ]
 
-        # Slayt konteyneri
         slayt_yeri = st.empty()
         ilerleme_cubugu = st.progress(0)
 
@@ -197,7 +195,7 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
                     <div class="slide-card">
                         <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ 00 - 03 sn</h4>
                         <h2 style="color: #ffffff; margin-top: 0px;">🚀 Ringmaster SaaS Slayt Turuna Hazır</h2>
-                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Yukarıdaki 'Başlat' butonuna basarak aidat takibi, antrenör primleri ve tüm modülleri izleyin.</p>
+                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Yukarıdaki 'Başlat' butonuna basarak tüm modülleri izleyin.</p>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -214,18 +212,18 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
     st.write("Salonunla ilgili stratejik sorular sorabilir, operasyonel hız hakkında bilgi alabilirsin.")
     
     with st.expander("💡 Bu Modül Nasıl Kullanılır? (Oryantasyon Rehberi)"):
-        st.write("Bu asistan doğrudan veritabanınızla konuşur. Üye istatistikleri, aidat ödemeleri veya prim sistemleri hakkında soru sorabilirsiniz.")
+        st.write("Bu asistan doğrudan veritabanınızla konuşur. Üye istatistikleri, aidat ödemeleri veya branş dağılımları hakkında soru sorabilirsiniz.")
 
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Selam patron! Aidat takibi, primler ve tüm modüllerimiz tam kadro devrede. Bugün neyi optimize ediyoruz?"}
+            {"role": "assistant", "content": "Selam patron! Yeni branşlar (Karate, MMA, Wing Chun, Crossfit vb.), aidat takibi ve tüm modüllerimiz tam kadro devrede. Bugün neyi optimize ediyoruz?"}
         ]
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Salon yönetimi, aidat ödemeleri veya primler hakkında sor..."):
+    if prompt := st.chat_input("Salon yönetimi, aidat ödemeleri veya branşlar hakkında sor..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -235,10 +233,8 @@ elif secilen_modul == "Ringmaster AI Asistanı 🤖":
                 lower_p = prompt.lower()
                 if "aidat" in lower_p or "borç" in lower_p or "ödeme" in lower_p:
                     yanit = "Aidat ve ücret ödeme takibi modülü üzerinden üye borçlandırmaları ve tahsilatları saniyeler içinde yönetiliyor, patron!"
-                elif "prim" in lower_p or "antrenör" in lower_p:
-                    yanit = "Antrenör prim modülü üzerinden ders sayıları ve oranlar hesaplanıyor."
-                elif "üye" in lower_p or "kayıt" in lower_p:
-                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz bulunuyor."
+                elif "branş" in lower_p or "sporcu" in lower_p:
+                    yanit = f"Şu an sistemde toplam **{len(db.uyeleri_getir())}** aktif sporcumuz bulunuyor. Karate, MMA, Wing Chun, Crossfit ve diğer tüm branşlar tam entegre çalışıyor!"
                 else:
                     yanit = f"Harika bir yaklaşım patron! '{prompt}' konusunda tüm otomasyon devrede."
                 
@@ -251,7 +247,7 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
     
     with st.expander("💡 Bu Modül Nasıl Kullanılır ve Veri Girilir? (Rehber)"):
         st.write("""
-        1. **Sporcu Ekleme:** Ad soyad, telefon ve branş girip 'Sporcuyu Kaydet' butonuna basın.
+        1. **Sporcu Ekleme:** Ad soyad, telefon ve genişletilmiş branş (Boks, Karate, MMA, Wing Chun, Crossfit vb.) seçip 'Sporcuyu Kaydet' butonuna basın.
         2. **WhatsApp Entegrasyonu:** Kayıttan sonra alttaki formdan sporcuyu seçip WhatsApp mesaj bağlantısıyla giriş PIN'ini iletin.
         """)
 
@@ -261,7 +257,11 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
             ad = st.text_input("Sporcu Ad Soyad")
             tel = st.text_input("Telefon (Örn: 5551234567)")
         with c2:
-            brans = st.selectbox("Branş", ["Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness"])
+            brans = st.selectbox("Branş", [
+                "Boks", "Kick Boks", "Muay Thai", "BJJ", "Fitness",
+                "Karate", "Capoeira", "Judo", "MMA", "Self Defense",
+                "Aikido", "Krav Maga", "Wing Chun", "Wushu", "Sanda", "Crossfit"
+            ])
             pin = st.text_input("4 Haneli PIN (Boş bırakırsan otomatik atanır)", max_chars=4, type="default")
         
         if st.form_submit_button("Sporcuyu Kaydet ve PIN Üret 🚀"):
@@ -269,7 +269,7 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
                 if not pin or len(pin) != 4 or not pin.isdigit():
                     pin = str(random.randint(1000, 9999))
                 db.uye_ekle(ad, tel, brans, pin)
-                st.success(f"🚀 {ad} başarıyla kaydedildi! 4 Haneli Giriş PIN Kodu: **{pin}**")
+                st.success(f"🚀 {ad} ({brans}) başarıyla kaydedildi! 4 Haneli Giriş PIN Kodu: **{pin}**")
             else:
                 st.warning("Lütfen sporcu adını girin.")
     
@@ -281,7 +281,7 @@ elif secilen_modul == "Salon Üyeleri Yönetimi":
         
         st.markdown("### 📱 WhatsApp ile Sporcuya PIN Gönder")
         with st.form("whatsapp_form"):
-            secilen_sporcu_str = st.selectbox("Sporcu Seç", df_uyeler.apply(lambda x: f"{x['ID']} - {x['Ad Soyad']} (Tel: {x['Telefon']} - PIN: {x['PIN']})", axis=1).tolist())
+            secilen_sporcu_str = st.selectbox("Sporcu Seç", df_uyeler.apply(lambda x: f"{x['ID']} - {x['Ad Soyad']} ({x['Branş']}) - Tel: {x['Telefon']} - PIN: {x['PIN']}", axis=1).tolist())
             if st.form_submit_button("WhatsApp Hoş Geldin & PIN Mesajı Hazırla 💬"):
                 parcalar = secilen_sporcu_str.split(" - ")
                 s_id = parcalar[0]
@@ -328,7 +328,7 @@ elif secilen_modul == "Yoklama Sistemi":
 elif secilen_modul == "Stok Takibi":
     st.subheader("📦 Ürün ve Ekipman Stok Yönetimi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Eldiven, bandaj, protein tozu veya ekipman stoklarını buradan takip edin.")
+        st.write("Eldiven, bandaj, kimono, protein tozu veya crossfit ekipman stoklarını buradan takip edin.")
     
     conn = db.baglanti_kur()
     stoklar = pd.read_sql("SELECT * FROM stok", conn)
@@ -379,7 +379,6 @@ elif secilen_modul == "Aidat & Ücret Ödeme Takibi 💳":
         3. **Geciken Ödemeler:** Vadesi geçmiş borçlar sistem tarafından kırmızı renkli uyarı bayrağıyla takip edilir.
         """)
 
-    # Güvenli tablo kontrolü / oluşturulması
     conn = db.baglanti_kur()
     conn.execute("""
         CREATE TABLE IF NOT EXISTS aidatlar (
@@ -435,7 +434,6 @@ elif secilen_modul == "Aidat & Ücret Ödeme Takibi 💳":
                 conn = db.baglanti_kur()
                 conn.execute("UPDATE aidatlar SET durum = ? WHERE id = ?", (yeni_durum, secilen_id))
                 
-                # Eğer ödendi seçildiyse kasaya da gelir olarak ekleyelim
                 if yeni_durum == "Ödendi":
                     ilgili_kayit = aidat_df[aidat_df['id'] == secilen_id].iloc[0]
                     conn.execute("INSERT INTO kasa (islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?)",
@@ -458,7 +456,7 @@ elif secilen_modul == "Antrenör & Prim Takibi":
     st.dataframe(df, use_container_width=True)
     with st.form("hoca_form"):
         hoca = st.text_input("Antrenör Adı")
-        brans = st.text_input("Branş")
+        brans = st.text_input("Uzmanlık Branşı")
         ders = st.number_input("Ders Sayısı", min_value=0, value=0)
         prim = st.number_input("Prim Oranı (%)", min_value=0.0, value=10.0)
         if st.form_submit_button("Antrenör Ekle"):
@@ -496,7 +494,7 @@ elif secilen_modul == "Çocuk Gelişim Raporları":
 elif secilen_modul == "Kuşak / Derece Sınavı":
     st.subheader("🥋 Kuşak ve Derece Sınav Takibi")
     with st.expander("💡 Bu Modül Nasıl Kullanılır?"):
-        st.write("Sporcuların kuşak geçiş sınavlarını ve hedef derecelerini kayıt altında tutun.")
+        st.write("Sporcuların kuşak, dan ve derece geçiş sınavlarını kayıt altında tutun.")
     
     conn = db.baglanti_kur()
     df = pd.read_sql("SELECT * FROM kusak_sinav", conn)
@@ -504,8 +502,8 @@ elif secilen_modul == "Kuşak / Derece Sınavı":
     st.dataframe(df, use_container_width=True)
     with st.form("kusak_form"):
         ogr = st.text_input("Öğrenci Adı")
-        mevcut = st.text_input("Mevcut Kuşak")
-        hedef = st.text_input("Hedef Kuşak")
+        mevcut = st.text_input("Mevcut Kuşak / Seviye")
+        hedef = st.text_input("Hedef Kuşak / Seviye")
         durum = st.selectbox("Durum", ["Bekliyor", "Başarılı", "Tekrar"])
         if st.form_submit_button("Sınav Kaydı Oluştur"):
             conn = db.baglanti_kur()
@@ -527,7 +525,7 @@ elif secilen_modul == "Müsabık Takımı Yönetimi":
     st.dataframe(df, use_container_width=True)
     with st.form("musabik_form"):
         sporcu = st.text_input("Sporcu Adı")
-        siklet = st.text_input("Siklet")
+        siklet = st.text_input("Siklet / Kategori")
         galibiyet = st.number_input("Galibiyet", min_value=0, value=0)
         maglubiyet = st.number_input("Mağlubiyet", min_value=0, value=0)
         if st.form_submit_button("Müsabık Ekle"):
