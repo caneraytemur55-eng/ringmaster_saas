@@ -263,7 +263,7 @@ s.markdown("""
 s.sidebar.title("🥊 Ringmaster SaaS")
 s.sidebar.markdown("---")
 
-# Modül Listesi (23 Modül Tam Kadro - Akıllı Kas Hafızası Dahil)
+# Modül Listesi (23 Modül Tam Kadro)
 secilen_modul = s.sidebar.selectbox(
     "Modül Seçin", 
     [
@@ -296,7 +296,7 @@ secilen_modul = s.sidebar.selectbox(
 # --- 1. ANA SAYFA ---
 if secilen_modul == "Ana Sayfa":
     s.subheader("🥊 Ringmaster SaaS Yönetim Paneline Hoş Geldin Patron!")
-    s.markdown("Koyu lacivert zemin, neon turuncu butonlar, genişletilmiş dövüş sanatları ve **Akıllı Kas Hafızası Modülü** ile sistem mermi gibi devrede.")
+    s.markdown("Koyu lacivert zemin, neon turuncu butonlar, tüm dövüş sanatları branşları ve **Akıllı Kas Hafızası Modülü** ile sistem mermi gibi devrede.")
     
     col1, col2, col3 = s.columns(3)
     with col1:
@@ -306,28 +306,47 @@ if secilen_modul == "Ana Sayfa":
     with col3:
         s.metric("Sistem Modeli", "Rakipsiz AI & Küresel SaaS 🚀")
 
-# --- 2. SİSTEM ORYANTASYONU & SLAYT TURU ---
+# --- 2. SİSTEM ORYANTASYONU & SLAYT TURU (23 MODÜL TAM KADRO) ---
 elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
-    s.subheader("🚀 Ringmaster SaaS - Otomatik Modül Slayt Turu")
-    s.write("Modülleri sırayla gösteren, kas hafızası analizlerini ve antrenör asistanlığını anlatan canlı slayt gösterisi.")
+    s.subheader("🚀 Ringmaster SaaS - 23 Modüllü Tam Slayt Turu")
+    s.write("Sistemin tüm operasyonel modüllerini, yapay zeka asistanını, kas hafızası analizlerini ve finansal akışları sırasıyla tanıtan 50 saniyelik canlı gösteri.")
 
-    tab1, tab2 = s.tabs(["🎬 Otomatik Modül Slayt Gösterisi", "📋 Modül Akış Detayları"])
+    tab1, tab2 = s.tabs(["🎬 Otomatik Modül Slayt Gösterisi", "📋 23 Modül Akış Detayları"])
 
     with tab1:
-        s.markdown("### ⏱️ Modül Geçiş Slaytları")
+        s.markdown("### ⏱️ Tüm Modülleri Kapsayan 50 Saniyelik Slayt Turu")
+        
+        # 23 Modülün Tamamını Kapsayan Slayt Adımları
         slayt_adimları = [
-            ("00 - 03 sn", "🚀 Giriş & Karşılama", "Ringmaster SaaS ekosistemine hoş geldiniz."),
-            ("03 - 06 sn", "🧠 Akıllı Kas Hafızası AI", "Sporcuların yumruk/teknik açılarını analiz eden devrimci yapay zeka modülü."),
-            ("06 - 09 sn", "👤 Salon Üyeleri Yönetimi", "Genişletilmiş branşlar (Boks, MMA, BJJ, Wing Chun, Crossfit vb.) ile kayıt ve PIN üretimi."),
-            ("09 - 12 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN girilerek saniyeler içinde yoklama alınması."),
-            ("12 - 15 sn", "💳 Aidat & Ücret Takibi", "Geciken ödemelerin ve tahsilatların akıllı finansal takibi."),
-            ("15 - 18 sn", "🌍 Küresel SaaS & Ödemeler", "Stripe ve PayTR ile uluslararası çoklu para birimi ve kartlı deneme modeli.")
+            ("00 - 02 sn", "🥊 Ana Sayfa", "Ringmaster SaaS yönetim paneline genel bakış ve anlık metrikler."),
+            ("02 - 04 sn", "🚀 Sistem Oryantasyonu", "Salonunuzu saniyeler içinde tanıtan akıllı slayt turu rehberi."),
+            ("04 - 06 sn", "🤖 Ringmaster AI Asistanı", "Veritabanınızla konuşan ve salon yönetiminizi optimize eden akıllı yapay zeka."),
+            ("06 - 09 sn", "🧠 Akıllı Kas Hafızası & Teknik AI", "Sporcuların eklem açılarını analiz eden, antrenörün yükünü alan devrimci AI modülü."),
+            ("09 - 11 sn", "👤 Salon Üyeleri Yönetimi", "Boks, MMA, BJJ, Crossfit ve tüm genişletilmiş branşlarda hızlı sporcu kaydı ve PIN üretimi."),
+            ("11 - 13 sn", "📝 Yoklama Sistemi", "Tablet üzerinden 4 haneli PIN ile saniyeler içinde otomatik antrenman yoklaması."),
+            ("13 - 15 sn", "📦 Stok Takibi", "Eldiven, bandaj, kimono ve ekipman stoklarının anlık kontrolü."),
+            ("15 - 17 sn", "💰 Kasa / Finans", "Günlük gelir ve gider hareketlerinin şeffaf finansal takibi."),
+            ("17 - 20 sn", "💳 Aidat & Ücret Ödeme Takibi", "Üye borçlandırma, tahsilat, dijital makbuz ve geciken ödeme uyarıları."),
+            ("20 - 22 sn", "🥋 Antrenör & Prim Takibi", "Antrenörlerin ders sayıları ve yüzdelik prim hesaplamalarının raporlanması."),
+            ("22 - 24 sn", "🧒 Çocuk Gelişim Raporları", "Çocuk sporcuların gelişim notları ve veli bilgilendirme akışı."),
+            ("24 - 26 sn", "🥋 Kuşak / Derece Sınavı", "Kuşak, dan ve seviye geçiş sınavlarının kayıt altında tutulması."),
+            ("26 - 28 sn", "🥊 Müsabık Takımı Yönetimi", "Lisanslı müsabık sporcuların siklet ve galibiyet/mağlubiyet istatistikleri."),
+            ("28 - 30 sn", "🩹 Sakatlık & Sparring Takibi", "Sakat sporcuların güvenliği için sparring yapmasının engellenmesi."),
+            ("30 - 32 sn", "🏆 Maç / Turnuva Takvimi", "Önümüzdeki şampiyonalar ve turnuvalara katılacak sporcu kadroları."),
+            ("32 - 34 sn", "📞 Aday Üye Takibi (CRM)", "Deneme dersine gelen potansiyel adayların dönüşüm süreçleri."),
+            ("34 - 36 sn", "🎯 Özel Ders (PT) Paketi", "Birebir özel ders alan sporcuların kalan ders haklarının takibi."),
+            ("36 - 38 sn", "📊 Vücut Ölçüm Takibi", "Sporcuların kilo ve yağ oranı değişimlerinin periyodik kaydı."),
+            ("38 - 40 sn", "⚠️ Üye Terk (Churn) Riski", "Uzun süredir gelmeyen üyelerin tespiti ve erken müdahale."),
+            ("40 - 43 sn", "📢 Toplu SMS / Duyuru Logu", "Üyelere veya velilere yapılan toplu duyuru ve mesaj arşivleme."),
+            ("43 - 45 sn", "🏢 SaaS Abonelik Yönetimi", "Yeni salon müşterilerinin 14 günlük deneme ve abonelik süreçleri."),
+            ("45 - 48 sn", "🌍 Küresel & Yerel Ödemeler", "Stripe ve PayTR ile çoklu para birimi ve kartlı deneme modeli."),
+            ("48 - 52 sn", "⚙️ Sistem Ayarları", "Veritabanı yönetimi, onarım ve sistem parametreleri kontrolü.")
         ]
 
         slayt_yeri = s.empty()
         ilerleme_cubugu = s.progress(0)
         
-        if s.button("▶️ Slayt Turunu Başlat"):
+        if s.button("▶️ 23 Modüllü Slayt Turunu Başlat"):
             for i, (z, b, a) in enumerate(slayt_adimları):
                 ilerleme_cubugu.progress((i + 1) / len(slayt_adimları))
                 with slayt_yeri.container():
@@ -339,19 +358,20 @@ elif secilen_modul == "🚀 Sistem Oryantasyonu & 50s Slayt Turu":
                         </div>
                     """, unsafe_allow_html=True)
                 time.sleep(1.5)
-            s.success("🎉 Slayt turu başarıyla tamamlandı, patron!")
+            s.success("🎉 23 modüllük dev slayt turu başarıyla tamamlandı, patron!")
         else:
             with slayt_yeri.container():
                 s.markdown("""
                     <div class="slide-card">
-                        <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ 00 - 03 sn</h4>
-                        <h2 style="color: #ffffff; margin-top: 0px;">🚀 Slayt Turuna Hazır</h2>
-                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Başlat butonuna basarak turu izleyin.</p>
+                        <h4 style="color: #f97316; margin-bottom: 5px;">⏱️ 00 - 02 sn</h4>
+                        <h2 style="color: #ffffff; margin-top: 0px;">🥊 Ringmaster SaaS Slayt Turuna Hazır</h2>
+                        <p style="font-size: 18px; color: #cbd5e1; margin-top: 15px;">Başlat butonuna basarak tüm 23 modülü tek tek izleyin.</p>
                     </div>
                 """, unsafe_allow_html=True)
 
     with tab2:
-        df_s = pd.DataFrame([{"Zaman": x[0], "Modül": x[1], "Açıklama": x[2]} for x in slayt_adimları])
+        s.markdown("### 📋 23 Modülün Tam Akış Tablosu")
+        df_s = pd.DataFrame([{"Zaman": x[0], "Modül Adı": x[1], "Açıklama": x[2]} for x in slayt_adimları])
         s.dataframe(df_s, use_container_width=True)
 
 # --- 3. RİNGMASTER AI ASİSTANI ---
@@ -394,7 +414,6 @@ elif secilen_modul == "🧠 Akıllı Dijital Kas Hafızası & Teknik AI":
             diz_acisi = s.slider("Diz / Büküm Açısı (Simüle Edilen Değer)", 90, 180, 160)
 
         if s.form_submit_button("🤖 AI Kas Hafızası Analizini Başlat"):
-            # Örnek skor hesaplama mantığı
             sapma = abs(90 - dirsek_acisi) + abs(170 - diz_acisi)
             skor = max(35, round(100 - (sapma * 0.8), 2))
             
