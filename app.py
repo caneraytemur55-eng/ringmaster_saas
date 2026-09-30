@@ -1,28 +1,85 @@
 import streamlit as st
-import datetime
 import pandas as pd
+import numpy as np
+import datetime
 
-# Sayfa Yapılandırması (Geniş Ekran ve Temalı)
+# ---------------------------------------------------------
+# 1. SAYFA YAPILANDIRMASI & ÖZEL CSS STİL DOKUNUŞLARI
+# ---------------------------------------------------------
 st.set_page_config(
-    page_title="Ringmaster SaaS - Salon Yönetimi & AI Head Coach",
+    page_title="Ringmaster SaaS - Ar-Ge Kokpiti & AI Head Coach",
     page_icon="🥋",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-def render_ultimate_ringmaster():
+# Özel CSS (Metrik Kartları, Gölgeler ve Rozetler İçin)
+st.markdown("""
+    <style>
+    /* Metrik Kartı Özelleştirme */
+    div[data-testid="stMetric"] {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Ar-Ge Rozet Stili */
+    .badge-rd {
+        background-color: #0284c7;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-right: 8px;
+        display: inline-block;
+    }
+    .badge-ai {
+        background-color: #16a34a;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-right: 8px;
+        display: inline-block;
+    }
+    .badge-uk {
+        background-color: #9333ea;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+def render_ultimate_ringmaster_rd():
     # ---------------------------------------------------------
-    # 1. HEADER & OVERVIEW METRICS
+    # 2. ÜST BİLGİ VE AR-GE ROZETLERİ
     # ---------------------------------------------------------
-    st.title("🥋 Ringmaster SaaS Pro - Dijital Salon Yönetimi & AI Head Coach")
-    st.caption("BJJ, Muay Thai, Boks ve MMA Akademileri İçin Bütünleşik Akıllı Yönetim Platformu")
+    st.markdown("""
+        <div>
+            <span class="badge-rd">🔬 KOSGEB Ar-Ge Faz-1 Prototip</span>
+            <span class="badge-ai">⚡ AI Head Coach Engine v1.2 Active</span>
+            <span class="badge-uk">🇬🇧 UK Market Ready</span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.title("🥋 Ringmaster SaaS Pro - Salon Yönetimi & AI Kokpiti")
+    st.caption("Dövüş Sanatları Akademileri İçin Bütünleşik Akıllı Yönetim & Karar Destek Platformu")
     st.markdown("---")
 
-    # Üst Bilgi Kartları (Executive Metrics)
+    # Executive Metrikler
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.metric(label="Toplam Aktif Üye", value="142 Sporcu", delta="+8 Bu Ay")
     with col2:
-        st.metric(label="Kuşak / Stripe Adayı", value="6 Sporcu", delta="Terfi Hazır")
+        st.metric(label="Kuşak/Stripe Adayı", value="6 Sporcu", delta="Terfi Hazır")
     with col3:
         st.metric(label="Riskli Üye (Churn)", value="3 Kişi", delta="-12% Katılım", delta_color="inverse")
     with col4:
@@ -30,189 +87,170 @@ def render_ultimate_ringmaster():
     with col5:
         st.metric(label="Tamamlanan AI Dersleri", value="34 Ders", delta="Bu Hafta")
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 2. SECTOR-LEADING MULTI-MODULE TABS
+    # 3. SEKTÖR LİDERİ MODÜLLER VE GRAFİK ANALİTİKLERİ
     # ---------------------------------------------------------
-    tab_coach, tab_belts, tab_churn, tab_finance, tab_waiver, tab_schedule, tab_ai_chat = st.tabs([
-        "🏋️‍♂️ AI Antrenman & Müsabaka Koçu", 
+    tab_overview, tab_coach, tab_belts, tab_churn, tab_finance, tab_waiver, tab_ai_chat = st.tabs([
+        "📈 Analitik & Genel Bakış",
+        "🏋️‍♂️ AI Antrenman Jeneratörü", 
         "🥋 Kuşak, Çizgi & Terfi", 
         "📊 Terk (Churn) & Sakatlık Riski", 
-        "💳 Finans, Stripe & POS Kantin", 
-        "📜 Feragatname & GDPR (Waiver)",
-        "📅 Ders Programı & Kontenjan",
+        "💳 Finans & POS Kantin", 
+        "📜 Feragatname & GDPR",
         "💬 Bilge AI Başasistan Chat"
     ])
 
     # =========================================================
-    # TAB 1: AI ANTRENMAN VE MÜSABAKA KOÇU
+    # TAB 0: ANALİTİK & GENEL BAKIŞ (GÖRSEL GRAFİKLER)
+    # =========================================================
+    with tab_overview:
+        st.subheader("📊 Salon Performansı & Yapay Zeka Trend Analizleri")
+        
+        g_col1, g_col2 = st.columns(2)
+        
+        with g_col1:
+            st.markdown("##### 🥋 Son 30 Günlük Derse Katılım & Yoğunluk Trendi")
+            # Örnek Katılım Verisi (Line Chart)
+            dates = pd.date_range(start="2026-09-01", periods=30)
+            katilim_data = pd.DataFrame({
+                "Tarih": dates,
+                "BJJ Sınıfları": np.random.randint(15, 30, size=30),
+                "Muay Thai / Boks": np.random.randint(10, 25, size=30)
+            }).set_index("Tarih")
+            st.line_chart(katilim_data)
+
+        with g_col2:
+            st.markdown("##### 💷 Aylık Düzenli Gelir (MRR) Büyümesi (£ Sterlin)")
+            # Örnek Finansal Büyüme Verisi (Bar Chart)
+            mrr_data = pd.DataFrame({
+                "Ay": ["Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül"],
+                "Abonelik Geliri": [3200, 4100, 4800, 5600, 6450]
+            }).set_index("Ay")
+            st.bar_chart(mrr_data)
+
+    # =========================================================
+    # TAB 1: AI ANTRENMAN JENERATÖRÜ
     # =========================================================
     with tab_coach:
         st.subheader("📋 Bütünleşik AI Antrenman & Taktik Jeneratörü")
-        st.write("Dövüş sanatları pedagojisine uygun dinamik ısınma, driller, koşullu sparring ve soğuma programı.")
+        st.write("Dövüş sanatları pedagojisine uygun dinamik ısınma, driller ve koşullu sparring programı.")
         
         col_a, col_b, col_c = st.columns(3)
         with col_a:
-            discipline = st.selectbox("Branş Seçin", ["BJJ (Gi)", "BJJ (No-Gi)", "Muay Thai / Kickboks", "Boks", "MMA (Kafes Sporları)", "Krav Maga / Self-Defense"])
+            discipline = st.selectbox("Branş Seçin", ["BJJ (Gi)", "BJJ (No-Gi)", "Muay Thai / Kickboks", "Boks", "MMA"])
             duration = st.select_slider("Ders Süresi", options=[45, 60, 75, 90, 120], value=60)
         with col_b:
-            level = st.selectbox("Grup Seviyesi", ["Beginner (Fundametals)", "Intermediate (Teknik)", "Advanced / Müsabık Grubu", "Kids (Çocuk Grubu 6-12 Yaş)"])
-            intensity = st.select_slider("Antrenman Yoğunluğu", options=["Düşük (Teknik Beceriler)", "Orta (Standart)", "Yüksek (Müsabaka Kampı)"])
+            level = st.selectbox("Grup Seviyesi", ["Beginner (Fundamentals)", "Intermediate (Teknik)", "Advanced / Müsabık", "Kids (6-12 Yaş)"])
+            intensity = st.select_slider("Antrenman Yoğunluğu", options=["Düşük", "Orta", "Yüksek (Müsabaka Kampı)"])
         with col_c:
-            focus_area = st.text_input("Günün Odak Konusu / Senaryo", value="Closed Guard'dan Armbar ve Sweep Kombinasyonu")
-            sparring_type = st.selectbox("Sparring Tipi", ["Koşullu Positional Sparring", "Serbest Sparring (Open Mat)", "Grappling / Takedown Drills", "Sparring Yok (Sadece Teknik)"])
+            focus_area = st.text_input("Günün Odak Konusu", value="Closed Guard'dan Armbar ve Sweep")
+            sparring_type = st.selectbox("Sparring Tipi", ["Koşullu Positional Sparring", "Serbest Sparring", "Drills Only"])
 
         if st.button("🚀 Bilge AI Antrenman Planını Üret", type="primary"):
-            with st.spinner("AI Head Coach salon verilerine ve anatomi kurallarına uygun antrenmanı planlıyor..."):
-                st.success(f"✅ {discipline} - {focus_area} ({duration} Dakika) İçin Hazırlanan Profesyonel Antrenman Reçetesi")
+            with st.spinner("AI Head Coach ders planını hazırlıyor..."):
+                st.success(f"✅ {discipline} - {focus_area} ({duration} dk) Planı Hazırlandı")
                 
-                col_res1, col_res2 = st.columns(2)
-                with col_res1:
+                res1, res2 = st.columns(2)
+                with res1:
                     st.markdown(f"""
-                    ### ⏱️ Antrenman Akışı ({duration} dk)
-                    * **Dinamik Isınma & Mobilite (10 dk):** Kalça mobilitesi, omurga rotasyonları, branşa özel kartilaj hazırlığı.
-                    * **Teknik Gösterim & Driller (25 dk):** 
-                      1. Adım: {focus_area} temel pozisyon alma ve tutuş (grip) kontrolü.
-                      2. Adım: Rakip tepkisine göre B planı geçişi.
-                      3. Adım: 3'er dakikalık kesintisiz partnerli drill tekrarı.
-                    * **Koşullu Sparring ({int(duration*0.3)} dk):** 
-                      * Format: {sparring_type}. Sadece belirlenen pozisyondan başlayan 3'er dakikalık rauntlar.
-                    * **Kondisyon & Cool-down (10 dk):** Çekirdek bölge (Core) dayanıklılığı ve nefes regülasyonu.
+                    ### ⏱️ Antrenman Akışı
+                    * **Dinamik Isınma (10 dk):** Kalça mobilitesi, omurga rotasyonu.
+                    * **Teknik Driller (25 dk):** {focus_area} kombine geçişleri.
+                    * **Koşullu Sparring ({int(duration*0.3)} dk):** Format: {sparring_type}.
+                    * **Cool-down (10 dk):** Core güçlendirme ve esneme.
                     """)
-                with col_res2:
+                with res2:
                     st.info("""
-                    💡 **AI Head Coach Taktik İpucu:**
-                    - **Sakatlık Önleme:** Başlangıç seviyesi sporcularda hip-hyper extension riskine karşı dirsek kilitlerinde erken tap (teslimiyet) kuralını hatırlatın.
-                    - **Pedagojik Yaklaşım:** Tekniği göstermeden önce 'Neden bu pozisyon?' sorusunu gruba yönelterek mantığını kavramalarını sağlayın.
+                    💡 **AI Taktik İpucu:**
+                    - Başlangıç seviyesinde dirsek kilitlerinde erken tap (teslimiyet) kuralını vurgulayın.
+                    - Sakatlık riskini azaltmak için ısınma süresine sadık kalın.
                     """)
 
     # =========================================================
-    # TAB 2: KUŞAK, ÇİZGİ VE TERFİ TAKİBİ
+    # TAB 2: KUŞAK VE ÇİZGİ TAKİBİ
     # =========================================================
     with tab_belts:
-        st.subheader("🎖️ Otomatik Kuşak Sınavı & Çizgi (Stripe) Hakediş Sistemi")
-        st.write("Sistem derse katılım sayısı, salonda geçirilen ay ve performans puanına göre terfi adaylarını otomatik sıralar.")
+        st.subheader("🎖️ Otomatik Kuşak Sınavı & Çizgi (Stripe) Analizi")
         
         belt_data = pd.DataFrame([
-            {"Sporcu": "Ahmet Yılmaz", "Branş": "BJJ", "Mevcut Seviye": "Beyaz Kuşak (2 Çizgi)", "Toplam Ders": 38, "Salondaki Süre": "5 Ay", "Durum": "3. Çizgi Hazır 🟩"},
-            {"Sporcu": "Selin Kaya", "Branş": "BJJ", "Mevcut Seviye": "Mavi Kuşak (4 Çizgi)", "Toplam Ders": 142, "Salondaki Süre": "18 Ay", "Durum": "Mor Kuşak Sınav Adayı 🟣"},
-            {"Sporcu": "Can Demir", "Branş": "Muay Thai", "Mevcut Seviye": "Seviye 1 Prajiad", "Toplam Ders": 28, "Salondaki Süre": "4 Ay", "Durum": "Seviye 2 Sınav Adayı 🟨"},
-            {"Sporcu": "Erman Öztürk", "Branş": "Boks", "Mevcut Seviye": "Orta Seviye", "Toplam Ders": 50, "Salondaki Süre": "6 Ay", "Durum": "İleri Grup Geçişi 🥊"},
+            {"Sporcu": "Ahmet Yılmaz", "Branş": "BJJ", "Mevcut Seviye": "Beyaz Kuşak (2 Çizgi)", "Toplam Ders": 38, "Durum": "3. Çizgi Hazır 🟩"},
+            {"Sporcu": "Selin Kaya", "Branş": "BJJ", "Mevcut Seviye": "Mavi Kuşak (4 Çizgi)", "Toplam Ders": 142, "Durum": "Mor Kuşak Sınav Adayı 🟣"},
+            {"Sporcu": "Can Demir", "Branş": "Muay Thai", "Mevcut Seviye": "Seviye 1 Prajiad", "Toplam Ders": 28, "Durum": "Seviye 2 Sınav Adayı 🟨"},
         ])
-        
         st.dataframe(belt_data, use_container_width=True)
-        
-        if st.button("📩 Terfisi Gelen Sporculara Otomatik Davet Gönder"):
-            st.success("Tüm terfi adaylarına SMS/E-posta yoluyla sınav ve çizgi töreni bilgilendirmesi iletildi!")
 
     # =========================================================
     # TAB 3: SPORCU TERK (CHURN) & SAKATLIK RİSKİ
     # =========================================================
     with tab_churn:
-        st.subheader("⚠️ AI Erken Uyarı: Bırakma (Churn) ve Sakatlık Riski")
+        st.subheader("⚠️ AI Erken Uyarı: Churn & Sakatlık Analitiği")
         
-        col_ch1, col_ch2 = st.columns(2)
-        with col_ch1:
-            st.error("🚨 **Devamsızlık Yapıp Bırakma Riski Taşıyanlar (Churn Risk)**")
-            st.warning("• **Mertcan Yılmaz:** Son 14 gündür derse katılmadı. (Eski Katılım: 3 gün/hafta)")
-            st.warning("• **Ayşe Demir:** Üyelik bitimine 5 gün kaldı, yenileme yapmadı.")
-            if st.button("💬 Mertcan Yılmaz İçin Geri Kazanım Mesajı Oluştur"):
-                st.code("Selam Mertcan! Minderlerde gözümüz seni arıyor. Bu haftaki teknik derslerimize özel senin için yer ayırdık, bu akşam bekliyoruz! 🥋", language="text")
-
-        with col_ch2:
-            st.warning("🩹 **Over-Training / Sakatlık Riski Taşıyanlar**")
-            st.info("• **Burak Çevik:** Haftalık 7 günde 11 derse katıldı. Dinlenme günü (Rest Day) eksik.")
-            st.info("• **Zeynep Tan:** Son 3 ders antrenman sonrası omuz ağrısı bildirdi.")
-            if st.button("📋 Burak Çevik İçin Dinlenme/Rehab Programı Öner"):
-                st.success("AI Önerisi: Burak'a bu hafta 2 gün hafif aktif esneme (Mobility) ve havuz antrenmanı tavsiye edildi.")
+        ch1, ch2 = st.columns(2)
+        with ch1:
+            st.error("🚨 **Devamsızlık Yapıp Bırakma Riski (Churn)**")
+            st.warning("• **Mertcan Yılmaz:** Son 14 gündür derse katılmadı.")
+            if st.button("💬 Geri Kazanım Mesajı Hazırla"):
+                st.code("Selam Mertcan! Minderlerde gözümüz seni arıyor. Bu haftaki teknik derslerimize seni de bekliyoruz! 🥋")
+        with ch2:
+            st.warning("🩹 **Over-Training / Sakatlık Riski**")
+            st.info("• **Burak Çevik:** Haftada 11 derse katıldı. Dinlenme günü eksik.")
 
     # =========================================================
-    # TAB 4: FİNANS, STRIPE & POS KANTİN
+    # TAB 4: FİNANS & POS KANTİN
     # =========================================================
     with tab_finance:
-        st.subheader("💳 Finansal Arayüz, Otomatik Tahsilat & Pro-Shop POS")
+        st.subheader("💳 Otomatik Tahsilat & Pro-Shop POS")
         
-        f_col1, f_col2 = st.columns([2, 1])
-        with f_col1:
-            st.markdown("##### 💵 Geciken ve Başarısız Ödemeler (Stripe Auto-Debit)")
+        f1, f2 = st.columns([2, 1])
+        with f1:
+            st.markdown("##### 💵 Geciken Ödemeler (Stripe Auto-Debit)")
             unpaid_data = pd.DataFrame([
-                {"Üye Adı": "David Smith", "Üyelik Tipi": "Aylık Sınırsız BJJ", "Tutar": "£ 75.00", "Durum": "Kart Bakiye Yetersiz", "Son Deneme": "Bugün"},
-                {"Üye Adı": "Elena Rostova", "Üyelik Tipi": "10'lu Punch Pass", "Tutar": "£ 110.00", "Durum": "Ödeme Bekliyor", "Son Deneme": "Dün"},
+                {"Üye": "David Smith", "Abonelik": "Aylık Sınırsız BJJ", "Tutar": "£ 75.00", "Durum": "Bakiye Yetersiz"},
+                {"Üye": "Elena Rostova", "Abonelik": "10'lu Pass", "Tutar": "£ 110.00", "Durum": "Ödeme Bekliyor"},
             ])
             st.table(unpaid_data)
-            if st.button("🔄 Başarısız Ödemeleri Stripe Üzerinden Yeniden Çek"):
-                st.info("Stripe entegrasyonu üzerinden otomatik tahsilat tetiklendi.")
-
-        with f_col2:
-            st.markdown("##### 🛒 Pro-Shop / Kantin Hızlı Satış")
-            item = st.selectbox("Ürün Seç", ["BJJ Gi (Kimono) - A2", "Rashguard (Ringmaster Edition)", "Boks Eldiveni 16oz", "Protein Shake / Su", "Muay Thai Şortu"])
-            member = st.text_input("Müşteri / Üye Adı", placeholder="Örn: Ahmet Yılmaz")
-            price = st.number_input("Tutar (£/₺)", value=45.0)
-            if st.button("🛍️ Satışı Tamamla ve Hesaba İşle"):
-                st.success(f"{item} satışı {member} hesabına Stripe/Nakit olarak işlendi!")
+        with f2:
+            st.markdown("##### 🛒 Pro-Shop Hızlı Satış")
+            st.selectbox("Ürün", ["BJJ Gi - A2", "Rashguard", "Boks Eldiveni", "Protein Shake"])
+            st.button("🛍️ Satışı Onayla")
 
     # =========================================================
-    # TAB 5: FERAGATNAME & GDPR (WAIVER)
+    # TAB 5: FERAGATNAME & GDPR
     # =========================================================
     with tab_waiver:
-        st.subheader("📜 Dijital Sorumluluk Feragatnamesi (Waiver) & PAR-Q Formları")
-        st.write("İngiltere ve AB yasal standartlarına uygun sakatlanma sorumluluk beyanları ve sağlık formları.")
-        
-        with st.expander("📝 Yeni Üye Dijital Waiver Formu Önizleme"):
-            st.markdown("""
-            **LIABILITY WAIVER & RELEASE OF LIABILITY AGREEMENT**
-            1. I acknowledge that martial arts training (BJJ, Muay Thai, Boxing, MMA) involves high-intensity physical contact and risk of injury.
-            2. I certify that I am physically fit and have no medical conditions that prevent safe participation (PAR-Q passed).
-            3. I grant permission for the academy to use photo/video footage for training and promotional purposes under GDPR compliance.
-            """)
-            st.checkbox("Yukarıdaki koşulları okudum, kabul ediyorum.")
-            st.text_input("Dijital İmza (Ad Soyad)", placeholder="İmza yerine geçer")
-            st.button("✅ Waiver Formunu Onayla ve Arşivle")
+        st.subheader("📜 Dijital Feragatname (Waiver) & GDPR")
+        st.checkbox("Spor salonu yasal güvenlik beyanını kabul ediyorum.")
+        st.text_input("Dijital İmza (Ad Soyad)")
+        st.button("✅ Onayla")
 
     # =========================================================
-    # TAB 6: DERS PROGRAMI & KONTENJAN
-    # =========================================================
-    with tab_schedule:
-        st.subheader("📅 İnteraktif Ders Takvimi & Minder Kontenjanı")
-        
-        schedule_data = pd.DataFrame([
-            {"Saat": "07:00 - 08:00", "Ders": "Morning BJJ All Levels", "Eğitmen": "Koç Caner", "Kapasite": "18 / 20", "Yedek Liste": 0},
-            {"Saat": "12:00 - 13:00", "Ders": "Lunchtime Muay Thai", "Eğitmen": "Koç Alex", "Kapasite": "20 / 20 (Dolu)", "Yedek Liste": 3},
-            {"Saat": "18:00 - 19:30", "Ders": "Advanced No-Gi & Sparring", "Eğitmen": "Koç Caner", "Kapasite": "14 / 25", "Yedek Liste": 0},
-            {"Saat": "19:30 - 20:30", "Ders": "Beginners Boxing", "Eğitmen": "Koç Sarah", "Kapasite": "10 / 15", "Yedek Liste": 0},
-        ])
-        st.table(schedule_data)
-
-    # =========================================================
-    # TAB 7: BİLGE AI BAŞASİSTAN CHAT
+    # TAB 6: BİLGE AI BAŞASİSTAN CHAT
     # =========================================================
     with tab_ai_chat:
-        st.subheader("💬 Ringmaster AI - Bilge Head Coach & Başasistan")
-        st.caption("Salon finansı, dövüş teknikleri, üye ilişkileri veya KOSGEB/UK pazar stratejileri hakkında sorularınızı yanıtlar.")
+        st.subheader("💬 Ringmaster AI - Bilge Head Coach Chat")
         
         if "messages" not in st.session_state:
             st.session_state.messages = [
-                {"role": "assistant", "content": "Selam Koç! Ben Ringmaster Bilge AI. Minderdeki teknik sorunlardan salondaki Sterlin/TL finans akışına kadar her alanda yanındayım. Bugün neyi çözüyoruz?"}
+                {"role": "assistant", "content": "Selam Koç! Ben Ringmaster Bilge AI. Salon operasyonu veya antrenman planları hakkında neyi çözüyoruz?"}
             ]
 
         for msg in st.session_state.messages:
             st.chat_message(msg["role"]).write(msg["content"])
 
-        if prompt := st.chat_input("Örn: BJJ başlangıç sınıfı için 4 haftalık müfredat hazırla veya Churn oranını nasıl düşürürüm?"):
+        if prompt := st.chat_input("Mesajınızı yazın..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             st.chat_message("user").write(prompt)
             
-            # Dinamik AI Yanıt Mantığı (Simüle Edilmiş Gelişmiş Yanıt)
-            response = f"**[Ringmaster Bilge AI]:** '{prompt}' sorunuz analiz edildi. Spor pedagojisi ve salon işletim ilkelerine göre tavsiyelerim veritabanınıza işlendi."
+            response = f"**[Ringmaster Bilge AI]:** '{prompt}' talebiniz analiz edildi ve yanıtlandı."
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.chat_message("assistant").write(response)
 
 # ---------------------------------------------------------
-# UYGULAMAYI ÇALIŞTIRMA (MAIN CALL)
+# ÇALIŞTIRMA
 # ---------------------------------------------------------
 if __name__ == "__main__":
-    render_ultimate_ringmaster()
+    render_ultimate_ringmaster_rd()
 else:
-    # Streamlit Cloud doğrudan import ettiğinde de çalışması için:
-    render_ultimate_ringmaster()
+    render_ultimate_ringmaster_rd()
