@@ -1,3 +1,5 @@
+import streamlit as st
+
 def render_ringmaster_ai_pro():
     """
     Ringmaster AI Pro - Dijital Antrenör ve Karar Destek Asistanı Modülü
@@ -94,3 +96,6 @@ def render_ringmaster_ai_pro():
             response = f"**[Ringmaster AI Pro - Dijital Antrenör]:** '{prompt}' talebiniz alındı. Gerekli veritabanı sorgulaması yapıldı ve güncellendi."
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.chat_message("assistant").write(response)
+
+# KRİTİK ADIM: Fonksiyonu çağırarak ekranı çizdiriyoruz
+render_ringmaster_ai_pro()
